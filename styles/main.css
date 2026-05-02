@@ -1,0 +1,33 @@
+/* Custom overrides on top of Tailwind CDN. Keep minimal — most styling
+   is utility classes inline in HTML. */
+
+html { scroll-padding-top: 4rem; }
+
+/* Markdown rendering (guideline.html / changelog.html) */
+.prose-content {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+.prose-content h1 { font-size: 2rem; font-weight: 700; margin: 1.5rem 0 1rem; line-height: 1.2; }
+.prose-content h2 { font-size: 1.5rem; font-weight: 600; margin: 2rem 0 .75rem; padding-top: .5rem; border-top: 1px solid #e2e8f0; }
+.prose-content h3 { font-size: 1.2rem; font-weight: 600; margin: 1.25rem 0 .5rem; }
+.prose-content p, .prose-content li { line-height: 1.65; color: #334155; }
+.prose-content ul, .prose-content ol { padding-left: 1.5rem; margin: .75rem 0; }
+.prose-content ul li { list-style: disc; }
+.prose-content ol li { list-style: decimal; }
+.prose-content code { background: #f1f5f9; padding: .1rem .35rem; border-radius: .25rem; font-size: .9em; color: #0f172a; }
+.prose-content pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .5rem; overflow-x: auto; font-size: .85rem; line-height: 1.5; margin: 1rem 0; }
+.prose-content pre code { background: transparent; color: inherit; padding: 0; }
+.prose-content a { color: #4338ca; text-decoration: underline; text-decoration-color: #c7d2fe; }
+.prose-content a:hover { text-decoration-color: #4338ca; }
+.prose-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .9rem; }
+.prose-content th, .prose-content td { border: 1px solid #e2e8f0; padding: .5rem .75rem; text-align: left; }
+.prose-content th { background: #f8fafc; font-weight: 600; }
+.prose-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
+
+@media (max-width: 640px) {
+  .prose-content h1 { font-size: 1.5rem; }
+  .prose-content h2 { font-size: 1.25rem; }
+  .prose-content pre { font-size: .8rem; }
+}
