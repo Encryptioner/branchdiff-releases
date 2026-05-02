@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>branchdiff — visual git diff in your browser</title>
   <meta name="description" content="Visual git & file diff in your browser, with AI-supported code review, GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud." />
-  <meta property="og:title" content="branchdiff" />
-  <meta property="og:description" content="Visual git & file diff in your browser, with AI review support." />
-  <meta property="og:image" content="./assets/og-image.png" />
+  <meta property="og:title" content="branchdiff — visual git diff in your browser" />
+  <meta property="og:description" content="Compare branches, files, and commits with a fast, browser-based viewer. AI-supported code review, persistent threads, GitHub & Bitbucket sync." />
+  <meta property="og:image" content="./assets/hero.svg" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://encryptioner.github.io/branchdiff-releases/" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./styles/main.css" />
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
   <!-- Skip nav for screen readers -->
-  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-white focus:px-3 focus:py-2 focus:rounded">Skip to content</a>
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-white focus:px-3 focus:py-2 focus:rounded focus:z-50">Skip to content</a>
 
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
@@ -25,100 +27,149 @@
         <span>branchdiff</span>
         <span id="version-badge" class="hidden sm:inline-block text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">v…</span>
       </a>
-      <div class="flex items-center gap-1 sm:gap-3 text-sm">
+
+      <!-- Desktop nav -->
+      <div class="hidden sm:flex items-center gap-1 text-sm">
         <a href="#features" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Features</a>
         <a href="#install" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Install</a>
         <a href="./guideline.html" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Guide</a>
         <a href="./changelog.html" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Changelog</a>
-        <a href="https://github.com/encryptioner/branchdiff-releases/releases" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Releases</a>
+        <a href="https://github.com/Encryptioner/branchdiff-releases" class="inline-flex items-center gap-1 px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">
+          <svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
       </div>
+
+      <!-- Mobile hamburger -->
+      <button id="mobile-menu-btn" class="sm:hidden p-2 rounded text-slate-700 hover:bg-slate-100" aria-label="Toggle menu">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
     </nav>
+
+    <!-- Mobile dropdown -->
+    <div id="mobile-menu" class="hidden sm:hidden bg-white border-b border-slate-200 px-4 pb-4">
+      <a href="#features" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Features</a>
+      <a href="#install" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Install</a>
+      <a href="./guideline.html" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Guide</a>
+      <a href="./changelog.html" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Changelog</a>
+      <a href="https://github.com/Encryptioner/branchdiff-releases" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">GitHub</a>
+    </div>
   </header>
 
   <main id="main">
     <!-- Hero -->
     <section class="relative overflow-hidden">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Subtle background gradient -->
+      <div class="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50 via-white to-slate-50"></div>
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+        <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div>
-            <p class="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full ring-1 ring-emerald-200 mb-6">
+            <p class="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full ring-1 ring-emerald-200 mb-4 sm:mb-6">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               100% local · no cloud · no telemetry
             </p>
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-[1.05]">
-              Visual git diff in your browser.
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-slate-900 leading-[1.1]">
+              Visual git diff<br class="hidden sm:block" /> in your browser.
             </h1>
-            <p class="mt-6 text-lg sm:text-xl text-slate-600 max-w-xl leading-relaxed">
+            <p class="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-slate-600 max-w-xl leading-relaxed">
               Compare branches, files, and commits with a fast, browser-based viewer.
-              AI-supported code review, persistent threads, GitHub & Bitbucket sync.
+              AI-supported code review, persistent threads, GitHub &amp; Bitbucket sync.
             </p>
-            <div class="mt-8 flex flex-wrap gap-3">
-              <a href="#install" class="inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-lg font-medium hover:bg-slate-800">
+            <div class="mt-6 sm:mt-8 flex flex-wrap gap-3">
+              <a href="#install" class="inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-lg font-medium hover:bg-slate-800 transition">
                 Get started
                 <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
               </a>
-              <a href="./guideline.html" class="inline-flex items-center gap-2 bg-white text-slate-900 ring-1 ring-slate-300 px-5 py-3 rounded-lg font-medium hover:bg-slate-50">
+              <a href="./guideline.html" class="inline-flex items-center gap-2 bg-white text-slate-900 ring-1 ring-slate-300 px-5 py-3 rounded-lg font-medium hover:bg-slate-50 transition">
                 Read the guide
               </a>
             </div>
-            <p class="mt-6 text-sm text-slate-500">
-              Available for macOS, Linux, Windows. Node, Python, Snap, Homebrew, APT.
-            </p>
+            <div class="mt-4 sm:mt-6 flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm text-slate-500">
+              <span>macOS</span><span class="text-slate-300">|</span>
+              <span>Linux</span><span class="text-slate-300">|</span>
+              <span>Windows</span><span class="text-slate-300">|</span>
+              <span>npm · pip · brew · snap · apt · scoop</span>
+            </div>
           </div>
           <div class="relative">
-            <!-- Replace with a real screenshot. Aspect-ratio reserves space so layout doesn't jump. -->
-            <div class="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl ring-1 ring-slate-200 shadow-2xl overflow-hidden flex items-center justify-center">
-              <img src="./assets/hero.png" alt="branchdiff screenshot" class="w-full h-full object-cover" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=&quot;text-slate-400 text-sm&quot;>Add assets/hero.png</span>'" />
+            <div class="rounded-2xl ring-1 ring-slate-200 shadow-2xl overflow-hidden bg-slate-900">
+              <img src="./assets/hero.svg" alt="branchdiff — visual diff viewer showing code changes with AI review comment" class="w-full h-auto" width="800" height="560" />
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Features -->
-    <section id="features" class="bg-white border-y border-slate-200">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">What it does</h2>
-          <p class="mt-3 text-slate-600">A focused tool for reviewing branch-level changes locally.</p>
+    <!-- Trust bar -->
+    <section class="border-y border-slate-200 bg-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 text-center">
+          <div>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-900">7</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Install channels</p>
+          </div>
+          <div>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-900">3</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Platforms</p>
+          </div>
+          <div>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-900">0</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Data leaves your machine</p>
+          </div>
+          <div>
+            <p class="text-2xl sm:text-3xl font-bold text-emerald-600">MIT</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Open-source license</p>
+          </div>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="bg-white border-b border-slate-200">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+        <div class="text-center mb-8 sm:mb-12">
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">What it does</h2>
+          <p class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600">A focused tool for reviewing branch-level changes locally.</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7l-4 5 4 5m8-10l4 5-4 5M14 4l-4 16"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">File-level branch diff</h3>
             <p class="mt-2 text-sm text-slate-600">Compare via blob hash to skip files with identical content, regardless of commit ancestry.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">AI-supported review</h3>
             <p class="mt-2 text-sm text-slate-600">Pipe diff context to any model, import its review. Resolve threads with autonomy.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">Persistent sessions</h3>
             <p class="mt-2 text-sm text-slate-600">Threads, comments, and tours survive across machines via repo fingerprint.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">Fast even on huge PRs</h3>
             <p class="mt-2 text-sm text-slate-600">File-level virtualization, lazy diffs on viewport intersection, dynamic syntax highlighting.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">GitHub & Bitbucket sync</h3>
             <p class="mt-2 text-sm text-slate-600">Push review threads upstream as PR comments. Reply locally, sync remotely.</p>
           </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-6 hover:shadow-md transition">
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
@@ -130,18 +181,17 @@
     </section>
 
     <!-- Install -->
-    <section id="install" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">Install</h2>
-        <p class="mt-3 text-slate-600">Pick your platform. All channels are kept in lockstep — same version everywhere.</p>
+    <section id="install" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div class="text-center mb-8 sm:mb-12">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Install</h2>
+        <p class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600">Pick your platform. All channels are kept in lockstep — same version everywhere.</p>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Cards rendered by main.js so install commands stay version-aware -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div data-install="npm" class="install-card"></div>
+        <div data-install="pip" class="install-card"></div>
         <div data-install="brew" class="install-card"></div>
         <div data-install="scoop" class="install-card"></div>
-        <div data-install="pip" class="install-card"></div>
         <div data-install="snap" class="install-card"></div>
         <div data-install="apt" class="install-card"></div>
         <div data-install="exe" class="install-card sm:col-span-2 lg:col-span-3"></div>
@@ -150,14 +200,21 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-200 bg-white">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-sm text-slate-600 flex flex-col sm:flex-row justify-between gap-4">
-        <p>© <span id="year"></span> branchdiff. MIT-licensed.</p>
-        <div class="flex gap-4">
-          <a href="./guideline.html" class="hover:text-slate-900">Guide</a>
-          <a href="./changelog.html" class="hover:text-slate-900">Changelog</a>
-          <a href="https://www.npmjs.com/package/@encryptioner/branchdiff" class="hover:text-slate-900">npm</a>
-          <a href="https://pypi.org/project/branchdiff/" class="hover:text-slate-900">PyPI</a>
-          <a href="https://snapcraft.io/branchdiff" class="hover:text-slate-900">Snap</a>
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 text-sm text-slate-600">
+        <div class="flex flex-col sm:flex-row justify-between gap-4">
+          <div>
+            <p class="font-semibold text-slate-900 mb-2">branchdiff</p>
+            <p>© <span id="year"></span> Mir Mursalin Ankur. MIT-licensed.</p>
+          </div>
+          <div class="flex flex-wrap gap-x-4 gap-y-2">
+            <a href="./guideline.html" class="hover:text-slate-900 transition">Guide</a>
+            <a href="./changelog.html" class="hover:text-slate-900 transition">Changelog</a>
+            <a href="https://www.npmjs.com/package/@encryptioner/branchdiff" class="hover:text-slate-900 transition">npm</a>
+            <a href="https://pypi.org/project/branchdiff/" class="hover:text-slate-900 transition">PyPI</a>
+            <a href="https://snapcraft.io/branchdiff" class="hover:text-slate-900 transition">Snap</a>
+            <a href="https://github.com/Encryptioner/branchdiff-releases" class="hover:text-slate-900 transition">GitHub</a>
+            <a href="https://www.supportkori.com/mirmursalinankur" class="hover:text-slate-900 transition">Sponsor</a>
+          </div>
         </div>
       </div>
     </footer>

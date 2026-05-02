@@ -17,12 +17,24 @@
         <img src="./assets/logo.svg" alt="" class="h-7 w-7" />
         <span>branchdiff</span>
       </a>
-      <div class="flex items-center gap-1 sm:gap-3 text-sm">
+      <!-- Desktop nav -->
+      <div class="hidden sm:flex items-center gap-1 text-sm">
         <a href="./" class="px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Home</a>
         <a href="./guideline.html" class="px-3 py-2 rounded text-slate-900 bg-slate-100">Guide</a>
         <a href="./changelog.html" class="px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Changelog</a>
       </div>
+      <!-- Mobile hamburger -->
+      <button id="mobile-menu-btn" class="sm:hidden p-2 rounded text-slate-700 hover:bg-slate-100" aria-label="Toggle menu">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
     </nav>
+    <div id="mobile-menu" class="hidden sm:hidden bg-white border-b border-slate-200 px-4 pb-4">
+      <a href="./" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Home</a>
+      <a href="./guideline.html" class="block px-3 py-2 rounded text-slate-900 bg-slate-100">Guide</a>
+      <a href="./changelog.html" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Changelog</a>
+    </div>
   </header>
 
   <article class="prose-content" id="content">
@@ -44,6 +56,11 @@
         document.getElementById('content').innerHTML =
           '<p class="text-rose-700">Failed to load guideline content (' + err + '). The CI sync job populates <code>content/guideline.md</code> on each release.</p>';
       });
+
+    // Mobile nav toggle
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+      document.getElementById('mobile-menu')?.classList.toggle('hidden');
+    });
   </script>
 </body>
 </html>

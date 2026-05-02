@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Window chrome -->
+  <rect width="800" height="560" rx="12" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- Title bar -->
+  <rect width="800" height="40" rx="12" fill="#1e293b"/>
+  <rect y="28" width="800" height="12" fill="#1e293b"/>
+  <circle cx="20" cy="20" r="6" fill="#ef4444" opacity="0.8"/>
+  <circle cx="40" cy="20" r="6" fill="#f59e0b" opacity="0.8"/>
+  <circle cx="60" cy="20" r="6" fill="#22c55e" opacity="0.8"/>
+
+  <!-- Branch pills in title bar -->
+  <rect x="280" y="10" width="100" height="20" rx="10" fill="#34d399" opacity="0.15"/>
+  <text x="305" y="24" font-family="ui-monospace,monospace" font-size="11" fill="#34d399">feature/auth</text>
+  <text x="390" y="24" font-family="ui-sans-serif,sans-serif" font-size="13" fill="#64748b">→</text>
+  <rect x="405" y="10" width="75" height="20" rx="10" fill="#f59e0b" opacity="0.15"/>
+  <text x="420" y="24" font-family="ui-monospace,monospace" font-size="11" fill="#f59e0b">main</text>
+
+  <!-- Sidebar -->
+  <rect y="40" width="220" height="520" fill="#0f172a"/>
+  <line x1="220" y1="40" x2="220" y2="560" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Sidebar header -->
+  <text x="16" y="68" font-family="ui-sans-serif,sans-serif" font-size="11" fill="#64748b" font-weight="600">CHANGED FILES</text>
+  <rect x="16" y="76" width="188" height="1" fill="#1e293b"/>
+
+  <!-- File items -->
+  <rect x="8" y="84" width="204" height="28" rx="4" fill="#1e293b"/>
+  <text x="20" y="103" font-family="ui-monospace,monospace" font-size="12" fill="#e2e8f0">src/auth/login.ts</text>
+  <rect x="170" y="92" width="32" height="16" rx="8" fill="#22c55e" opacity="0.2"/>
+  <text x="176" y="103" font-family="ui-monospace,monospace" font-size="10" fill="#22c55e">+24</text>
+
+  <rect x="8" y="116" width="204" height="28" rx="4" fill="transparent"/>
+  <text x="20" y="135" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">src/auth/oauth.ts</text>
+  <rect x="170" y="124" width="32" height="16" rx="8" fill="#f59e0b" opacity="0.2"/>
+  <text x="176" y="135" font-family="ui-monospace,monospace" font-size="10" fill="#f59e0b">~8</text>
+
+  <rect x="8" y="148" width="204" height="28" rx="4" fill="transparent"/>
+  <text x="20" y="167" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">src/api/routes.ts</text>
+  <rect x="170" y="156" width="32" height="16" rx="8" fill="#22c55e" opacity="0.2"/>
+  <text x="176" y="167" font-family="ui-monospace,monospace" font-size="10" fill="#22c55e">+12</text>
+
+  <rect x="8" y="180" width="204" height="28" rx="4" fill="transparent"/>
+  <text x="20" y="199" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">src/db/schema.ts</text>
+  <rect x="170" y="188" width="32" height="16" rx="8" fill="#ef4444" opacity="0.2"/>
+  <text x="176" y="199" font-family="ui-monospace,monospace" font-size="10" fill="#ef4444">-3</text>
+
+  <rect x="8" y="212" width="204" height="28" rx="4" fill="transparent"/>
+  <text x="20" y="231" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">tests/auth.test.ts</text>
+  <rect x="170" y="220" width="32" height="16" rx="8" fill="#22c55e" opacity="0.2"/>
+  <text x="176" y="231" font-family="ui-monospace,monospace" font-size="10" fill="#22c55e">+31</text>
+
+  <!-- Main diff area -->
+  <!-- File header -->
+  <rect x="220" y="40" width="580" height="32" fill="#1e293b"/>
+  <text x="236" y="60" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">src/auth/login.ts</text>
+
+  <!-- Line numbers + code -->
+  <!-- Context line -->
+  <text x="236" y="96" font-family="ui-monospace,monospace" font-size="12" fill="#475569">42</text>
+  <text x="276" y="96" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  const session = await validateToken(token);</text>
+
+  <!-- Deleted lines -->
+  <rect x="220" y="104" width="580" height="20" fill="#ef4444" opacity="0.08"/>
+  <text x="236" y="118" font-family="ui-monospace,monospace" font-size="12" fill="#475569">43</text>
+  <text x="276" y="118" font-family="ui-monospace,monospace" font-size="12" fill="#fca5a5">-  if (!session) return res.redirect('/login');</text>
+
+  <rect x="220" y="124" width="580" height="20" fill="#ef4444" opacity="0.08"/>
+  <text x="236" y="138" font-family="ui-monospace,monospace" font-size="12" fill="#475569">44</text>
+  <text x="276" y="138" font-family="ui-monospace,monospace" font-size="12" fill="#fca5a5">-  const user = getUser(session.userId);</text>
+
+  <!-- Added lines -->
+  <rect x="220" y="144" width="580" height="20" fill="#22c55e" opacity="0.08"/>
+  <text x="236" y="158" font-family="ui-monospace,monospace" font-size="12" fill="#475569">43</text>
+  <text x="276" y="158" font-family="ui-monospace,monospace" font-size="12" fill="#86efac">+  if (!session) {</text>
+
+  <rect x="220" y="164" width="580" height="20" fill="#22c55e" opacity="0.08"/>
+  <text x="236" y="178" font-family="ui-monospace,monospace" font-size="12" fill="#475569">44</text>
+  <text x="276" y="178" font-family="ui-monospace,monospace" font-size="12" fill="#86efac">+    await logFailedAttempt(token);</text>
+
+  <rect x="220" y="184" width="580" height="20" fill="#22c55e" opacity="0.08"/>
+  <text x="236" y="198" font-family="ui-monospace,monospace" font-size="12" fill="#475569">45</text>
+  <text x="276" y="198" font-family="ui-monospace,monospace" font-size="12" fill="#86efac">+    return res.redirect('/login?error=expired');</text>
+
+  <rect x="220" y="204" width="580" height="20" fill="#22c55e" opacity="0.08"/>
+  <text x="236" y="218" font-family="ui-monospace,monospace" font-size="12" fill="#475569">46</text>
+  <text x="276" y="218" font-family="ui-monospace,monospace" font-size="12" fill="#86efac">+  }</text>
+
+  <rect x="220" y="224" width="580" height="20" fill="#22c55e" opacity="0.08"/>
+  <text x="236" y="238" font-family="ui-monospace,monospace" font-size="12" fill="#475569">47</text>
+  <text x="276" y="238" font-family="ui-monospace,monospace" font-size="12" fill="#86efac">+  const user = await getUser(session.userId);</text>
+
+  <!-- Context lines -->
+  <text x="236" y="260" font-family="ui-monospace,monospace" font-size="12" fill="#475569">48</text>
+  <text x="276" y="260" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  const permissions = getPermissions(user.role);</text>
+
+  <text x="236" y="282" font-family="ui-monospace,monospace" font-size="12" fill="#475569">49</text>
+  <text x="276" y="282" font-family="ui-monospace,monospace" font-size="12" fill="#94a3b8">  return { user, permissions, session };</text>
+
+  <!-- Thread comment bubble -->
+  <rect x="560" y="144" width="224" height="80" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="576" cy="160" r="8" fill="#818cf8"/>
+  <text x="576" y="164" font-family="ui-sans-serif,sans-serif" font-size="9" fill="white" text-anchor="middle">AI</text>
+  <text x="590" y="164" font-family="ui-sans-serif,sans-serif" font-size="10" fill="#e2e8f0" font-weight="600">AI Review</text>
+  <text x="572" y="180" font-family="ui-sans-serif,sans-serif" font-size="10" fill="#94a3b8">Good: logging failed attempts</text>
+  <text x="572" y="194" font-family="ui-sans-serif,sans-serif" font-size="10" fill="#94a3b8">improves security audit trail.</text>
+  <text x="572" y="212" font-family="ui-monospace,monospace" font-size="9" fill="#64748b">2 replies · 3 min ago</text>
+
+  <!-- Bottom stats bar -->
+  <rect y="530" width="800" height="30" fill="#1e293b"/>
+  <text x="16" y="549" font-family="ui-monospace,monospace" font-size="10" fill="#64748b">5 files · +75 -3 · 2 threads · 1 tour</text>
+
+  <!-- Status indicators -->
+  <circle cx="740" cy="545" r="4" fill="#22c55e"/>
+  <text x="750" y="549" font-family="ui-sans-serif,sans-serif" font-size="10" fill="#64748b">Local</text>
+</svg>

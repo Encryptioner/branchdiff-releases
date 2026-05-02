@@ -3,6 +3,23 @@
 
 html { scroll-padding-top: 4rem; }
 
+/* Prevent horizontal overflow on mobile */
+body { overflow-x: hidden; }
+
+/* Install cards: ensure code blocks don't push out */
+.install-card {
+  min-width: 0; /* reset flex child min-width */
+}
+.install-card pre {
+  min-width: 0;
+  max-width: 100%;
+}
+.install-card pre code {
+  word-break: break-all;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 /* Markdown rendering (guideline.html / changelog.html) */
 .prose-content {
   max-width: 64rem;
@@ -29,5 +46,5 @@ html { scroll-padding-top: 4rem; }
 @media (max-width: 640px) {
   .prose-content h1 { font-size: 1.5rem; }
   .prose-content h2 { font-size: 1.25rem; }
-  .prose-content pre { font-size: .8rem; }
+  .prose-content pre { font-size: .75rem; padding: .75rem; }
 }

@@ -2,12 +2,12 @@
 
 **Visual git & file diff in your browser — with AI-supported code review & resolve, GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud, no telemetry.**
 
-[![npm](https://img.shields.io/npm/v/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff)
-[![license](https://img.shields.io/npm/l/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
-[![changelog](https://img.shields.io/badge/changelog-view-blue.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
-[![website](https://img.shields.io/badge/website-branchdiff-blue.svg)](https://encryptioner.github.io/branchdiff-releases/)
-[![github](https://img.shields.io/badge/github-Encryptioner-181717?logo=github)](https://github.com/Encryptioner/branchdiff-releases)
-[![SupportKori](https://img.shields.io/badge/SupportKori-☕-FFDD00?style=flat-square)](https://www.supportkori.com/mirmursalinankur)
+- [![npm](https://img.shields.io/npm/v/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff)
+- [![license](https://img.shields.io/npm/l/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
+- [![changelog](https://img.shields.io/badge/changelog-view-blue.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
+- [![website](https://img.shields.io/badge/website-branchdiff-blue.svg)](https://encryptioner.github.io/branchdiff-releases/)
+- [![github](https://img.shields.io/badge/github-Encryptioner-181717?logo=github)](https://github.com/Encryptioner/branchdiff-releases)
+- [![SupportKori](https://img.shields.io/badge/SupportKori-☕-FFDD00?style=flat-square)](https://www.supportkori.com/mirmursalinankur)
 
 Open any git diff in a browser UI with inline comments, split/unified views, and syntax highlighting. Use Claude Code slash commands (`/branchdiff-review`, `/branchdiff-resolve`) or any AI via prompts to review and fix code. Push and pull review comments to GitHub and Bitbucket PRs. Everything runs on your machine.
 
