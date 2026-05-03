@@ -44,7 +44,6 @@ Download a precompiled binary for your platform from [GitHub Releases](https://g
 | Platform | Command |
 |----------|---------|
 | **macOS (Apple Silicon)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-darwin-arm64 && chmod +x branchdiff` |
-| **macOS (Intel)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-darwin-x64 && chmod +x branchdiff` |
 | **Linux (x64)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-x64 && chmod +x branchdiff` |
 | **Linux (ARM64)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-arm64 && chmod +x branchdiff` |
 | **Windows** | Download [`branchdiff-win-x64.exe`](https://github.com/encryptioner/branchdiff-releases/releases/latest) from the Releases page |
