@@ -39,15 +39,14 @@ function renderHeader(container) {
     return `<a href="${n.href}" class="px-3 py-2 rounded ${active ? 'text-slate-900 bg-slate-100 font-medium' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'}">${n.label}</a>`;
   }).join('');
 
-  const desktopExtra = current === 'index'
-    ? `<a href="#features" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Features</a>
-       <a href="#install" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Install</a>`
-    : '';
+  const featHref = current === 'index' ? '#features' : './#features';
+  const instHref = current === 'index' ? '#install' : './#install';
 
-  const mobileExtra = current === 'index'
-    ? `<a href="#features" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Features</a>
-       <a href="#install" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Install</a>`
-    : '';
+  const desktopExtra = `<a href="${featHref}" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Features</a>
+       <a href="${instHref}" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Install</a>`;
+
+  const mobileExtra = `<a href="${featHref}" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Features</a>
+       <a href="${instHref}" class="block px-3 py-2 rounded text-slate-700 hover:bg-slate-100">Install</a>`;
 
   container.innerHTML = `
     <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
