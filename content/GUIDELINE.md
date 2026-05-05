@@ -151,7 +151,7 @@ Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
 - **Code tours** — AI-generated guided walkthroughs of your codebase
 - **Keyboard-driven** — navigate files, hunks, and views without touching the mouse
 - **Export & Import** — back up review & tour data to JSON and restore it on another machine; conflict strategies: merge, skip, overwrite
-- **Multiple instances** — work on several repos simultaneously, each on its own port
+- **Multiple instances** — run several sessions simultaneously: different repos each on their own port, or different branch comparisons within the same repo
 - **UI state persistence** — collapse state, viewed file markers, and filter preferences persist across port changes and machines via repo fingerprinting
 - **Sidebar filtering** — filter files by 9 states: Commented, Uncommented, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged
 - **Working tree toggle** — switch between staged and unstaged changes from the toolbar
@@ -834,11 +834,11 @@ Branch names come from `git branch -a` at completion time, so remote branches ap
 
 ## Instance Management
 
-Multiple repos open at once — each gets its own port starting at 5391.
+Multiple repos open at once — each gets its own port starting at 5391. You can also run multiple sessions **within the same repo** when comparing different ref pairs.
 
 ```bash
 branchdiff list         # show all running instances
-branchdiff open         # reopen browser for this repo
+branchdiff open         # reopen browser for this repo (prompts to choose if multiple running sessions)
 branchdiff kill         # stop all instances
 branchdiff clear        # stop this repo's instance and delete its review data
 branchdiff prune        # delete all stored data (~/.branchdiff)
@@ -850,7 +850,22 @@ branchdiff info         # show repo fingerprint, name, and state table size
 branchdiff state reset  # clear UI state (collapse, viewed markers) without affecting sessions
 ```
 
-Rerunning `branchdiff` in a repo that already has a running instance **reuses** it (just reopens the browser). Use `--new` to force a restart.
+Rerunning `branchdiff` with the **same ref pair** in a repo that already has a running instance **reuses** it (just reopens the browser). Use `--new` to force a restart. Running with a **different ref pair** starts a new session on the next available port.
+
+### Running multiple sessions in the same repo
+
+Useful when you want to review a colleague's PR while also diffing your own branch:
+
+```bash
+# Terminal 1 — review a PR branch
+branchdiff main feature/payments
+
+# Terminal 2 — check your own work in progress
+branchdiff main feature/auth
+
+# Both open in separate browser tabs; branchdiff open will prompt which to focus
+branchdiff open
+```
 
 ---
 

@@ -6,7 +6,7 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [1.4.0] - 2026-05-02
+## [1.4.0] - 2026-05-05
 
 ### Added
 
@@ -43,6 +43,10 @@ All notable changes to `branchdiff` are documented here.
 - **Export/import bundle format (v2)** — Now includes full UI state; uiState merges during import using last-write-wins conflict resolution based on `updated_at` timestamp.
 - **Tooltips (Tip component rewrite)** — Tooltips now render via `createPortal` (no longer clipped by overflow containers), auto-flip above/below based on viewport space, clamp to viewport edges, and dismiss on scroll/resize. It is now shown in most of the place instead of native tooltip. Zero-delay hover still preserved.
 - **Copy Path in File and Folder Context Menu** — Updated the context menu in file section to copy the file path.
+
+**Multiple sessions per repo:**
+- **Run several comparisons in the same repo at once** — each unique ref pair gets its own session on a separate port. Handy for reviewing a teammate's PR branch while also keeping an eye on your own work-in-progress diff. Same ref pair still reuses the existing session as before.
+- **`branchdiff open` now handles multiple sessions** — if more than one session is running for the current repo, it shows a numbered list so you can pick which to reopen in the browser.
 
 ### New Commands & Flags
 - **`branchdiff info`** — Show current repo fingerprint, name, and state table size.
