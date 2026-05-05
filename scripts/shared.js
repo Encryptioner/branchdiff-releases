@@ -137,6 +137,33 @@ function initShared() {
   // Year
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  // Analytics — internal nav clicks
+  if (header) {
+    header.querySelectorAll('nav a, #mobile-menu a').forEach(a => {
+      a.addEventListener('click', () => {
+        const text = (a.textContent || '').trim();
+        if (!text) return;
+        const isExternal = a.target === '_blank';
+        if (isExternal) {
+          trackEvent({ name: 'external_link_clicked', params: { label: text, destination: 'github' } });
+        } else {
+          trackEvent({ name: 'nav_clicked', params: { destination: text.toLowerCase() } });
+        }
+      });
+    });
+  }
+
+  // Analytics — footer external links
+  if (footer) {
+    footer.querySelectorAll('a[target="_blank"]').forEach(a => {
+      a.addEventListener('click', () => {
+        const text = (a.textContent || '').trim();
+        if (!text) return;
+        trackEvent({ name: 'external_link_clicked', params: { label: text, destination: new URL(a.href).hostname } });
+      });
+    });
+  }
 }
 
 // Auto-init

@@ -12,6 +12,14 @@
   <meta property="og:url" content="https://encryptioner.github.io/branchdiff-releases/" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WBK7WTZ0MR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WBK7WTZ0MR');
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./styles/main.css" />
 </head>
@@ -202,7 +210,50 @@
 
   <div id="site-footer"></div>
 
+  <script src="./scripts/analytics.js"></script>
   <script src="./scripts/shared.js"></script>
   <script src="./scripts/main.js"></script>
-</body>
+  <script>
+    // Section scroll tracking (fires once per section per page load)
+    (function wireSectionObserver() {
+      if (!('IntersectionObserver' in window)) return;
+
+      var sectionMap = {
+        'install': 'install',
+        'features': 'features',
+        'blog-grid': 'resources',
+      };
+
+      var observer = new IntersectionObserver(function(entries, obs) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          var section = entry.target.dataset.analyticsSection;
+          if (section) {
+            trackEvent({ name: 'section_scrolled', params: { section: section } });
+          }
+          obs.unobserve(entry.target);
+        });
+      }, { threshold: 0.3 });
+
+      document.querySelectorAll('section[id]').forEach(function(el) {
+        var sectionName = sectionMap[el.id] || el.id;
+        el.dataset.analyticsSection = sectionName;
+        observer.observe(el);
+      });
+    })();
+
+    // Resource card click tracking
+    document.getElementById('blog-grid').addEventListener('click', function(e) {
+      var card = e.target.closest('a');
+      if (!card) return;
+      var title = card.querySelector('h3');
+      trackEvent({
+        name: 'resource_card_clicked',
+        params: {
+          title: title ? title.textContent.trim() : '',
+          destination: card.href,
+        },
+      });
+    });
+  </script>
 </html>

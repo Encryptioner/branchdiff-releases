@@ -129,6 +129,7 @@ function renderTabbedCard(card, info) {
       });
       card.querySelector('.cmd-block code').innerHTML = escapeHtml(tabs[idx].cmd);
       card.dataset.currentCmd = tabs[idx].cmd;
+      trackEvent({ name: 'install_tab_switched', params: { channel: slug, tab: tabs[idx].label } });
     });
   });
 
@@ -139,7 +140,18 @@ function renderTabbedCard(card, info) {
     await navigator.clipboard.writeText(card.dataset.currentCmd);
     btn.textContent = 'Copied!';
     setTimeout(() => (btn.textContent = 'Copy'), 1500);
+    const activeTab = card.querySelector('.tab-btn.text-indigo-600');
+    const variant = activeTab ? activeTab.textContent.trim() : slug;
+    trackEvent({ name: 'install_cmd_copied', params: { channel: slug, variant: variant } });
   });
+
+  // External link click (npm/pypi/brew link)
+  const extLink = card.querySelector('a[target="_blank"]');
+  if (extLink) {
+    extLink.addEventListener('click', () => {
+      trackEvent({ name: 'install_link_clicked', params: { channel: slug, label: info.link.label } });
+    });
+  }
 }
 
 function renderSingleCard(card, info) {
@@ -165,6 +177,15 @@ function renderSingleCard(card, info) {
       await navigator.clipboard.writeText(cmd);
       btn.textContent = 'Copied!';
       setTimeout(() => (btn.textContent = 'Copy'), 1500);
+      trackEvent({ name: 'install_cmd_copied', params: { channel: slug, variant: slug } });
+    });
+  }
+
+  // External link click
+  const extLink = card.querySelector('a[target="_blank"]');
+  if (extLink) {
+    extLink.addEventListener('click', () => {
+      trackEvent({ name: 'install_link_clicked', params: { channel: slug, label: info.link.label } });
     });
   }
 }

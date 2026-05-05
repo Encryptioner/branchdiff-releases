@@ -50,3 +50,4 @@ Open `http://localhost:8080` in your browser.
 | `content/changelog.md` | Synced from private repo |
 | `Formula/branchdiff.rb` | Auto-bumped on release |
 | `bucket/branchdiff.json` | Auto-bumped on release |
+| `apt/` | Signed APT repo — written by CI on every release. Do not edit. `.aptly-state.tar.gz` inside is CI persistence state. |
