@@ -1,0 +1,19 @@
+Package: branchdiff
+Priority: optional
+Section: devel
+Installed-Size: 83012
+Maintainer: Mir Mursalin Ankur <mir.ankur.ruet13@gmail.com>
+Architecture: amd64
+Version: 1.4.0
+Filename: pool/main/b/branchdiff/branchdiff_1.4.0_amd64.deb
+Size: 28621616
+MD5sum: c2a97db6ca6f1d462e95fcc0580f36c5
+SHA1: 5bdb97788e5e9934f0ff2ec841f34919dbb0249e
+SHA256: 29f77abf9398b4c6e26628d148132d2fd430753a6b7bdb60f9f2e55fef43bb32
+SHA512: 595e0ce54807a17653bf33ec061fa4b6542e9c1c61b007e3d310521bf4fa52e25fbc54bf72ec06dfb190730f3535c543cd7c86ddd0df7583df3ae7f06311f0ae
+Description: Visual git & file diff in your browser, with AI-supported code review,
+ GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud,
+ no telemetry.
+Homepage: https://www.npmjs.com/package/@encryptioner/branchdiff
+License: MIT
+
