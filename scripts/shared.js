@@ -99,14 +99,14 @@ function renderFooter(container) {
       <div class="flex flex-col sm:flex-row justify-between gap-4 text-sm text-slate-600">
         <div>
           <p class="font-semibold text-slate-900 mb-2">${SITE_NAME}</p>
-          <p>© <span id="year"></span> Mir Mursalin Ankur. Free &amp; open-source.</p>
+          <p>© <span id="year"></span> Mir Mursalin Ankur. Free &amp; Seamless integration.</p>
         </div>
         <div class="flex flex-wrap gap-x-4 gap-y-2">
           <a href="./guideline.html" class="hover:text-slate-900 transition">Guide</a>
           <a href="./changelog.html" class="hover:text-slate-900 transition">Changelog</a>
           <a href="https://www.npmjs.com/package/@encryptioner/branchdiff" target="_blank" rel="noopener" class="hover:text-slate-900 transition">npm</a>
           <a href="https://pypi.org/project/branchdiff/" target="_blank" rel="noopener" class="hover:text-slate-900 transition">PyPI</a>
-          <a href="https://snapcraft.io/branchdiff" target="_blank" rel="noopener" class="hover:text-slate-900 transition">Snap</a>
+          <a href="https://snapcraft.io/branchdiff" target="_blank" rel="noopener" class="hover:text-slate-900 transition hidden">Snap</a>
           <a href="${GITHUB_REPO}" target="_blank" rel="noopener" class="hover:text-slate-900 transition">GitHub</a>
           <a href="${SPONSOR_URL}" target="_blank" rel="noopener" class="hover:text-slate-900 transition">Sponsor</a>
         </div>

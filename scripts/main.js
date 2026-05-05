@@ -41,13 +41,13 @@ const INSTALLERS = {
     note: 'Static .exe. No Node needed.',
     link: { label: 'Scoop', url: 'https://scoop.sh/' },
   },
-  snap: {
-    title: 'Snap (Linux)',
-    icon: 'snap',
-    cmd: 'sudo snap install branchdiff --classic',
-    note: 'Classic confinement (reads any local repo).',
-    link: { label: 'Snap Store', url: 'https://snapcraft.io/branchdiff' },
-  },
+  // snap: {
+  //   title: 'Snap (Linux)',
+  //   icon: 'snap',
+  //   cmd: 'sudo snap install branchdiff --classic',
+  //   note: 'Classic confinement (reads any local repo).',
+  //   link: { label: 'Snap Store', url: 'https://snapcraft.io/branchdiff' },
+  // },
   apt: {
     title: 'apt (Debian / Ubuntu)',
     icon: 'apt',

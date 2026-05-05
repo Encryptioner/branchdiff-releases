@@ -30,7 +30,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 - ✅ **Personal use** — allowed
 - ✅ **Educational use** — allowed
-- ✅ **Open-source use** — allowed
 - ❌ **Commercial use** — not allowed without explicit permission
 - ❌ **Selling as a service** — not allowed without explicit permission
 
