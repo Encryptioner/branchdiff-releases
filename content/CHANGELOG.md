@@ -1,3 +1,5 @@
+<!-- AUTO-GENERATED - DO NOT EDIT IN THIS REPO. Source of truth: private repo. Edits here will be overwritten on the next release. -->
+
 # Changelog
 
 All notable changes to `branchdiff` are documented here.
