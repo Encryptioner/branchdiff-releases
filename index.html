@@ -167,6 +167,23 @@
       </div>
     </section>
 
+    <!-- Uninstall -->
+    <section id="uninstall" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div class="text-center mb-8 sm:mb-12">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Uninstall</h2>
+        <p class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600">Remove branchdiff from any platform. Complete cleanup including package managers, taps, and config.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div data-uninstall="npm" class="uninstall-card"></div>
+        <div data-uninstall="pip" class="uninstall-card"></div>
+        <div data-uninstall="brew" class="uninstall-card"></div>
+        <div data-uninstall="scoop" class="uninstall-card"></div>
+        <!-- <div data-uninstall="snap" class="uninstall-card"></div> -->
+        <div data-uninstall="apt" class="uninstall-card"></div>
+        <div data-uninstall="exe" class="uninstall-card sm:col-span-2 lg:col-span-3"></div>
+      </div>
+    </section>
+
     <!-- Blog / Resources -->
     <section class="bg-white border-t border-slate-200">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
@@ -220,6 +237,7 @@
 
       var sectionMap = {
         'install': 'install',
+        'uninstall': 'uninstall',
         'features': 'features',
         'blog-grid': 'resources',
       };
