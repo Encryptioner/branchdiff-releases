@@ -21,9 +21,12 @@
 <body class="bg-slate-50 text-slate-900 antialiased">
   <div id="site-header"></div>
 
-  <article class="prose-content" id="content">
-    <p class="text-slate-500">Loading…</p>
-  </article>
+  <div class="doc-layout">
+    <aside id="toc-sidebar" aria-label="Table of contents"></aside>
+    <article class="prose-content" id="content">
+      <p class="text-slate-500">Loading…</p>
+    </article>
+  </div>
 
   <div id="site-footer"></div>
 
@@ -33,9 +36,9 @@
   <script src="./scripts/analytics.js"></script>
   <script src="./scripts/shared.js"></script>
   <script>
-    // Try CI-synced content first, then fall back to content/ files that ship with the repo.
     const SOURCES = ['./content/GUIDELINE.md'];
     const CONTENT_EL = document.getElementById('content');
+    const TOC_EL = document.getElementById('toc-sidebar');
 
     async function loadContent() {
       for (const src of SOURCES) {
@@ -46,6 +49,7 @@
           if (!md.trim()) continue;
           CONTENT_EL.innerHTML = marked.parse(md);
           Prism.highlightAll();
+          buildTOC(CONTENT_EL, TOC_EL);
           trackEvent({ name: 'content_loaded', params: { page: 'guideline' } });
           return;
         } catch { /* try next source */ }

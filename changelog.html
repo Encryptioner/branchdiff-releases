@@ -21,9 +21,12 @@
 <body class="bg-slate-50 text-slate-900 antialiased">
   <div id="site-header"></div>
 
-  <article class="prose-content" id="content">
-    <p class="text-slate-500">Loading…</p>
-  </article>
+  <div class="doc-layout">
+    <aside id="toc-sidebar" aria-label="Table of contents"></aside>
+    <article class="prose-content" id="content">
+      <p class="text-slate-500">Loading…</p>
+    </article>
+  </div>
 
   <div id="site-footer"></div>
 
@@ -35,6 +38,7 @@
   <script>
     const SOURCES = ['./content/CHANGELOG.md'];
     const CONTENT_EL = document.getElementById('content');
+    const TOC_EL = document.getElementById('toc-sidebar');
 
     async function loadContent() {
       for (const src of SOURCES) {
@@ -45,6 +49,8 @@
           if (!md.trim()) continue;
           CONTENT_EL.innerHTML = marked.parse(md);
           Prism.highlightAll();
+          // Changelog: version-level (h2) only — h3 are "Added/Fixed/Changed" repetitions
+          buildTOC(CONTENT_EL, TOC_EL, { selector: 'h2' });
           trackEvent({ name: 'content_loaded', params: { page: 'changelog' } });
           return;
         } catch { /* try next source */ }

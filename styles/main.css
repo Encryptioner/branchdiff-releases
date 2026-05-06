@@ -48,3 +48,162 @@ body { overflow-x: hidden; }
   .prose-content h2 { font-size: 1.25rem; }
   .prose-content pre { font-size: .75rem; padding: .75rem; }
 }
+
+/* Doc layout: stacked on mobile, side-by-side on desktop */
+.doc-layout {
+  display: flex;
+  flex-direction: column;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+.doc-layout .prose-content {
+  max-width: none;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── TOC — mobile: sticky collapsible strip ── */
+#toc-sidebar {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 20;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+/* Toggle button (mobile only) */
+.toc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: left;
+}
+.toc-toggle:hover { background: #f8fafc; }
+.toc-toggle-label { display: flex; align-items: center; gap: 0.4rem; }
+.toc-toggle-label::before {
+  content: '';
+  display: inline-block;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: #4338ca;
+  flex-shrink: 0;
+}
+.toc-chevron {
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+#toc-sidebar.toc-open .toc-chevron { transform: rotate(180deg); }
+
+/* Collapsible body */
+.toc-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+}
+#toc-sidebar.toc-open .toc-body {
+  max-height: 55vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Hidden on mobile; desktop block set inside @media (min-width: 1024px) */
+.toc-desktop-title { display: none; }
+
+/* TOC list (shared mobile + desktop) */
+.toc-list {
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+}
+.toc-list li { margin: 0; }
+.toc-link {
+  display: block;
+  padding: 0.3rem 1rem;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.1s, background 0.1s;
+  border-radius: 0;
+}
+.toc-h3 { padding-left: 1.75rem; font-size: 0.77rem; color: #94a3b8; }
+.toc-link:hover { color: #1e293b; background: #f1f5f9; }
+.toc-active { color: #4338ca !important; background: #eef2ff !important; font-weight: 500; }
+
+/* ── TOC — desktop: sticky left sidebar ── */
+@media (min-width: 1024px) {
+  html { scroll-padding-top: 4rem; } /* restore — sidebar layout needs no extra offset */
+
+  .doc-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  #toc-sidebar {
+    width: 15rem;
+    flex-shrink: 0;
+    position: sticky;
+    top: 3.5rem;
+    max-height: calc(100vh - 3.5rem);
+    overflow-y: auto;
+    border-bottom: none;
+    border-right: 1px solid #e2e8f0;
+    box-shadow: none;
+    background: transparent;
+    padding: 2rem 0.75rem 2rem 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  /* Hide the mobile toggle; always show the body */
+  .toc-toggle { display: none; }
+  .toc-body {
+    max-height: none !important;
+    overflow: visible !important;
+    transition: none;
+  }
+
+  /* Desktop list tweaks: tighter padding, border-radius */
+  .toc-link {
+    padding: 0.22rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.78rem;
+  }
+  .toc-h3 { padding-left: 1rem; font-size: 0.73rem; }
+
+  /* Label: hidden on mobile, shown on desktop sidebar */
+  .toc-desktop-title {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 0.6rem;
+    padding-left: 0.5rem;
+  }
+}
+
+/* Mobile doc pages: account for sticky header (56px) + collapsed TOC strip (~42px) */
+@media (max-width: 1023px) {
+  .doc-layout ~ * { scroll-padding-top: 6.5rem; }
+  html:has(.doc-layout) { scroll-padding-top: 6.5rem; }
+}

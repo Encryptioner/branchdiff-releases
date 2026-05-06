@@ -1,8 +1,6 @@
-// Marketing page glue: version badge, install cards with link buttons.
+// Marketing page glue: install cards with link buttons.
 // Depends on: scripts/shared.js (header/footer).
 // No frameworks. Plain DOM. Editable in public repo without build step.
-
-const PUBLIC_REPO = 'encryptioner/branchdiff-releases';
 
 const INSTALLERS = {
   npm: {
@@ -252,22 +250,6 @@ function renderSingleCard(card, info, slug, source) {
   }
 }
 
-async function loadVersionBadge() {
-  const badge = document.getElementById('version-badge');
-  if (!badge) return;
-  try {
-    const res = await fetch(`https://api.github.com/repos/${PUBLIC_REPO}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github+json' },
-    });
-    if (!res.ok) throw new Error(`status ${res.status}`);
-    const data = await res.json();
-    badge.textContent = data.tag_name || '';
-  } catch {
-    badge.textContent = 'latest';
-  }
-}
-
 // Init
 document.querySelectorAll('.install-card').forEach(c => renderCard(c, 'install'));
 document.querySelectorAll('.uninstall-card').forEach(c => renderCard(c, 'uninstall'));
-loadVersionBadge();

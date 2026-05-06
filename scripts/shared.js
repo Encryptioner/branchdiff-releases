@@ -5,6 +5,8 @@ const SITE_NAME = 'branchdiff';
 const LOGO_PATH = './assets/logo.svg';
 const GITHUB_REPO = 'https://github.com/Encryptioner/branchdiff-releases';
 const SPONSOR_URL = 'https://www.supportkori.com/mirmursalinankur';
+const PUBLIC_REPO = 'encryptioner/branchdiff-releases';
+const VERSION_CACHE_KEY = 'branchdiff-version';
 
 const NAV_ITEMS = [
   { label: 'Home', href: './', match: 'index' },
@@ -14,8 +16,8 @@ const NAV_ITEMS = [
 
 function getCurrentPage() {
   const path = window.location.pathname;
-  if (path.endsWith('guideline.html')) return 'guideline';
-  if (path.endsWith('changelog.html')) return 'changelog';
+  if (/\/guideline(\.html)?$/.test(path)) return 'guideline';
+  if (/\/changelog(\.html)?$/.test(path)) return 'changelog';
   return 'index';
 }
 
@@ -33,14 +35,16 @@ function heartIcon(cls = 'w-4 h-4') {
 
 function renderHeader(container) {
   const current = getCurrentPage();
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const homeUrl = window.location.origin + basePath;
 
   const navLinks = NAV_ITEMS.map(n => {
     const active = n.match === current;
     return `<a href="${n.href}" class="px-3 py-2 rounded ${active ? 'text-slate-900 bg-slate-100 font-medium' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'}">${n.label}</a>`;
   }).join('');
 
-  const featHref = current === 'index' ? '#features' : './#features';
-  const instHref = current === 'index' ? '#install' : './#install';
+  const featHref = current === 'index' ? '#features' : `${homeUrl}#features`;
+  const instHref = current === 'index' ? '#install' : `${homeUrl}#install`;
 
   const desktopExtra = `<a href="${featHref}" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Features</a>
        <a href="${instHref}" class="px-3 py-2 rounded text-slate-700 hover:text-slate-900 hover:bg-slate-100">Install</a>`;
@@ -117,6 +121,30 @@ function renderFooter(container) {
   container.classList.add('border-t', 'border-slate-200', 'bg-white');
 }
 
+async function loadVersionBadge() {
+  const badge = document.getElementById('version-badge');
+  if (!badge) return;
+
+  const cached = sessionStorage.getItem(VERSION_CACHE_KEY);
+  if (cached) {
+    badge.textContent = cached;
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${PUBLIC_REPO}/releases/latest`, {
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const data = await res.json();
+    const version = data.tag_name || 'latest';
+    badge.textContent = version;
+    sessionStorage.setItem(VERSION_CACHE_KEY, version);
+  } catch {
+    badge.textContent = 'latest';
+  }
+}
+
 function initShared() {
   const header = document.getElementById('site-header');
   const footer = document.getElementById('site-footer');
@@ -137,6 +165,9 @@ function initShared() {
   // Year
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  // Version badge — use cached version if available
+  loadVersionBadge();
 
   // Analytics — internal nav clicks
   if (header) {
@@ -171,4 +202,115 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initShared);
 } else {
   initShared();
+}
+
+// ── Table of Contents ────────────────────────────────────────────────────────
+
+function slugify(text) {
+  return (text || '').toLowerCase().trim()
+    .replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+}
+
+/**
+ * Build a TOC from headings inside contentEl and inject into tocEl.
+ * Mobile: sticky collapsible strip below site header.
+ * Desktop (≥1024px): sticky left sidebar, always visible.
+ * opts.selector — CSS selector for headings (default: 'h2, h3')
+ */
+function buildTOC(contentEl, tocEl, opts) {
+  const selector = (opts && opts.selector) || 'h2, h3';
+  const headings = Array.from(contentEl.querySelectorAll(selector));
+  if (headings.length < 3) {
+    tocEl.hidden = true;
+    return;
+  }
+
+  // Assign unique slug IDs to headings
+  const seen = {};
+  headings.forEach(h => {
+    let base = slugify(h.textContent);
+    seen[base] = (seen[base] || 0) + 1;
+    h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base;
+  });
+
+  // ── List ──
+  const ul = document.createElement('ul');
+  ul.className = 'toc-list';
+  headings.forEach(h => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${h.id}`;
+    a.textContent = h.textContent;
+    a.className = h.tagName === 'H2' ? 'toc-link toc-h2' : 'toc-link toc-h3';
+    a.dataset.id = h.id;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  // ── Mobile toggle button ──
+  const chevron = `<svg class="toc-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 7l5 5 5-5"/>
+  </svg>`;
+  const toggle = document.createElement('button');
+  toggle.className = 'toc-toggle';
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-controls', 'toc-body');
+  toggle.innerHTML = `<span class="toc-toggle-label">On this page</span>${chevron}`;
+
+  function closeTOC() {
+    tocEl.classList.remove('toc-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', () => {
+    const open = tocEl.classList.toggle('toc-open');
+    toggle.setAttribute('aria-expanded', String(open));
+    // Lock page scroll while TOC is open on mobile
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+
+  // ── Collapsible body ──
+  const body = document.createElement('div');
+  body.className = 'toc-body';
+  body.id = 'toc-body';
+
+  const desktopTitle = document.createElement('span');
+  desktopTitle.className = 'toc-desktop-title';
+  desktopTitle.textContent = 'On this page';
+  body.appendChild(desktopTitle);
+  body.appendChild(ul);
+
+  tocEl.appendChild(toggle);
+  tocEl.appendChild(body);
+
+  // Close mobile TOC on link click; hash URL + scroll-padding-top handle the rest
+  ul.querySelectorAll('.toc-link').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth < 1024) closeTOC();
+    });
+  });
+
+  // ── Active section tracking (desktop only — mobile TOC is closed while reading) ──
+  let activeId = null;
+
+  function updateActive() {
+    if (window.innerWidth < 1024) return;
+    const scrollY = window.scrollY + 68;
+    let active = headings[0];
+    for (const h of headings) {
+      if (h.offsetTop <= scrollY) active = h;
+      else break;
+    }
+    if (!active || active.id === activeId) return;
+    activeId = active.id;
+    ul.querySelectorAll('.toc-link').forEach(a => {
+      a.classList.toggle('toc-active', a.dataset.id === activeId);
+    });
+    const activeLink = ul.querySelector('.toc-active');
+    if (activeLink) activeLink.scrollIntoView({ block: 'nearest' });
+  }
+
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
 }
