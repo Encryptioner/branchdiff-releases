@@ -1,12 +1,12 @@
 {
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "Visual git & file diff in your browser, with AI review support",
   "homepage": "https://www.npmjs.com/package/@encryptioner/branchdiff",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/encryptioner/branchdiff-releases/releases/download/v1.3.3/branchdiff-win-x64.exe",
-      "hash": "575c6adc545d1ffd3efe1fba79051476461a93d48e752e016f2982c6a021c198",
+      "url": "https://github.com/encryptioner/branchdiff-releases/releases/download/v1.4.0/branchdiff-win-x64.exe",
+      "hash": "ba03a8c73f0b72b71e45521af30129dcd3eb6520ab4dd76f3f30c060d145bf3e",
       "bin": [
         [
           "branchdiff-win-x64.exe",

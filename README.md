@@ -2,11 +2,12 @@
 
 **Visual git & file diff in your browser — with AI-supported code review & resolve, GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud, no telemetry.**
 
-- [![npm](https://img.shields.io/npm/v/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff)
-- [![license](https://img.shields.io/npm/l/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
-- [![changelog](https://img.shields.io/badge/changelog-view-blue.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code)
 - [![website](https://img.shields.io/badge/website-branchdiff-blue.svg)](https://encryptioner.github.io/branchdiff-releases/)
+- [![license](https://img.shields.io/npm/l/@encryptioner%2Fbranchdiff.svg)](https://github.com/Encryptioner/branchdiff-releases/blob/master/LICENSE.md)
+- [![changelog](https://img.shields.io/badge/changelog-view-blue.svg)](https://encryptioner.github.io/branchdiff-releases/changelog.html)
 - [![github](https://img.shields.io/badge/github-Encryptioner-181717?logo=github)](https://github.com/Encryptioner/branchdiff-releases)
+- [![npm](https://img.shields.io/npm/v/@encryptioner%2Fbranchdiff.svg)](https://www.npmjs.com/package/@encryptioner/branchdiff)
+- [![pypi](https://img.shields.io/pypi/v/branchdiff.svg)](https://pypi.org/project/branchdiff/)
 - [![SupportKori](https://img.shields.io/badge/SupportKori-☕-FFDD00?style=flat-square)](https://www.supportkori.com/mirmursalinankur)
 
 Open any git diff in a browser UI with inline comments, split/unified views, and syntax highlighting. Use Claude Code slash commands (`/branchdiff-review`, `/branchdiff-resolve`) or any AI via prompts to review and fix code. Push and pull review comments to GitHub and Bitbucket PRs. Everything runs on your machine.
@@ -658,7 +659,7 @@ Multiple repos open at once — each gets its own port starting at 5391.
 
 ```bash
 branchdiff list         # show all running instances
-branchdiff open         # reopen browser for this repo
+branchdiff open         # reopen browser for this repo (prompts to choose if multiple running sessions)
 branchdiff kill         # stop all instances
 branchdiff prune        # delete all stored data (~/.branchdiff)
 branchdiff clear        # reset current repo's review data
@@ -779,7 +780,8 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 ## Contributing
 
 Feedback and bug reports are welcome on the [GitHub repo](https://github.com/Encryptioner/branchdiff-releases).
-More projects by the author: [github.com/Encryptioner](https://github.com/Encryptioner)
+More projects by the author: [github.com/Encryptioner](https://github.com/Encryptioner).
+His portfolio: [encryptioner.github.io](https://encryptioner.github.io).
 
 If you find branchdiff useful, consider giving it a [star on GitHub](https://github.com/Encryptioner/branchdiff-releases)!
 
@@ -800,7 +802,7 @@ View the release history and what's changed:
 
 ## License
 
-Commons Clause + MIT — see [LICENSE.md](https://www.npmjs.com/package/@encryptioner/branchdiff?activeTab=code) (browse via npm code tab) for full text.
+Commons Clause + MIT — see [LICENSE.md](https://github.com/Encryptioner/branchdiff-releases/blob/master/LICENSE.md) (browse via npm code tab) for full text.
 
 ## Support
 
