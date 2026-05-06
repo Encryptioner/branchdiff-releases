@@ -777,14 +777,6 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 
 ---
 
-## Contributing
-
-Feedback and bug reports are welcome on the [GitHub repo](https://github.com/Encryptioner/branchdiff-releases).
-More projects by the author: [github.com/Encryptioner](https://github.com/Encryptioner).
-His portfolio: [encryptioner.github.io](https://encryptioner.github.io).
-
-If you find branchdiff useful, consider giving it a [star on GitHub](https://github.com/Encryptioner/branchdiff-releases)!
-
 ## Guideline
 
 View the complete user guide and command reference:
@@ -803,6 +795,14 @@ View the release history and what's changed:
 ## License
 
 Commons Clause + MIT — see [LICENSE.md](https://github.com/Encryptioner/branchdiff-releases/blob/master/LICENSE.md) (browse via npm code tab) for full text.
+
+## Contributing
+
+Feedback and bug reports are welcome on the [GitHub repo](https://github.com/Encryptioner/branchdiff-releases).
+More projects by the author: [github.com/Encryptioner](https://github.com/Encryptioner).
+His portfolio: [encryptioner.github.io](https://encryptioner.github.io).
+
+If you find branchdiff useful, consider giving it a [star on GitHub](https://github.com/Encryptioner/branchdiff-releases)!
 
 ## Support
 

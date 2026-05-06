@@ -6,6 +6,20 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.4.1] - 2026-05-06
+
+### Improved
+
+- **Full file mode — copy button for each pane** — In the split view of the full file comparison, a copy icon now appears in the header of the old (changed) and new sides. Clicking copies the full content of that pane to the clipboard.
+
+### Fixed
+
+- **Bitbucket PR creation now includes default reviewers** — When opening a pull request from the branchdiff UI, Bitbucket's configured default reviewers are now automatically fetched and included in the request. Previously they were silently omitted. GitHub is unaffected (`gh pr create` delegates reviewer assignment to the server).
+- **npm install on Node 18 no longer fails** — `npm install -g @encryptioner/branchdiff` on Node 18 was immediately failing because `scripts/postinstall.js` was missing from the published package. The `files` field in `package.json` now explicitly includes it.
+- **APT repository — GPG key signature verified correctly** — `apt update` was failing with `NO_PUBKEY 8AFCC29C5DD7C18F` because the ASCII-armored public key was being written directly to `/etc/apt/keyrings/` without dearmoring. Install instructions now pipe through `gpg --dearmor` to produce the binary format apt expects.
+
+---
+
 ## [1.4.0] - 2026-05-05
 
 ### Added
