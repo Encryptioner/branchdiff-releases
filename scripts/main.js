@@ -51,7 +51,7 @@ const INSTALLERS = {
     icon: 'apt',
     cmd: 'sudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://encryptioner.github.io/branchdiff-releases/apt/key.gpg \\\n  | gpg --dearmor \\\n  | sudo tee /etc/apt/keyrings/branchdiff.gpg > /dev/null\necho "deb [signed-by=/etc/apt/keyrings/branchdiff.gpg arch=amd64,arm64] https://encryptioner.github.io/branchdiff-releases/apt stable main" \\\n  | sudo tee /etc/apt/sources.list.d/branchdiff.list\nsudo apt update && sudo apt install branchdiff',
     note: 'GPG-signed APT repo. One-time setup.',
-    link: { label: 'APT repo', url: 'https://encryptioner.github.io/branchdiff-releases/apt/' },
+    link: { label: 'APT repo', url: 'https://github.com/Encryptioner/branchdiff-releases/tree/master/apt' },
   },
   exe: {
     title: 'Direct download (Windows)',
@@ -112,7 +112,7 @@ const UNINSTALLERS = {
     icon: 'apt',
     cmd: 'sudo apt remove branchdiff\nsudo rm /etc/apt/keyrings/branchdiff.gpg\nsudo rm /etc/apt/sources.list.d/branchdiff.list\nsudo apt update',
     note: 'Removes the package, GPG key, and repo source.',
-    link: { label: 'APT repo', url: 'https://encryptioner.github.io/branchdiff-releases/apt/' },
+    link: { label: 'APT repo', url: 'https://github.com/Encryptioner/branchdiff-releases/tree/master/apt' },
   },
   exe: {
     title: 'Direct download (Windows)',
@@ -172,7 +172,7 @@ function renderTabbedCard(card, info, slug, source) {
         `<button class="tab-btn px-2 sm:px-3 py-1.5 text-xs font-medium rounded-t transition ${i === 0 ? 'text-indigo-600 bg-indigo-50 border-b-2 border-indigo-500' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}" data-tab="${i}">${t.label}</button>`
       ).join('')}
     </div>
-    <pre class="cmd-block text-xs sm:text-sm bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto whitespace-pre break-all leading-relaxed max-h-40 overflow-y-auto"><code>${escapeHtml(firstCmd)}</code></pre>
+    <pre class="cmd-block text-xs sm:text-sm bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed max-h-40 overflow-y-auto max-w-full"><code>${escapeHtml(firstCmd)}</code></pre>
     <p class="text-xs text-slate-500 mt-auto">${info.note}</p>
   `;
 
@@ -228,7 +228,7 @@ function renderSingleCard(card, info, slug, source) {
         ${info.isText ? '' : '<button class="copy-btn text-xs px-2 py-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition">Copy</button>'}
       </div>
     </div>
-    <pre class="cmd-block text-xs sm:text-sm bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto whitespace-pre break-all leading-relaxed max-h-40 overflow-y-auto"><code>${escapeHtml(cmd)}</code></pre>
+    <pre class="cmd-block text-xs sm:text-sm bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed max-h-40 overflow-y-auto max-w-full"><code>${escapeHtml(cmd)}</code></pre>
     <p class="text-xs text-slate-500 mt-auto">${info.note}</p>
   `;
   const btn = card.querySelector('.copy-btn');

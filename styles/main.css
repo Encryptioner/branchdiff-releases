@@ -3,18 +3,22 @@
 
 html { scroll-padding-top: 4rem; }
 
-/* Prevent horizontal overflow on mobile */
+/* overflow-x MUST stay on body only — adding it to <html> creates a new scroll
+   container and silently breaks position:sticky on every element in the page */
 body { overflow-x: hidden; }
 
-/* Install cards: ensure code blocks don't push out */
-.install-card {
-  min-width: 0; /* reset flex child min-width */
+/* ── Install / Uninstall cards: prevent code blocks pushing out ── */
+.install-card,
+.uninstall-card {
+  min-width: 0;
 }
-.install-card pre {
+.install-card pre,
+.uninstall-card pre {
   min-width: 0;
   max-width: 100%;
 }
-.install-card pre code {
+.install-card pre code,
+.uninstall-card pre code {
   word-break: break-all;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -34,11 +38,21 @@ body { overflow-x: hidden; }
 .prose-content ul li { list-style: disc; }
 .prose-content ol li { list-style: decimal; }
 .prose-content code { background: #f1f5f9; padding: .1rem .35rem; border-radius: .25rem; font-size: .9em; color: #0f172a; }
-.prose-content pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .5rem; overflow-x: auto; font-size: .85rem; line-height: 1.5; margin: 1rem 0; }
-.prose-content pre code { background: transparent; color: inherit; padding: 0; }
-.prose-content a { color: #4338ca; text-decoration: underline; text-decoration-color: #c7d2fe; }
+.prose-content pre,
+.prose-content pre[class*="language-"] {
+  background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .5rem;
+  overflow-x: auto; max-width: 100%; min-width: 0;
+  font-size: .85rem; line-height: 1.5; margin: 1rem 0;
+  white-space: pre-wrap; word-break: break-all; word-wrap: break-word;
+}
+.prose-content pre code,
+.prose-content pre[class*="language-"] code { background: transparent; color: inherit; padding: 0; display: block; white-space: pre-wrap; word-break: break-all; word-wrap: break-word; }
+.prose-content a { color: #4338ca; text-decoration: underline; text-decoration-color: #c7d2fe; overflow-wrap: break-word; }
 .prose-content a:hover { text-decoration-color: #4338ca; }
-.prose-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .9rem; }
+.prose-content p, .prose-content li { overflow-wrap: break-word; }
+.prose-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .9rem; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.prose-content thead, .prose-content tbody, .prose-content tfoot { display: table; width: 100%; table-layout: fixed; }
+.prose-content tr { display: table-row; }
 .prose-content th, .prose-content td { border: 1px solid #e2e8f0; padding: .5rem .75rem; text-align: left; }
 .prose-content th { background: #f8fafc; font-weight: 600; }
 .prose-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
@@ -164,6 +178,7 @@ body { overflow-x: hidden; }
     top: 3.5rem;
     max-height: calc(100vh - 3.5rem);
     overflow-y: auto;
+    overscroll-behavior: contain;
     border-bottom: none;
     border-right: 1px solid #e2e8f0;
     box-shadow: none;
