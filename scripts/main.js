@@ -51,7 +51,7 @@ const INSTALLERS = {
   apt: {
     title: 'apt (Debian / Ubuntu)',
     icon: 'apt',
-    cmd: 'sudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://encryptioner.github.io/branchdiff-releases/apt/key.gpg \\\n  | sudo tee /etc/apt/keyrings/branchdiff.gpg > /dev/null\necho "deb [signed-by=/etc/apt/keyrings/branchdiff.gpg arch=amd64,arm64] https://encryptioner.github.io/branchdiff-releases/apt stable main" \\\n  | sudo tee /etc/apt/sources.list.d/branchdiff.list\nsudo apt update && sudo apt install branchdiff',
+    cmd: 'sudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://encryptioner.github.io/branchdiff-releases/apt/key.gpg \\\n  | gpg --dearmor \\\n  | sudo tee /etc/apt/keyrings/branchdiff.gpg > /dev/null\necho "deb [signed-by=/etc/apt/keyrings/branchdiff.gpg arch=amd64,arm64] https://encryptioner.github.io/branchdiff-releases/apt stable main" \\\n  | sudo tee /etc/apt/sources.list.d/branchdiff.list\nsudo apt update && sudo apt install branchdiff',
     note: 'GPG-signed APT repo. One-time setup.',
     link: { label: 'APT repo', url: 'https://encryptioner.github.io/branchdiff-releases/apt/' },
   },
