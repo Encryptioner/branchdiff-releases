@@ -66,7 +66,8 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 | View a Bitbucket PR | `branchdiff https://bitbucket.org/workspace/repo/pull-requests/123` |
 | Browse repo files | `branchdiff tree` |
 | View last commit | `branchdiff HEAD~1` |
-| Compare branch vs parent | `branchdiff --earlier-commit` |
+| Compare branch vs parent | `branchdiff -p` |
+| Compare branch vs 3rd commit back | `branchdiff -p 3` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
 
 Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
@@ -515,7 +516,8 @@ NOTE: Push and pull work identically to GitHub — click the PR number button in
 | View a GitHub PR | `branchdiff https://github.com/owner/repo/pull/123` |
 | Browse repo files | `branchdiff tree` |
 | View last N commits | `branchdiff HEAD~3` |
-| Compare branch vs parent | `branchdiff --earlier-commit` |
+| Compare branch vs parent | `branchdiff -p` |
+| Compare branch vs 3rd commit back | `branchdiff -p 3` |
 | Re-open a running instance | `branchdiff open` |
 | Stop all instances | `branchdiff kill` |
 | Self-update | `branchdiff update` |
@@ -649,7 +651,7 @@ Toolbar button. Shows what the two modes disagree on:
 | `--unified` | Unified view (default is split) |
 | `--quiet` | Minimal terminal output |
 | `--new` | Archive current session and start fresh |
-| `--earlier-commit` | Compare branch against its parent commit |
+| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1) |
 
 ---
 

@@ -6,6 +6,23 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.4.2] - 2026-05-07
+
+### Fixed
+
+- **File section sort now matches sidebar tree order** — Files in the diff view are now sorted with directories before files at each path level, then alphabetically within each group. Previously the diff view used a flat `localeCompare` on full paths, which caused a mismatch (e.g., `release-notes/v1.4.2.md` appeared after `README.md` in the diff view while the sidebar correctly placed the `release-notes/` directory before root-level files).
+
+### Improved
+
+- **`branchdiff update` now supports all installation methods** — The update command detects npm, pnpm, yarn, Homebrew, pip/uv/pipx, Scoop, apt, and standalone binaries. Previously only npm/pnpm/yarn/brew were detected. Each method runs the correct native update command (`brew upgrade`, `scoop update`, `apt install --only-upgrade`, `pip install --upgrade`, etc.). Standalone binaries are updated by downloading the latest release from GitHub directly.
+- **New `--pm` values** — `branchdiff update --pm` now accepts `pip`, `scoop`, `apt`, and `binary` in addition to the existing `npm`, `pnpm`, `yarn`, `brew`.
+
+### Changed
+
+- **`--earlier-commit` replaced by `--previous [n]` / `-p [n]`** — The boolean `--earlier-commit` flag is now `--previous` (short: `-p`) with an optional depth parameter. `branchdiff -p` (default N=1) compares against the parent commit; `branchdiff -p 3` compares against the 3rd previous commit. Supports an optional source ref: `branchdiff -p 5 feature` → `feature~5 vs feature`. The old `--earlier-commit` flag is removed.
+
+---
+
 ## [1.4.1] - 2026-05-06
 
 ### Improved

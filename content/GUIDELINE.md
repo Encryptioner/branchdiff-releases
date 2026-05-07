@@ -103,14 +103,31 @@ sudo apt update && sudo apt install branchdiff
 branchdiff update
 ```
 
-The `update` command auto-detects your installation method (npm, pnpm, yarn, Homebrew, pip, scoop) and runs the appropriate upgrade command. To override detection:
+The `update` command auto-detects your installation method and runs the appropriate upgrade command:
+
+| Detected method | Update command |
+|---|---|
+| **npm** | `npm install -g @encryptioner/branchdiff@latest` |
+| **pnpm** | `pnpm add -g @encryptioner/branchdiff@latest` |
+| **yarn** | `yarn global add @encryptioner/branchdiff@latest` |
+| **Homebrew** | `brew upgrade branchdiff` |
+| **pip / uv / pipx** | `pip install --upgrade branchdiff` |
+| **Scoop** | `scoop update branchdiff` |
+| **apt** | `sudo apt update && sudo apt install --only-upgrade branchdiff` |
+| **Standalone binary** | Downloads the latest binary from GitHub Releases |
+
+To override detection:
 
 ```bash
-branchdiff update --pm npm     # Force npm
-branchdiff update --pm homebrew  # Force Homebrew
+branchdiff update --pm npm      # Force npm
+branchdiff update --pm brew     # Force Homebrew
+branchdiff update --pm pip      # Force pip
+branchdiff update --pm scoop    # Force Scoop
+branchdiff update --pm apt      # Force apt
+branchdiff update --pm binary   # Force standalone binary download
 ```
 
-When binaries become available, the update command will automatically detect and install the latest binary for your platform.
+Detection checks the resolved binary path, file type (compiled vs Node.js script), and available package managers.
 
 ### Quick Reference
 
@@ -125,7 +142,8 @@ When binaries become available, the update command will automatically detect and
 | Export session data | `branchdiff export --all` |
 | Import session data | `branchdiff import backup.json` |
 | View last commit | `branchdiff HEAD~1` |
-| Compare branch vs parent | `branchdiff --earlier-commit` |
+| Compare branch vs parent | `branchdiff -p` |
+| Compare branch vs 3rd commit back | `branchdiff -p 3` |
 | Show repo info & state | `branchdiff info` |
 | Clear UI state | `branchdiff state reset` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
@@ -213,14 +231,16 @@ branchdiff HEAD~1       # last commit
 branchdiff HEAD~5       # last 5 commits
 ```
 
-### Parent commit comparison
+### Previous commit comparison
 
 ```bash
-branchdiff --earlier-commit             # current branch vs its parent (HEAD~1)
-branchdiff --earlier-commit feature     # feature vs feature~1
+branchdiff -p                       # current branch vs its parent (HEAD~1)
+branchdiff -p 3                     # current branch vs 3 commits back (HEAD~3)
+branchdiff -p 2 feature             # feature vs feature~2
+branchdiff --previous 5 feature     # same, long form
 ```
 
-Compares a branch against its parent commit — useful for reviewing a single branch's latest change. Cannot be combined with `--base`/`--compare`.
+Compares a branch against the Nth previous commit — useful for reviewing one or more commits on a branch. Defaults to N=1 (parent commit). Cannot be combined with `--base`/`--compare`.
 
 ### Comparing branches or refs
 
@@ -922,7 +942,7 @@ Both Export and Import are also available in the **3-dot menu** (⋯) on the dif
 | `--unified` | Unified view (default is split) |
 | `--quiet` | Minimal terminal output |
 | `--new` | Archive current session and start fresh |
-| `--earlier-commit` | Compare branch against its parent commit |
+| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1) |
 
 ---
 
