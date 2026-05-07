@@ -7,17 +7,20 @@ html { scroll-padding-top: 4rem; }
    container and silently breaks position:sticky on every element in the page */
 body { overflow-x: hidden; }
 
-/* ── Install / Uninstall cards: prevent code blocks pushing out ── */
+/* ── Install / Update / Uninstall cards: prevent code blocks pushing out ── */
 .install-card,
+.update-card,
 .uninstall-card {
   min-width: 0;
 }
 .install-card pre,
+.update-card pre,
 .uninstall-card pre {
   min-width: 0;
   max-width: 100%;
 }
 .install-card pre code,
+.update-card pre code,
 .uninstall-card pre code {
   word-break: break-all;
   white-space: pre-wrap;

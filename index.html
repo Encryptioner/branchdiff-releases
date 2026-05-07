@@ -167,18 +167,50 @@
       </div>
     </section>
 
-    <!-- Uninstall -->
+    <!-- Update & Uninstall -->
     <section id="uninstall" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
       <div class="text-center mb-8 sm:mb-12">
-        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Uninstall</h2>
-        <p class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600">Remove branchdiff from any platform. Complete cleanup including package managers, taps, and config.</p>
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Update & Uninstall</h2>
+        <p class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600">Keep branchdiff up to date or remove it from your system.</p>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <!-- Section tabs -->
+      <div class="flex justify-center mb-6">
+        <div class="inline-flex rounded-lg ring-1 ring-slate-200 bg-slate-100 p-1">
+          <button class="section-tab-btn px-4 py-2 text-sm font-medium rounded-md transition text-indigo-600 bg-white shadow-sm" data-section-tab="update">Update</button>
+          <button class="section-tab-btn px-4 py-2 text-sm font-medium rounded-md transition text-slate-500 hover:text-slate-700" data-section-tab="uninstall">Uninstall</button>
+        </div>
+      </div>
+      <!-- Update tip -->
+      <div id="update-tip" class="mb-4 text-center">
+        <p class="text-xs sm:text-sm text-slate-500">
+          <span class="font-medium text-slate-700">Tip:</span>
+          Run <code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">branchdiff update</code> to auto-detect and update automatically.
+          Use <code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">--pm &lt;method&gt;</code> to force a specific package manager.
+        </p>
+      </div>
+      <!-- Uninstall tip -->
+      <div id="uninstall-tip" class="mb-4 text-center hidden">
+        <p class="text-xs sm:text-sm text-slate-500">
+          <span class="font-medium text-slate-700">Tip:</span>
+          Clean up without uninstalling — run <code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">branchdiff prune</code> to delete all stored data,
+          or <code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">branchdiff clear</code> to remove data for the current repo only.
+        </p>
+      </div>
+      <!-- Update grid (default visible) -->
+      <div id="update-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div data-update="npm" class="update-card"></div>
+        <div data-update="pip" class="update-card"></div>
+        <div data-update="brew" class="update-card"></div>
+        <div data-update="scoop" class="update-card"></div>
+        <div data-update="apt" class="update-card"></div>
+        <div data-update="exe" class="update-card sm:col-span-2 lg:col-span-3"></div>
+      </div>
+      <!-- Uninstall grid (hidden by default) -->
+      <div id="uninstall-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div data-uninstall="npm" class="uninstall-card"></div>
         <div data-uninstall="pip" class="uninstall-card"></div>
         <div data-uninstall="brew" class="uninstall-card"></div>
         <div data-uninstall="scoop" class="uninstall-card"></div>
-        <!-- <div data-uninstall="snap" class="uninstall-card"></div> -->
         <div data-uninstall="apt" class="uninstall-card"></div>
         <div data-uninstall="exe" class="uninstall-card sm:col-span-2 lg:col-span-3"></div>
       </div>
@@ -237,7 +269,7 @@
 
       var sectionMap = {
         'install': 'install',
-        'uninstall': 'uninstall',
+        'uninstall': 'update_uninstall',
         'features': 'features',
         'blog-grid': 'resources',
       };

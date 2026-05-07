@@ -124,6 +124,67 @@ const UNINSTALLERS = {
   },
 };
 
+const UPDATERS = {
+  npm: {
+    title: 'Node.js (Node 18+)',
+    icon: 'npm',
+    tabs: [
+      { label: 'npm', cmd: 'npm install -g @encryptioner/branchdiff@latest' },
+      { label: 'pnpm', cmd: 'pnpm add -g @encryptioner/branchdiff@latest' },
+      { label: 'yarn', cmd: 'yarn global add @encryptioner/branchdiff@latest' },
+    ],
+    note: 'Upgrades to the latest published version.',
+    link: { label: 'npm package', url: 'https://www.npmjs.com/package/@encryptioner/branchdiff' },
+  },
+  pip: {
+    title: 'Python (universal)',
+    icon: 'pip',
+    tabs: [
+      { label: 'pip', cmd: 'pip install --upgrade branchdiff' },
+      { label: 'uv', cmd: 'uv tool upgrade branchdiff' },
+      { label: 'pipx', cmd: 'pipx upgrade branchdiff' },
+    ],
+    note: 'Replaces the binary with the newest release.',
+    link: { label: 'PyPI page', url: 'https://pypi.org/project/branchdiff/' },
+  },
+  brew: {
+    title: 'Homebrew (macOS / Linux)',
+    icon: 'brew',
+    cmd: 'brew upgrade branchdiff',
+    note: 'Pulls the latest formula from the tap.',
+    link: { label: 'Homebrew', url: 'https://brew.sh/' },
+  },
+  scoop: {
+    title: 'Scoop (Windows)',
+    icon: 'scoop',
+    cmd: 'scoop update branchdiff',
+    note: 'Updates to the latest from the bucket.',
+    link: { label: 'Scoop', url: 'https://scoop.sh/' },
+  },
+  snap: {
+    title: 'Snap (Linux)',
+    icon: 'snap',
+    cmd: 'sudo snap refresh branchdiff',
+    note: 'Classic confinement.',
+    link: { label: 'Snap Store', url: 'https://snapcraft.io/branchdiff' },
+  },
+  apt: {
+    title: 'apt (Debian / Ubuntu)',
+    icon: 'apt',
+    cmd: 'sudo apt update && sudo apt install --only-upgrade branchdiff',
+    note: 'APT repo tracks the latest release.',
+    link: { label: 'APT repo', url: 'https://github.com/Encryptioner/branchdiff-releases/tree/master/apt' },
+  },
+  exe: {
+    title: 'Direct download (Windows)',
+    icon: 'win',
+    cmd: 'Download the latest branchdiff-win-x64.exe from Releases,\nrename to branchdiff.exe, replace the existing file on PATH.',
+    note: 'Replace the existing binary on PATH.',
+    isText: true,
+    link: { label: 'Releases', url: 'https://github.com/Encryptioner/branchdiff-releases/releases' },
+  },
+};
+
 function escapeHtml(s) {
   return s
     .replace(/&/g, '&amp;')
@@ -136,14 +197,15 @@ function linkIcon() {
   return '<svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>';
 }
 
+const SOURCES = { install: INSTALLERS, uninstall: UNINSTALLERS, update: UPDATERS };
+
 function renderCard(card, source) {
   const slug = card.dataset[source];
-  const info = source === 'uninstall' ? UNINSTALLERS[slug] : INSTALLERS[slug];
+  const info = SOURCES[source]?.[slug];
   if (!info) return;
 
-  const cls = source === 'uninstall' ? 'uninstall-card' : 'install-card';
   card.className =
-    `${cls} rounded-xl ring-1 ring-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-3 hover:shadow-md transition min-w-0`;
+    `${source}-card rounded-xl ring-1 ring-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-3 hover:shadow-md transition min-w-0`;
 
   if (info.tabs) {
     renderTabbedCard(card, info, slug, source);
@@ -252,4 +314,21 @@ function renderSingleCard(card, info, slug, source) {
 
 // Init
 document.querySelectorAll('.install-card').forEach(c => renderCard(c, 'install'));
+document.querySelectorAll('.update-card').forEach(c => renderCard(c, 'update'));
 document.querySelectorAll('.uninstall-card').forEach(c => renderCard(c, 'uninstall'));
+
+// Section-level tab switching (Update / Uninstall)
+document.querySelectorAll('.section-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.sectionTab;
+    document.querySelectorAll('.section-tab-btn').forEach(b => {
+      const isActive = b === btn;
+      b.className = `section-tab-btn px-4 py-2 text-sm font-medium rounded-md transition ${isActive ? 'text-indigo-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`;
+    });
+    document.getElementById('update-grid').classList.toggle('hidden', tab !== 'update');
+    document.getElementById('uninstall-grid').classList.toggle('hidden', tab !== 'uninstall');
+    document.getElementById('update-tip').classList.toggle('hidden', tab !== 'update');
+    document.getElementById('uninstall-tip').classList.toggle('hidden', tab !== 'uninstall');
+    trackEvent({ name: 'manage_tab_switched', params: { tab } });
+  });
+});
