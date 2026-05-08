@@ -103,7 +103,7 @@ sudo apt update && sudo apt install branchdiff
 branchdiff update
 ```
 
-The `update` command auto-detects your installation method and runs the appropriate upgrade command:
+The `update` command auto-detects your installation method and runs the appropriate upgrade command. It resolves symlinks and queries package manager stores for reliable detection:
 
 | Detected method | Update command |
 |---|---|
@@ -116,6 +116,16 @@ The `update` command auto-detects your installation method and runs the appropri
 | **apt** | `sudo apt update && sudo apt install --only-upgrade branchdiff` |
 | **Standalone binary** | Downloads the latest binary from GitHub Releases |
 
+Before updating, the command shows the detected package manager, binary path, and update command it will run:
+
+```
+Package manager : pnpm
+Binary path     : /Users/you/.nvm/versions/node/v24/bin/branchdiff
+Update command   : pnpm add -g @encryptioner/branchdiff@latest
+```
+
+If the update fails, all alternative update commands are listed along with the `--pm` override flag.
+
 To override detection:
 
 ```bash
@@ -127,7 +137,17 @@ branchdiff update --pm apt      # Force apt
 branchdiff update --pm binary   # Force standalone binary download
 ```
 
-Detection checks the resolved binary path, file type (compiled vs Node.js script), and available package managers.
+To see what was detected without updating, check the **Installation** section in `branchdiff info`:
+
+```
+Installation
+  Package mgr : pnpm
+  Binary      : /Users/you/.nvm/versions/node/v24/bin/branchdiff
+  Resolved    : /Users/you/Library/pnpm/global/5/node_modules/@encryptioner/branchdiff/dist/index.js
+  Update cmd  : pnpm add -g @encryptioner/branchdiff@latest
+```
+
+Detection resolves symlinks to find the actual package manager store, checks `pnpm list -g` / `npm list -g` for explicit ownership, and falls back to checking which package managers are available on the system.
 
 ### Quick Reference
 
@@ -144,7 +164,8 @@ Detection checks the resolved binary path, file type (compiled vs Node.js script
 | View last commit | `branchdiff HEAD~1` |
 | Compare branch vs parent | `branchdiff -p` |
 | Compare branch vs 3rd commit back | `branchdiff -p 3` |
-| Show repo info & state | `branchdiff info` |
+| Inspect a single commit | Click any commit in the sidebar while viewing a branch diff |
+| Show repo info & installation | `branchdiff info` |
 | Clear UI state | `branchdiff state reset` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
 
@@ -154,6 +175,7 @@ Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
 
 ## Features at a Glance
 
+- **Commit detail view** — click any commit in the history sidebar to open a full diff page with metadata, file list, and session-aware comment threads
 - **Local-first** — runs entirely on your machine, no data leaves localhost
 - **Dark and light themes** — automatic system detection, manual toggle in toolbar or CLI flag
 - **Split, unified, and full views** — switch instantly with toolbar buttons or keyboard shortcuts
@@ -166,6 +188,7 @@ Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
 - **GitHub PR sync** — push local comments to GitHub PR, pull GitHub comments into branchdiff
 - **Bitbucket PR sync** — same push/pull workflow for Bitbucket Cloud PRs
 - **Create PRs from UI** — open pull requests on GitHub or Bitbucket directly from the toolbar when no PR exists
+- **PR lifecycle actions** — approve, request changes, comment, merge, close, reopen, toggle draft, and edit PR title/description directly from the toolbar dropdown
 - **File browser** — navigate repo tree with syntax highlighting (`branchdiff tree`)
 - **Code tours** — AI-generated guided walkthroughs of your codebase
 - **Keyboard-driven** — navigate files, hunks, and views without touching the mouse
@@ -211,6 +234,7 @@ When comparing branches, a **Full** option appears in the view mode toggle. This
 - **Scroll markers** — a thin minimap strip alongside the scroll area shows old/new (red/green) status markers, so you can jump to changes instantly without scrolling in both `Split` and `Unified` view. Click any marker to jump to that line.
 - **Line-by-line navigation** — in split view, scroll is automatically synchronized between left and right panes (toggle via "Sync scroll" checkbox)
 - **View mode toggle** — the Full view is modal-based; use Close (Esc) or the X button to return to the diff view
+- **Markdown preview** — for `.md`, `.mdx`, `.markdown`, and other markdown files, a **Preview** checkbox appears in the view controls. When checked, both the old and new file are rendered as formatted markdown side-by-side instead of raw source code. Comments are hidden in preview mode since line numbers don't align to rendered output. Useful for documentation-heavy PRs where you want to read the final output rather than the raw diff.
 
 ---
 
@@ -254,6 +278,17 @@ branchdiff origin/main feat     # remote + local
 ```
 
 Anything `git rev-parse --verify` accepts works.
+
+### Individual commit detail view
+
+When viewing a branch comparison, the **commit history** panel lists all commits on the source branch. Click any commit to open its detail page:
+
+- **Metadata header** — full commit SHA (click to copy), author, date, and commit message. Merge commits show both parent SHAs as clickable links so you can navigate up the ancestry chain.
+- **File list sidebar** — all changed files with a git status indicator (**A** = added, **D** = deleted, **M** = modified, **R** = renamed) and per-file `+N / -N` counts. Click any file to jump directly to its diff.
+- **Diff view** — unified or split diff with syntax highlighting. Use the view toggle in the header to switch modes.
+- **Session comments** — if you opened the commit from a branch comparison that has active review comments, those threads appear alongside the diff as view-only. This lets you see existing feedback while inspecting individual commits.
+
+Use the **Back** button (or browser back) to return to the originating branch comparison. The session context is preserved.
 
 ### Viewing a GitHub PR
 
@@ -512,9 +547,11 @@ branchdiff skill add   # creates .claude/skills/branchdiff-{review,resolve}/SKIL
 | Slash command | What it does |
 |---|---|
 | `/branchdiff-review` | AI reads the diff and posts inline comments with severity tags |
-| `/branchdiff-review main feature` | Review a specific branch comparison |
+| `/branchdiff-review main feature` | Review a specific branch comparison by ref |
+| `/branchdiff-review http://localhost:5391/diff?b1=main&b2=feature&mode=git` | Paste the URL from your browser — server, branches, and mode are parsed automatically |
 | `/branchdiff-resolve` | AI reads open threads, fixes the code, resolves each comment |
 | `/branchdiff-resolve abc123` | Resolve a single thread by ID |
+| `/branchdiff-resolve http://localhost:5391/diff?b1=main&b2=feature&mode=git` | Paste the URL to target a specific running session |
 
 **Skill options:**
 
@@ -527,12 +564,39 @@ branchdiff skill add --force                 # overwrite existing files
 
 ### Review skill workflow
 
+The simplest way to start a review is to copy the URL from your browser and paste it as the argument:
+
+```
+/branchdiff-review http://localhost:5391/diff?b1=origin%2Fmain&b2=origin%2Ffeature&mode=git
+```
+
+The skill parses the URL to extract the server address, base branch (`b1`), source branch (`b2`), and diff mode — no need to type refs manually. If the server is already running at that URL, it reuses the active session instead of starting a new one.
+
 `/branchdiff-review` reads the full diff, analyzes each changed file, and posts inline comments tagged by severity:
 - `[must-fix]` — bugs, security issues, data loss risks
 - `[suggestion]` — concrete improvements, missing tests
 - `[question]` — unclear behavior needing clarification
 
 After the review, it summarizes findings and prompts you to run `/branchdiff-resolve`.
+
+### Review tone
+
+The review skill uses a constructive, collaborative tone:
+
+- **Lead with the problem, not a judgment** — "this returns undefined when X is empty" instead of "this is wrong"
+- **Collaborative language** — "Consider using X" and "We might want to handle Y" instead of "You should"
+- **Acknowledge good code** — brief praise for well-written sections
+- **Explain the why** — suggestions include reasoning, not just prescriptions
+
+### Follow-up (nth-time) reviews
+
+Reviews are **additive**, not repetitive. Before analyzing code, the review skill fetches resolved and dismissed threads:
+
+- **Resolved threads** are not re-raised — the author already addressed them
+- **Dismissed threads** are only re-flagged if new evidence contradicts the dismissal reason
+- **Improvements are acknowledged** in the general summary when the author clearly addressed prior feedback
+
+This makes follow-up reviews (2nd, 3rd, nth pass) practical without repeating the same feedback loop.
 
 ### Resolve skill workflow
 
@@ -552,10 +616,35 @@ Copy-paste one of these prompts:
 ```
 You are reviewing code using branchdiff agent commands (not any other tool).
 Run `branchdiff review guide` first to load the full reference, then:
-1. Run `branchdiff agent diff` to read the full diff.
-2. Post comments: branchdiff agent comment --file <path> --line <n> --body "[tag] message"
-   Tags: [must-fix] bugs/security · [suggestion] improvements · [nit] style · [question] unclear
-3. Confirm: branchdiff agent list --status open
+
+1. Check for prior review context (nth-time review):
+   branchdiff agent list --status resolved --json
+   branchdiff agent list --status dismissed --json
+   - Do NOT re-raise resolved issues — the author already addressed them.
+   - Only re-flag dismissed issues if new evidence contradicts the dismissal reason.
+   - Acknowledge improvements when the author addressed prior feedback.
+
+2. Run `branchdiff agent diff` to read the full diff.
+
+3. For each changed file, read the ENTIRE file (not just diff hunks) for full context.
+   Analyze: data flow (null/undefined?), state/lifecycle (resource cleanup?), contracts (callers updated?), boundaries (input validation?), edge cases.
+
+4. Validate each finding before commenting — re-read surrounding code, grep for imports, read actual call sites.
+   Flag: logic errors, security issues, race conditions, broken contracts, missing tests.
+   Skip: style, linter-catchable issues, pre-existing problems in unchanged code.
+
+5. Post comments (order: [must-fix] first, then [suggestion], then [question]):
+   branchdiff agent comment --file <path> --line <n> --body "[tag] message"
+   Tags: [must-fix] bugs/security/data-loss · [suggestion] improvements/missing tests · [question] unclear
+   For multi-line: add --end-line <n>
+
+   Tone: lead with the problem, not a judgment. "This returns undefined when X is empty" not "this is wrong".
+   Use collaborative language ("Consider using X" not "You should"). Acknowledge good code.
+
+6. General comment (optional): 3+ findings → summarize themes.
+   branchdiff agent general-comment --body "<overall summary>"
+
+7. Confirm: branchdiff agent list --status open
 Start: branchdiff review guide
 ```
 
@@ -563,9 +652,19 @@ Start: branchdiff review guide
 ```
 You are resolving open review comments using branchdiff agent commands.
 Run `branchdiff review guide` first to load the full reference, then:
+
 1. Run `branchdiff agent list --status open --json` to get open threads.
-2. Fix the code, then: branchdiff agent resolve <id> --summary "what you did"
-   Or dismiss: branchdiff agent dismiss <id> --reason "why"
+
+2. For each thread:
+   - Skip general comments (filePath "__general__") — these are summaries, not actionable.
+   - Skip threads where the last comment is an agent asking a question and the user hasn't responded.
+   - Read the comment body to understand the requested change. Interpret intent:
+     code suggestion → make the change; documentation suggestion → update docs; unclear → ask for clarification.
+   - Read the ENTIRE source file around the commented lines for full context, then make the fix.
+   - Resolve: branchdiff agent resolve <id> --summary "Fixed: <what you did>"
+   - Or dismiss if the fix shouldn't apply: branchdiff agent dismiss <id> --reason "<why>"
+
+3. Confirm: branchdiff agent list
 Start: branchdiff review guide
 ```
 
@@ -774,6 +873,28 @@ When comparing two branches and no PR exists, branchdiff shows an "Open a Pull R
 
 > **Tip:** Use ⌘+Enter (Mac) or Ctrl+Enter (Windows/Linux) in the modal to create the PR instantly.
 
+### Managing PRs — Lifecycle Actions
+
+When a PR already exists, the toolbar platform pill becomes a **dropdown menu**. Click the PR badge (e.g. `#42`) to see all available actions:
+
+| Action | What it does | Confirmation? |
+|--------|-------------|---------------|
+| **Approve** | Submit an approval review | No — executes immediately |
+| **Request Changes** | Submit a changes-requested review with a required comment | Yes |
+| **Comment** | Submit a review comment without approval/rejection | Yes — comment is required |
+| **Merge** | Merge the pull request | Yes — warning displayed (GitHub supports merge, squash, and rebase strategies) |
+| **Close PR** | Close/decline the PR without merging | Yes — warning displayed |
+| **Reopen PR** | Reopen a previously closed PR | No — only shown for closed PRs |
+| **Mark Ready for Review** | Convert draft → ready | No — only shown for draft PRs |
+| **Mark as Draft** | Convert ready → draft | No — only shown for open PRs |
+| **Edit Title/Description** | Edit the PR title and body inline | Opens edit modal with ⌘+Enter to save |
+| **Sync Comments** | Open the comment sync dialog | No |
+| **Open in Browser** | Open PR on GitHub/Bitbucket | Opens in new tab |
+
+**GitHub** uses the `gh` CLI for all operations (requires `gh auth login`). **Bitbucket** uses the REST API (requires configured credentials).
+
+After any action, the toolbar automatically refreshes to reflect the updated PR state (e.g., a merged PR updates its status).
+
 ---
 
 ## Keyboard Shortcuts
@@ -867,7 +988,7 @@ branchdiff doctor       # diagnose install / environment issues
 branchdiff update       # self-update (auto-detects package manager)
 branchdiff version      # print current version
 branchdiff version --check  # check npm for latest version
-branchdiff info         # show repo fingerprint, name, and state table size
+branchdiff info         # show repo fingerprint, installation info, and state table size
 branchdiff state reset  # clear UI state (collapse, viewed markers) without affecting sessions
 ```
 

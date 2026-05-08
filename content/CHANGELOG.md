@@ -6,6 +6,30 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.5.0] - 2026-05-08
+
+### Added
+
+- **PR lifecycle actions from the toolbar** — The platform PR badge now opens a dropdown menu with full PR management. The badge shows a colored state dot (green = open, purple = merged, red = closed/declined) and the dropdown header displays reviewer status pills showing each reviewer's state (approved ✓, changes requested ✗, commented 💬, pending ○). Available actions adapt to PR state: open PRs get Approve, Request Changes, Comment, Merge, Close, Draft toggle, and Edit; closed PRs show Reopen; merged PRs show no lifecycle actions. Destructive actions (merge, close, request changes) show a confirmation dialog. Comment action requires a message. Works for both GitHub and Bitbucket. The toolbar refreshes automatically after each action.
+- **PR state and reviewer visibility** — The toolbar fetches PR state (open/closed/merged/declined) and reviewer status from GitHub and Bitbucket APIs. Reviewer states are deduplicated to show the latest review per reviewer. Bitbucket reviewer states are normalized to match GitHub's format across the UI.
+- **Individual commit detail view** — Clicking any commit in the commit history sidebar now opens a dedicated page at `/commit/:hash` with full commit metadata (hash, author, date, message, parent links), a file list with git status indicators (A/D/M/R) and change counts, unified/split diff rendering with syntax highlighting, and session-aware view-only comment threads. The back button returns to the originating branch comparison or dashboard, preserving context.
+- **Markdown preview in full-file view** — When a `.md`, `.mdx`, or `.markdown` file is open in full-file mode, a **Preview** checkbox appears in the toolbar. Checking it renders both the old and new versions as formatted markdown side-by-side — useful for reviewing documentation without reading raw markup. Comments are hidden in preview mode.
+
+### Improved
+
+- **`branchdiff update` — reliable package manager detection** — The update command now resolves symlinks (`realpathSync`) to find the actual package manager store path, explicitly queries `pnpm list -g` to verify ownership when path checks fail, and shows full installation context (detected PM, binary path, update command) upfront before any version check. On failure, it lists all alternative update commands and the `--pm` override flag.
+- **`branchdiff info` — installation section** — The info command now shows the detected package manager, binary path, resolved symlink target, and update command in a new **Installation** section.
+- **AI review skill — constructive tone** — The review skill now includes tone guidelines: collaborative language, acknowledging good code, explaining reasoning rather than prescribing fixes, and leading with the problem instead of judgments.
+- **AI review skill — nth-time review awareness** — Reviews now check resolved and dismissed threads before analyzing. Previously resolved issues are not re-raised. Dismissals are only challenged if new evidence contradicts the dismissal reason. Prior fixes are acknowledged in the summary.
+
+### Fixed
+
+- **Bitbucket PR creation no longer fails when author is a default reviewer** — When the PR author was configured as a default reviewer in the Bitbucket repository settings, PR creation failed with a 400 error. The fix fetches the authenticated user's UUID from Bitbucket's `/user` endpoint and filters them out of the default reviewers list before creating the PR.
+- **Full-file view now loads unstaged new files** — Files present only in the working tree (new, unstaged) showed blank content when opened in full-file view. The fix passes the correct `layer='working'` to the API, matching how unified/split diff modes handle working-tree files.
+- **Inline comments no longer appear in multiple places simultaneously** — Comments on code ranges were sometimes displayed in both the orphaned-threads section and counted as inline-anchored threads at the same time. The fix aligns the anchor check and render position to use `endLine` consistently, matching how hunk diffs position threads.
+
+---
+
 ## [1.4.2] - 2026-05-07
 
 ### Fixed

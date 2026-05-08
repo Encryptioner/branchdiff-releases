@@ -105,10 +105,35 @@ branchdiff skill add   # creates .claude/skills/branchdiff-{review,resolve}/SKIL
 ```
 You are reviewing code using branchdiff agent commands (not any other tool).
 Run `branchdiff review guide` first to load the full reference, then:
-1. Run `branchdiff agent diff` to read the full diff.
-2. Post comments: branchdiff agent comment --file <path> --line <n> --body "[tag] message"
-   Tags: [must-fix] bugs/security · [suggestion] improvements · [nit] style · [question] unclear
-3. Confirm: branchdiff agent list --status open
+
+1. Check for prior review context (nth-time review):
+   branchdiff agent list --status resolved --json
+   branchdiff agent list --status dismissed --json
+   - Do NOT re-raise resolved issues — the author already addressed them.
+   - Only re-flag dismissed issues if new evidence contradicts the dismissal reason.
+   - Acknowledge improvements when the author addressed prior feedback.
+
+2. Run `branchdiff agent diff` to read the full diff.
+
+3. For each changed file, read the ENTIRE file (not just diff hunks) for full context.
+   Analyze: data flow (null/undefined?), state/lifecycle (resource cleanup?), contracts (callers updated?), boundaries (input validation?), edge cases.
+
+4. Validate each finding before commenting — re-read surrounding code, grep for imports, read actual call sites.
+   Flag: logic errors, security issues, race conditions, broken contracts, missing tests.
+   Skip: style, linter-catchable issues, pre-existing problems in unchanged code.
+
+5. Post comments (order: [must-fix] first, then [suggestion], then [question]):
+   branchdiff agent comment --file <path> --line <n> --body "[tag] message"
+   Tags: [must-fix] bugs/security/data-loss · [suggestion] improvements/missing tests · [question] unclear
+   For multi-line: add --end-line <n>
+
+   Tone: lead with the problem, not a judgment. "This returns undefined when X is empty" not "this is wrong".
+   Use collaborative language ("Consider using X" not "You should"). Acknowledge good code.
+
+6. General comment (optional): 3+ findings → summarize themes.
+   branchdiff agent general-comment --body "<overall summary>"
+
+7. Confirm: branchdiff agent list --status open
 Start: branchdiff review guide
 ```
 
@@ -116,9 +141,19 @@ Start: branchdiff review guide
 ```
 You are resolving open review comments using branchdiff agent commands.
 Run `branchdiff review guide` first to load the full reference, then:
+
 1. Run `branchdiff agent list --status open --json` to get open threads.
-2. Fix the code, then: branchdiff agent resolve <id> --summary "what you did"
-   Or dismiss: branchdiff agent dismiss <id> --reason "why"
+
+2. For each thread:
+   - Skip general comments (filePath "__general__") — these are summaries, not actionable.
+   - Skip threads where the last comment is an agent asking a question and the user hasn't responded.
+   - Read the comment body to understand the requested change. Interpret intent:
+     code suggestion → make the change; documentation suggestion → update docs; unclear → ask for clarification.
+   - Read the ENTIRE source file around the commented lines for full context, then make the fix.
+   - Resolve: branchdiff agent resolve <id> --summary "Fixed: <what you did>"
+   - Or dismiss if the fix shouldn't apply: branchdiff agent dismiss <id> --reason "<why>"
+
+3. Confirm: branchdiff agent list
 Start: branchdiff review guide
 ```
 
