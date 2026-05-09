@@ -312,7 +312,63 @@ function renderSingleCard(card, info, slug, source) {
   }
 }
 
+// Hero slideshow — add more images by appending to this array
+const HERO_IMAGES = [
+  { src: './assets/hero-1.png', alt: 'branchdiff screenshot 1' },
+  { src: './assets/hero-2.png', alt: 'branchdiff screenshot 2' },
+  { src: './assets/hero-3.png', alt: 'branchdiff screenshot 3' },
+  { src: './assets/hero-4.png', alt: 'branchdiff screenshot 4' },
+  { src: './assets/hero-5.png', alt: 'branchdiff screenshot 5' },
+  { src: './assets/hero-6.png', alt: 'branchdiff screenshot 6' },
+  { src: './assets/hero-7.png', alt: 'branchdiff screenshot 7' },
+  { src: './assets/hero-8.png', alt: 'branchdiff screenshot 8' },
+  { src: './assets/hero-9.png', alt: 'branchdiff screenshot 9' },
+  { src: './assets/hero-10.png', alt: 'branchdiff screenshot 10' },
+];
+
+function initHeroSlideshow() {
+  const track = document.getElementById('hero-slideshow');
+  const dotsEl = document.getElementById('hero-dots');
+  if (!track || HERO_IMAGES.length === 0) return;
+
+  let current = 0;
+
+  // Build slides
+  const slides = HERO_IMAGES.map((img, i) => {
+    const el = document.createElement('img');
+    el.src = img.src;
+    el.alt = img.alt;
+    el.width = 800;
+    el.height = 560;
+    el.className = 'absolute inset-0 w-full h-full object-cover transition-opacity duration-700';
+    el.style.opacity = i === 0 ? '1' : '0';
+    track.appendChild(el);
+    return el;
+  });
+
+  // Build dots
+  const dots = HERO_IMAGES.map((_, i) => {
+    const d = document.createElement('button');
+    d.className = `w-2 h-2 rounded-full transition-colors duration-300 ${i === 0 ? 'bg-white' : 'bg-white/40'}`;
+    d.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+    return d;
+  });
+
+  function goTo(index) {
+    slides[current].style.opacity = '0';
+    dots[current].className = 'w-2 h-2 rounded-full transition-colors duration-300 bg-white/40';
+    current = index;
+    slides[current].style.opacity = '1';
+    dots[current].className = 'w-2 h-2 rounded-full transition-colors duration-300 bg-white';
+  }
+
+  setInterval(() => goTo((current + 1) % HERO_IMAGES.length), 5000);
+}
+
 // Init
+initHeroSlideshow();
 document.querySelectorAll('.install-card').forEach(c => renderCard(c, 'install'));
 document.querySelectorAll('.update-card').forEach(c => renderCard(c, 'update'));
 document.querySelectorAll('.uninstall-card').forEach(c => renderCard(c, 'uninstall'));
