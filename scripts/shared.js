@@ -270,6 +270,47 @@ function buildTOC(contentEl, tocEl, opts) {
     document.body.style.overflow = open ? 'hidden' : '';
   });
 
+  // ── Search input ──
+  const searchWrap = document.createElement('div');
+  searchWrap.className = 'toc-search';
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = 'toc-search-input';
+  searchInput.placeholder = 'Filter headings…';
+  searchInput.setAttribute('aria-label', 'Filter table of contents');
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'toc-search-clear';
+  clearBtn.setAttribute('aria-label', 'Clear filter');
+  clearBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>';
+  clearBtn.hidden = true;
+  searchWrap.appendChild(searchInput);
+  searchWrap.appendChild(clearBtn);
+
+  const noResults = document.createElement('div');
+  noResults.className = 'toc-no-results';
+  noResults.textContent = 'No matches';
+  noResults.hidden = true;
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    clearBtn.hidden = !q;
+    let visible = 0;
+    ul.querySelectorAll('li').forEach(li => {
+      const match = !q || li.textContent.toLowerCase().includes(q);
+      li.hidden = !match;
+      if (match) visible++;
+    });
+    noResults.hidden = visible > 0;
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.hidden = true;
+    noResults.hidden = true;
+    ul.querySelectorAll('li').forEach(li => { li.hidden = false; });
+    searchInput.focus();
+  });
+
   // ── Collapsible body ──
   const body = document.createElement('div');
   body.className = 'toc-body';
@@ -279,7 +320,9 @@ function buildTOC(contentEl, tocEl, opts) {
   desktopTitle.className = 'toc-desktop-title';
   desktopTitle.textContent = 'On this page';
   body.appendChild(desktopTitle);
+  body.appendChild(searchWrap);
   body.appendChild(ul);
+  body.appendChild(noResults);
 
   tocEl.appendChild(toggle);
   tocEl.appendChild(body);

@@ -141,6 +141,49 @@ body { overflow-x: hidden; }
 /* Hidden on mobile; desktop block set inside @media (min-width: 1024px) */
 .toc-desktop-title { display: none; }
 
+/* TOC search input */
+.toc-search {
+  position: relative;
+  padding: 0.4rem 0.75rem;
+}
+.toc-search-input {
+  width: 100%;
+  padding: 0.3rem 1.5rem 0.3rem 0.6rem;
+  font-size: 0.78rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  background: #f8fafc;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.toc-search-input::placeholder { color: #94a3b8; }
+.toc-search-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129,140,248,0.2);
+  background: #fff;
+}
+.toc-search-clear {
+  position: absolute;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.15rem;
+  line-height: 1;
+  border-radius: 0.25rem;
+}
+.toc-search-clear:hover { color: #64748b; background: #f1f5f9; }
+.toc-no-results {
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
 /* TOC list (shared mobile + desktop) */
 .toc-list {
   list-style: none;
@@ -217,6 +260,13 @@ body { overflow-x: hidden; }
     color: #94a3b8;
     margin-bottom: 0.6rem;
     padding-left: 0.5rem;
+  }
+
+  .toc-search {
+    padding: 0 0 0.4rem 0;
+  }
+  .toc-search-clear {
+    right: 0.35rem;
   }
 }
 
