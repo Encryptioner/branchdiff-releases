@@ -6,6 +6,31 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.5.1] - 2026-05-10
+
+### Added
+
+- **Bitbucket merge strategy selection** — The merge confirmation dialog now shows a strategy picker for Bitbucket PRs: **Merge commit**, **Squash**, and **Fast-forward**. The selection is sent as `merge_strategy` to the Bitbucket API. Previously Bitbucket always used the repository default.
+- **`-p 0` shows unstaged changes only** — `--previous` now accepts `0` as an alias for `branchdiff unstaged`. Useful for quickly reviewing what an AI coding agent just changed before staging. Combining a source ref with `-p 0` is rejected since unstaged changes are repo-local, not branch-relative.
+
+### Fixed
+
+- **`branchdiff unstaged` and `branchdiff staged` now show changes** — A regression in ref validation rejected the working-tree pseudo-refs (`unstaged`, `staged`, `work`, `.`) because `git rev-parse --verify` returns no match for them. The `/api/diff` validator short-circuited to an empty diff before the resolver could route them. `isValidGitRef` now treats pseudo-refs as valid, restoring the documented behavior.
+- **Bitbucket PR approve no longer returns 400** — Approving a PR via the toolbar failed because `Content-Type: application/json` was sent on bodyless POST requests. Bitbucket's API rejected the empty body. Content-Type is now only set when a request body exists, and empty success responses are handled gracefully.
+- **Bitbucket reviewers now display correctly** — Two bugs prevented reviewer info from showing: (1) the code looked for a `user` wrapper on `reviewers[]` items that does not exist in the Bitbucket API — fields are directly on each item; (2) reviewers awaiting review were incorrectly shown as "commented" because `participants[]` with `state: null` was treated as having commented. Defaults to `pending` and only maps `'commented'` for explicit non-null participant states.
+- **GitHub `DISMISSED` reviewer state now handled** — Admin-dismissed reviews were not in the recognized states set and fell back to `PENDING`. `DISMISSED` is now recognized and rendered correctly.
+- **Bitbucket SUPERSEDED PRs no longer show Reopen** — The `SUPERSEDED` state was incorrectly grouped with closed PRs, causing a Reopen button to appear for an operation the Bitbucket API does not support. Reopen is now only shown for `DECLINED` and `CLOSED`.
+- **GitHub Comment action now posts a standalone comment** — The action was using `gh pr review --comment`, which creates a formal review object. Changed to `gh pr comment` for a regular PR comment.
+- **PR action errors now shown inline in dialogs** — Errors from the confirm dialog (merge, close, request changes, comment) and the edit PR modal now appear inline inside the modal. The dialog stays open on failure so the user can read the error and retry without losing typed input. Non-modal actions (approve, mark draft, reopen) still show the toolbar error banner.
+- **Platform detection when both GitHub and Bitbucket PRs exist** — The active platform was always resolved as GitHub when both PRs were present. The platform is now captured at action-trigger time.
+- **ESLint unused variable error resolved** — The `actionLoading` state in the toolbar was declared but never read. Fixed with the skip-destructure pattern.
+
+### Changed
+
+- **Request Changes comment is now optional** — The comment field when requesting changes is no longer required. Both platforms always update the PR review status — a default message is posted when no comment is provided.
+
+---
+
 ## [1.5.0] - 2026-05-08
 
 ### Added

@@ -73,15 +73,7 @@ scoop install branchdiff
 
 No Node.js required — installs a single static `.exe`.
 
-#### Option 9: Snap (Linux)
-
-```bash
-sudo snap install branchdiff --classic
-```
-
-Uses classic confinement for access to arbitrary git repositories.
-
-#### Option 10: apt (Debian / Ubuntu)
+#### Option 9: apt (Debian / Ubuntu)
 
 One-time GPG key setup:
 
@@ -258,6 +250,7 @@ branchdiff HEAD~5       # last 5 commits
 ### Previous commit comparison
 
 ```bash
+branchdiff -p 0                     # only unstaged changes (alias for `branchdiff unstaged`)
 branchdiff -p                       # current branch vs its parent (HEAD~1)
 branchdiff -p 3                     # current branch vs 3 commits back (HEAD~3)
 branchdiff -p 2 feature             # feature vs feature~2
@@ -265,6 +258,8 @@ branchdiff --previous 5 feature     # same, long form
 ```
 
 Compares a branch against the Nth previous commit — useful for reviewing one or more commits on a branch. Defaults to N=1 (parent commit). Cannot be combined with `--base`/`--compare`.
+
+**N=0 special case** — shows only unstaged working-tree changes (tracked files modified but not yet staged). Equivalent to `branchdiff unstaged`. Useful when reviewing what an AI coding agent just changed before staging. Does not accept a source ref — `branchdiff -p 0 feature` is rejected because unstaged changes are repo-local, not branch-relative.
 
 ### Comparing branches or refs
 
@@ -1063,7 +1058,7 @@ Both Export and Import are also available in the **3-dot menu** (⋯) on the dif
 | `--unified` | Unified view (default is split) |
 | `--quiet` | Minimal terminal output |
 | `--new` | Archive current session and start fresh |
-| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1) |
+| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1). Use `-p 0` for unstaged-only view |
 
 ---
 
@@ -1195,12 +1190,6 @@ Or: `uv tool uninstall branchdiff` / `pipx uninstall branchdiff`.
 ```powershell
 scoop uninstall branchdiff
 scoop bucket rm branchdiff
-```
-
-#### Snap (Linux)
-
-```bash
-sudo snap remove branchdiff
 ```
 
 #### apt (Debian / Ubuntu)

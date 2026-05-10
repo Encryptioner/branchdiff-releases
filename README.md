@@ -51,7 +51,7 @@ Tab-completion installs automatically — restart your terminal after install.
 
 Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn installs (not required for standalone binaries).
 
-> See the [**full installation guide**](https://encryptioner.github.io/branchdiff-releases/guideline.html) for platform-specific instructions (Homebrew, Scoop, pip, Snap, apt, standalone binaries).
+> See the [**full installation guide**](https://encryptioner.github.io/branchdiff-releases/guideline.html) for platform-specific instructions (Homebrew, Scoop, pip, apt, standalone binaries).
 
 ---
 
@@ -68,6 +68,7 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 | View last commit | `branchdiff HEAD~1` |
 | Compare branch vs parent | `branchdiff -p` |
 | Compare branch vs 3rd commit back | `branchdiff -p 3` |
+| Only unstaged changes | `branchdiff -p 0` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
 
 Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
@@ -553,6 +554,7 @@ NOTE: Push and pull work identically to GitHub — click the PR number button in
 | View last N commits | `branchdiff HEAD~3` |
 | Compare branch vs parent | `branchdiff -p` |
 | Compare branch vs 3rd commit back | `branchdiff -p 3` |
+| Only unstaged changes | `branchdiff -p 0` |
 | Re-open a running instance | `branchdiff open` |
 | Stop all instances | `branchdiff kill` |
 | Self-update | `branchdiff update` |
@@ -686,7 +688,7 @@ Toolbar button. Shows what the two modes disagree on:
 | `--unified` | Unified view (default is split) |
 | `--quiet` | Minimal terminal output |
 | `--new` | Archive current session and start fresh |
-| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1) |
+| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1). Use `-p 0` for unstaged-only view |
 
 ---
 
