@@ -6,6 +6,30 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.6.0] - 2026-05-13
+
+### Added
+
+- **Background mode with `--detach`** — `branchdiff main --detach` (short: `-d`) runs the server in the background and returns the terminal prompt immediately. The diff URL is printed before detaching. Background instances are tracked in `~/.branchdiff/logs/`. Combine with any flags: `branchdiff main feat --detach --dark`.
+- **`branchdiff killall`** — stop all running branchdiff instances from any directory. `branchdiff kill` now requires a target flag (`--port`, `--pid`, or `--repo`); bare `kill` shows guidance to use `killall` or specify a target.
+- **Diff URLs in `branchdiff list`** — each running instance now shows its full diff URL (e.g. `http://localhost:5391/diff?ref=main&b1=main&b2=feat&mode=git`) alongside port, PID, repo, and uptime. Copy-paste friendly.
+- **PR URLs with query params** — passing a GitHub or Bitbucket PR URL with query parameters (e.g. `?atlOrigin=...` from chat notifications) no longer fails. Query params and fragments are stripped before parsing.
+- **Close session from the browser** — every 3-dot menu now has a **Close session** button. Clicking it stops the server process (via `/api/kill`) and closes the browser tab. No need to switch to the terminal.
+- **Rich-text comment editor** — comment input is now a WYSIWYG editor (Milkdown/ProseMirror). Markdown formats as you type: bold/italic via `**`/`*`, inline code via backtick, fenced code blocks, headings, lists, blockquotes, and strikethrough. No Write/Preview toggle needed. Comments are stored as standard GFM and render correctly when synced to GitHub or Bitbucket.
+
+### Fixed
+
+- **Sidebar file click now expands collapsed files** — Clicking a file in the sidebar scrolled to it but left it collapsed, making the diff hard to find. The file is now automatically expanded before scrolling. Keyboard file navigation (J/K) has the same fix.
+- **Stale diff refresh now works without hard reload** — When files changed on disk, clicking "Refresh" in the staleness banner did not always reflect updated changes. The refresh handler now awaits refetch completion before resetting the staleness baseline, so fresh data is always rendered. Previously a browser hard reload (Ctrl+Shift+R) was needed.
+- **Bitbucket Request Changes sets reviewer state** — The action was posting a comment instead of calling the dedicated `/request-changes` API endpoint. The reviewer state now correctly changes to "changes requested" and the toolbar badge shows the red `✗` indicator.
+- **Comments auto-sync when requesting changes on Bitbucket** — Unresolved local comment threads are now automatically pushed to the PR before the request-changes action executes, so all feedback arrives together in one notification.
+
+### Changed
+
+- **Smaller downloads (36% UI bundle reduction)** — Syntax highlighting bundle trimmed from 334 to 79 languages, themes from 42 to 2, and the WASM engine replaced with a JS regex engine. Binary downloads are smaller across Homebrew, Scoop, PyPI, and direct downloads. Fully offline-compatible — no internet required.
+
+---
+
 ## [1.5.1] - 2026-05-10
 
 ### Added

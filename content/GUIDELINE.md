@@ -186,6 +186,7 @@ Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
 - **Keyboard-driven** — navigate files, hunks, and views without touching the mouse
 - **Export & Import** — back up review & tour data to JSON and restore it on another machine; conflict strategies: merge, skip, overwrite
 - **Multiple instances** — run several sessions simultaneously: different repos each on their own port, or different branch comparisons within the same repo
+- **Close session from browser** — stop the server and close the tab from any 3-dot menu, no terminal needed
 - **UI state persistence** — collapse state, viewed file markers, and filter preferences persist across port changes and machines via repo fingerprinting
 - **Sidebar filtering** — filter files by 9 states: Commented, Uncommented, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged
 - **Working tree toggle** — switch between staged and unstaged changes from the toolbar
@@ -374,7 +375,26 @@ Working tree, staged changes, or a specific commit get their own session per HEA
 
 ### Posting comments
 
-Click the **+** button that appears on any diff line to start a comment thread. Add your message and save. Comments support **markdown** — use the Write/Preview toggle to see formatted output before posting.
+Click the **+** button that appears on any diff line to start a comment thread. The editor is a live WYSIWYG editor — markdown formatting applies as you type, so what you see is what gets posted. No Write/Preview toggle needed.
+
+**Formatting shortcuts:**
+
+| Shortcut | Result |
+|---|---|
+| `**text**` or `Ctrl+B` | **Bold** |
+| `*text*` or `Ctrl+I` | *Italic* |
+| `` `code` `` | `inline code` |
+| ` ``` ` then Enter | fenced code block |
+| `# `, `## `, `### ` | Heading levels |
+| `- ` or `* ` | Bullet list |
+| `1. ` | Numbered list |
+| `> ` | Blockquote |
+| `~~text~~` | ~~Strikethrough~~ |
+| `[text](url)` | Hyperlink |
+| `Shift+Enter` | Hard line break within a paragraph |
+| `ArrowDown` (inside code block) | Exit code block and continue below |
+
+Comments are stored as standard GitHub-Flavored Markdown and render correctly when synced to GitHub or Bitbucket.
 
 ### Severity tags
 
@@ -875,7 +895,7 @@ When a PR already exists, the toolbar platform pill becomes a **dropdown menu**.
 | Action | What it does | Confirmation? |
 |--------|-------------|---------------|
 | **Approve** | Submit an approval review | No — executes immediately |
-| **Request Changes** | Submit a changes-requested review with a required comment | Yes |
+| **Request Changes** | Submit a changes-requested review with an optional comment | Yes |
 | **Comment** | Submit a review comment without approval/rejection | Yes — comment is required |
 | **Merge** | Merge the pull request | Yes — warning displayed (GitHub supports merge, squash, and rebase strategies) |
 | **Close PR** | Close/decline the PR without merging | Yes — warning displayed |
@@ -974,11 +994,14 @@ Branch names come from `git branch -a` at completion time, so remote branches ap
 Multiple repos open at once — each gets its own port starting at 5391. You can also run multiple sessions **within the same repo** when comparing different ref pairs.
 
 ```bash
-branchdiff list         # show all running instances
-branchdiff open         # reopen browser for this repo (prompts to choose if multiple running sessions)
-branchdiff kill         # stop all instances
-branchdiff clear        # stop this repo's instance and delete its review data
-branchdiff prune        # delete all stored data (~/.branchdiff)
+branchdiff list              # show all running instances (with URLs)
+branchdiff open              # reopen browser for this repo (prompts to choose if multiple running sessions)
+branchdiff killall           # stop all instances
+branchdiff kill --port 5391  # stop a specific instance by port
+branchdiff kill --pid 12345  # stop a specific instance by PID
+branchdiff kill --repo       # stop instances for current repo only
+branchdiff clear             # stop this repo's instance and delete its review data
+branchdiff prune             # delete all stored data (~/.branchdiff)
 branchdiff doctor       # diagnose install / environment issues
 branchdiff update       # self-update (auto-detects package manager)
 branchdiff version      # print current version
@@ -988,6 +1011,27 @@ branchdiff state reset  # clear UI state (collapse, viewed markers) without affe
 ```
 
 Rerunning `branchdiff` with the **same ref pair** in a repo that already has a running instance **reuses** it (just reopens the browser). Use `--new` to force a restart. Running with a **different ref pair** starts a new session on the next available port.
+
+### Background mode
+
+Run branchdiff in the background to free your terminal:
+
+```bash
+branchdiff main --detach     # run in background, prints URL and exits
+branchdiff main -d           # short form
+
+# Check status later
+branchdiff list               # shows URLs for all running instances
+
+# Stop when done
+branchdiff killall            # stop all instances from any directory
+```
+
+Logs are written to `~/.branchdiff/logs/`.
+
+### Close session from the browser
+
+Every 3-dot menu (toolbar, commit detail, file browser, changelog, guideline) has a **Close session** button at the bottom. Clicking it stops the server and closes the browser tab — equivalent to running `branchdiff kill` from the terminal.
 
 ### Running multiple sessions in the same repo
 
