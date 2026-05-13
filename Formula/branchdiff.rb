@@ -1,22 +1,22 @@
 class Branchdiff < Formula
   desc "Visual git & file diff in your browser, with AI review support"
-  homepage "https://www.npmjs.com/package/@encryptioner/branchdiff"
-  version "1.5.1"
+  homepage "https://encryptioner.github.io/branchdiff-releases"
+  version "1.6.0"
   license "MIT"
 
   on_macos do
     url "https://github.com/encryptioner/branchdiff-releases/releases/download/v#{version}/branchdiff-darwin-arm64"
-    sha256 "79fef54b711a067a29586c30677038a6d978dcfef07a7da2d57005a67346f3ed"
+    sha256 "dadbb56e639bd8f83157fb7e2e206bec817e019adcb28c0fc6e39b2834ff4baa"
   end
 
   on_linux do
     on_arm do
       url "https://github.com/encryptioner/branchdiff-releases/releases/download/v#{version}/branchdiff-linux-arm64"
-      sha256 "7953ce1eac400387cb212149599a33c3910b6c0ad7132a165086f17c962a0959"
+      sha256 "8ddff273284f2e8e112f408406a5458128d2c9ffa2c3bd5ea21ae916864752e7"
     end
     on_intel do
       url "https://github.com/encryptioner/branchdiff-releases/releases/download/v#{version}/branchdiff-linux-x64"
-      sha256 "cb128f8e605371dbda14d3afd51e2991fd896d50f835ce2c6674abe8061f5cc0"
+      sha256 "2f66a0893f3f6d961ba72d761c2574a7dd9787818087e65fb626d4e54fb0489d"
     end
   end
 
