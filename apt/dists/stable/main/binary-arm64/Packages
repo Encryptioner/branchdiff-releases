@@ -1,19 +1,19 @@
 Package: branchdiff
 Priority: optional
 Section: devel
-Installed-Size: 79043
+Installed-Size: 73719
 Maintainer: Mir Mursalin Ankur <mir.ankur.ruet13@gmail.com>
 Architecture: arm64
-Version: 1.5.1
-Filename: pool/main/b/branchdiff/branchdiff_1.5.1_arm64.deb
-Size: 28359094
-MD5sum: f46d1b04ece96d82b72a73ba69f6e50e
-SHA1: 9bb7a91e0a126682ac6e29bbd0fb689b3d04b287
-SHA256: 43aa517ed5b1983dfd6d7b66ff86a19bf1ceef925f00aa738e6de83f346c9f4a
-SHA512: bb8c4bada9fcb96dcd7b3be577cc3efc0fed2bf670d89a9eae0e5e9a38d3de3d70283b1c7d59c6115161f881ee560391b737a9ff20e6e3c6fdebe1e3ab328353
+Version: 1.6.0
+Filename: pool/main/b/branchdiff/branchdiff_1.6.0_arm64.deb
+Size: 27300866
+MD5sum: 03b7f520d6f272e4870e0a0a1ffad70b
+SHA1: dcadad9ee27cc4e37591407f655389d25225cf27
+SHA256: 971dedc0294df31f45613927401bc9ac3393ef2671beaae4be94130e2f714cbe
+SHA512: 76e4151da479cfa49b8de9962ea642e17cd2f29dc1a886e875c7166290b7560db6fd440da5ab2d47b37d61d88860bda4cb2c86154dc7890efce11df435d572e4
 Description: Visual git & file diff in your browser, with AI-supported code review,
  GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud,
  no telemetry.
-Homepage: https://www.npmjs.com/package/@encryptioner/branchdiff
+Homepage: https://encryptioner.github.io/branchdiff-releases
 License: MIT
 
