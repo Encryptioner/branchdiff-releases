@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/plugin.schema.json",
+  "name": "branchdiff-skills",
+  "version": "1.0.0",
+  "description": "Claude Code skills for branchdiff: /branchdiff-review and /branchdiff-resolve.",
+  "author": {
+    "name": "Ankur Mursalin",
+    "email": "encryptioner@gmail.com",
+    "url": "https://github.com/Encryptioner"
+  },
+  "homepage": "https://encryptioner.github.io/branchdiff-releases/",
+  "repository": "https://github.com/Encryptioner/branchdiff-releases",
+  "license": "MIT",
+  "keywords": [
+    "branchdiff",
+    "code-review",
+    "diff",
+    "git",
+    "agent"
+  ]
+}

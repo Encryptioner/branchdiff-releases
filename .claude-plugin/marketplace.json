@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/marketplace.schema.json",
+  "name": "branchdiff",
+  "owner": {
+    "name": "Ankur Mursalin",
+    "url": "https://github.com/Encryptioner"
+  },
+  "metadata": {
+    "description": "Claude Code skills for branchdiff — review diffs and resolve review comments from the terminal.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "branchdiff-skills",
+      "source": "./plugins/branchdiff-skills",
+      "description": "Two skills: /branchdiff-review (post inline review comments on a diff) and /branchdiff-resolve (apply fixes for open review threads).",
+      "version": "1.0.0",
+      "category": "code-review",
+      "keywords": [
+        "branchdiff",
+        "code-review",
+        "diff",
+        "git",
+        "review",
+        "agent"
+      ],
+      "homepage": "https://encryptioner.github.io/branchdiff-releases/",
+      "license": "MIT"
+    }
+  ]
+}

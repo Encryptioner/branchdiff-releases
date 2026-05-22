@@ -20,6 +20,7 @@ Open any git diff in a browser UI with inline comments, split/unified views, and
 - [Install](#install)
 - [Common tasks](#common-tasks)
 - [AI Review](#ai-review)
+- [Claude Code skills](#claude-code-skills)
 - [Usage Guide](#usage-guide)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Why branchdiff?](#why-branchdiff)
@@ -52,6 +53,36 @@ Tab-completion installs automatically — restart your terminal after install.
 Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn installs (not required for standalone binaries).
 
 > See the [**full installation guide**](https://encryptioner.github.io/branchdiff-releases/guideline.html) for platform-specific instructions (Homebrew, Scoop, pip, apt, standalone binaries).
+
+---
+
+## Claude Code skills
+
+Two slash commands ship as a Claude Code plugin: `/branchdiff-review` (post inline review comments on a diff) and `/branchdiff-resolve` (apply fixes for open review threads). Install one of three ways — no need to clone the repo.
+
+**Inside Claude Code (recommended):**
+```text
+/plugin marketplace add Encryptioner/branchdiff-releases
+/plugin install branchdiff-skills@branchdiff
+```
+
+**Via `npx` (Node 18+):**
+```bash
+npx @encryptioner/branchdiff-skills add branchdiff-review
+npx @encryptioner/branchdiff-skills add branchdiff-resolve
+# or both at once:
+npx @encryptioner/branchdiff-skills add all
+```
+
+**Via `curl` (no Node required):**
+```bash
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-resolve
+```
+
+The `npx` and `curl` paths write `SKILL.md` files into `~/.claude/skills/<name>/`. The plugin path uses Claude Code's native marketplace flow and stays self-updating. Both depend on the `branchdiff` CLI being installed (see [Install](#install) above).
+
+> Per-project install (skills only active inside one repo): set `BRANCHDIFF_SKILL_DEST=./.claude/skills` before the `npx`/`curl` command.
 
 ---
 
