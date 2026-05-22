@@ -12,7 +12,7 @@
 
 Open any git diff in a browser UI with inline comments, split/unified views, and syntax highlighting. Use Claude Code slash commands (`/branchdiff-review`, `/branchdiff-resolve`) or any AI via prompts to review and fix code. Push and pull review comments to GitHub and Bitbucket PRs. Everything runs on your machine.
 
-**Features:** inline diff comments · AI review & resolve (Claude Code or any AI) · GitHub & Bitbucket PR sync · persistent sessions across commits · three diff modes (git, file, delta) · code tours · keyboard navigation · multiple repos simultaneously
+**Features:** inline diff comments · AI review & resolve (Claude Code or any AI) · GitHub & Bitbucket PR sync (browser + CLI) · persistent sessions across commits · three diff modes (git, file, delta) · code tours · keyboard navigation · multiple repos simultaneously
 
 ---
 
@@ -69,6 +69,10 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 | Compare branch vs parent | `branchdiff -p` |
 | Compare branch vs 3rd commit back | `branchdiff -p 3` |
 | Only unstaged changes | `branchdiff -p 0` |
+| Check PR status | `branchdiff pr info` |
+| Merge a PR | `branchdiff pr merge` |
+| Push comments to PR | `branchdiff sync push` |
+| AI agent reference | `branchdiff agent guide` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
 
 Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
@@ -196,7 +200,7 @@ Then use slash commands — no prompt needed:
 
 ##### Option B — Any AI: copy-paste prompts
 
-> The AI can run `branchdiff review guide` at any point to get the full command reference. The prompts below instruct the AI to start there.
+> The AI can run `branchdiff review guide` for review/resolve workflows, or `branchdiff agent guide` for the complete CLI reference covering all commands. The prompts below instruct the AI to start with `review guide`.
 
 **To review:**
 ```
@@ -239,7 +243,8 @@ branchdiff review run --exec "llm -m gpt-4o" --mode resolve
 ##### Option D — Load full guide (humans and AI)
 
 ```bash
-branchdiff review guide    # complete command reference + all workflows
+branchdiff review guide    # review/resolve workflows
+branchdiff agent guide     # complete AI agent reference (all commands)
 ```
 
 ---
@@ -261,6 +266,10 @@ branchdiff agent general-comment \
 branchdiff agent resolve <thread-id> --summary "Fixed"       # mark resolved
 branchdiff agent dismiss <thread-id> --reason "By design"    # mark won't fix
 branchdiff agent reply <thread-id> --body "Can you clarify?" # reply to thread
+branchdiff agent delete-thread <thread-id>                   # delete thread + comments
+branchdiff agent clear-threads                                # delete all threads
+branchdiff agent edit-comment <id> --body "updated"          # edit a comment
+branchdiff agent delete-comment <id>                          # delete a single comment
 ```
 
 **Notes:**
@@ -712,6 +721,27 @@ branchdiff guide        # open user guide in browser (no repo required)
 branchdiff changelog    # open release notes in browser (no repo required)
 ```
 
+#### PR, sync & session commands
+
+Manage pull requests, sync comments, and control sessions from the terminal. All commands target a running branchdiff instance (supports `--port`/`--pid` for multi-instance environments).
+
+```bash
+branchdiff pr info                              # show PR status
+branchdiff pr create --title "Fix" --source feat --dest main
+branchdiff pr merge --strategy squash           # merge, squash, or rebase
+branchdiff pr approve --comment "LGTM"          # approve the PR
+branchdiff pr request-changes --comment "Fix X"
+branchdiff pr close / reopen / draft / ready
+branchdiff pr edit --title "New title"          # edit PR title or body
+branchdiff pr comment --body "Nice work"        # add a general comment
+branchdiff sync push                            # push local threads → remote PR
+branchdiff sync pull                            # pull remote comments → local session
+branchdiff session current                      # show active session
+branchdiff session archive                      # archive current session
+branchdiff session history                      # list archived sessions
+branchdiff session delete --id <id>             # delete an archived session
+```
+
 Rerunning `branchdiff` in a repo that already has a running instance **reuses** it (just reopens the browser). Use `--new` to force a restart.
 
 ---
@@ -809,6 +839,7 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 - **UI state persistence** — collapse state, viewed markers, and preferences persist across ports and machines
 - **Working tree toggle** — switch between staged and unstaged changes from the toolbar
 - GitHub & Bitbucket PR integration — push/pull review comments, create PRs from the UI
+- **CLI commands for PR, sync & session** — manage PRs, sync comments, and control sessions from the terminal (`branchdiff pr`, `branchdiff sync`, `branchdiff session`)
 - Multiple repos open simultaneously on different ports
 - 100% local — no telemetry, no cloud, no API key
 

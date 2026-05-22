@@ -159,6 +159,15 @@ Detection resolves symlinks to find the actual package manager store, checks `pn
 | Inspect a single commit | Click any commit in the sidebar while viewing a branch diff |
 | Show repo info & installation | `branchdiff info` |
 | Clear UI state | `branchdiff state reset` |
+| Show PR status | `branchdiff pr info` |
+| Create a PR | `branchdiff pr create --title "Fix" --source feat --dest main` |
+| Merge a PR | `branchdiff pr merge` |
+| Approve a PR | `branchdiff pr approve --comment "LGTM"` |
+| Push comments to PR | `branchdiff sync push` |
+| Pull comments from PR | `branchdiff sync pull` |
+| Show active session | `branchdiff session current` |
+| Archive session | `branchdiff session archive` |
+| AI agent reference | `branchdiff agent guide` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
 
 Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
@@ -277,7 +286,7 @@ Anything `git rev-parse --verify` accepts works.
 
 ### Individual commit detail view
 
-When viewing a branch comparison, the **commit history** panel lists all commits on the source branch. Click any commit to open its detail page:
+When viewing a branch comparison, the **commit history** panel lists all commits on the source branch. Merge commits are marked with a purple **merge** badge so you can spot them at a glance without opening each one. The filter row has an **expand** button (next to the search input) that grows the commit list to fill the rest of the sidebar — and auto-collapses the Files section while expanded — so long commit lists are easy to scan. Click it again to restore both sections. Click any commit to open its detail page:
 
 - **Metadata header** — full commit SHA (click to copy), author, date, and commit message. Merge commits show both parent SHAs as clickable links so you can navigate up the ancestry chain.
 - **File list sidebar** — all changed files with a git status indicator (**A** = added, **D** = deleted, **M** = modified, **R** = renamed) and per-file `+N / -N` counts. Click any file to jump directly to its diff.
@@ -418,6 +427,10 @@ Tags appear as colored badges in the UI, making it easy to scan comment threads 
 ### Thread navigation
 
 Use the **comment count button** in the toolbar to see a dropdown of all open threads. Click any thread to jump directly to it. The toolbar also shows counts for open vs. resolved threads.
+
+### General-comments jump
+
+When unresolved **general** PR comments exist (comments not tied to a file/line), the toolbar shows a separate `comment` chip with their count next to the per-file counter. Click it to expand the General Comments panel at the top of the diff and scroll to its first thread — symmetric to the file-level navigation.
 
 ---
 
@@ -579,20 +592,36 @@ branchdiff skill add --force                 # overwrite existing files
 
 ### Review skill workflow
 
-The simplest way to start a review is to copy the URL from your browser and paste it as the argument:
+The simplest way to start a review is to pass a URL as the skill argument. Three forms are accepted:
 
+**1. Branchdiff URL** (server already running — copy from your browser):
 ```
 /branchdiff-review http://localhost:5391/diff?b1=origin%2Fmain&b2=origin%2Ffeature&mode=git
 ```
+The skill parses out the server address, base branch (`b1`), source branch (`b2`), and diff mode — no manual refs needed.
 
-The skill parses the URL to extract the server address, base branch (`b1`), source branch (`b2`), and diff mode — no need to type refs manually. If the server is already running at that URL, it reuses the active session instead of starting a new one.
+**2. GitHub PR URL** (no session needed — the skill creates one):
+```
+/branchdiff-review https://github.com/owner/repo/pull/123
+```
+
+**3. Bitbucket PR URL** (same — auto-creates a session):
+```
+/branchdiff-review https://bitbucket.org/workspace/repo/pull-requests/123
+```
+
+For PR URLs, the skill runs `branchdiff <pr-url> --no-open` under the hood — that command checks out the PR locally, derives base/compare refs, and starts the session.
+
+**Multiple sessions per repo can run in parallel** — one per ref pair. `branchdiff <pr-url>` reuses an existing session only when the repo *and* the derived ref pair both match. If your workspace already has sessions running for unrelated refs, the PR URL starts a new one alongside them.
+
+> **Session lifecycle** — a skill-created session keeps running in the background until you stop it explicitly (`branchdiff killall` or `branchdiff kill --port N`). It does **not** auto-end when the review/resolve pass completes. The skill prints the session URL at the end of each run so you can jump back to the browser.
 
 `/branchdiff-review` reads the full diff, analyzes each changed file, and posts inline comments tagged by severity:
 - `[must-fix]` — bugs, security issues, data loss risks
 - `[suggestion]` — concrete improvements, missing tests
 - `[question]` — unclear behavior needing clarification
 
-After the review, it summarizes findings and prompts you to run `/branchdiff-resolve`.
+After the review, it summarizes findings, prints the active session URL, and prompts you to run `/branchdiff-resolve`.
 
 ### Review tone
 
@@ -690,9 +719,20 @@ branchdiff review context | claude -p "review for security"
 branchdiff review context --refs "main feature" | your-ai-tool  # no session needed
 branchdiff review run --exec "claude" --mode review
 branchdiff review run --exec "llm -m gpt-4o" --mode resolve
+
+# Use --url to bootstrap a session before the run. PR URLs auto-create a session
+# if no matching one exists; branchdiff URLs validate that the targeted instance
+# is alive and warn if the active-session pointer points elsewhere.
+branchdiff review run --exec "claude" --url https://github.com/owner/repo/pull/123
+branchdiff review run --exec "claude" --url https://bitbucket.org/ws/repo/pull-requests/45
+branchdiff review run --exec "claude" --url http://localhost:5391/diff?b1=main&b2=feature
 ```
 
+After every `review run` or `review import`, branchdiff prints the active session URL/port/pid so you can jump back to the browser. Sessions stay alive — stop them with `branchdiff killall` or `branchdiff kill --port N`.
+
 ### Agent command reference
+
+> **Full AI agent reference:** `branchdiff agent guide` outputs the complete CLI reference for AI agents — all commands grouped by workflow (comments, PR, sync, sessions, review pipeline).
 
 ```bash
 branchdiff agent diff                                         # read the full diff
@@ -709,6 +749,10 @@ branchdiff agent general-comment \
 branchdiff agent resolve <thread-id> --summary "Fixed"       # mark resolved
 branchdiff agent dismiss <thread-id> --reason "By design"    # mark won't fix
 branchdiff agent reply <thread-id> --body "Can you clarify?" # reply to thread
+branchdiff agent delete-thread <thread-id>                   # delete thread + comments
+branchdiff agent clear-threads                                # delete all threads
+branchdiff agent edit-comment <id> --body "updated text"     # edit a comment
+branchdiff agent delete-comment <id>                          # delete a single comment
 ```
 
 > Keep branchdiff running while the AI works. Agents hit `http://localhost:<port>/api/*`.
@@ -827,6 +871,34 @@ Sync review comments between branchdiff and GitHub PRs.
 2. Click **Pull from PR** — all review comments from the GitHub PR are imported as local threads
 3. Duplicate comments are automatically skipped
 
+**Sync All (pull + push in one click):**
+1. Click the PR number button
+2. Click **Sync All** — pulls remote comments first, then pushes any remaining local unsynced threads
+
+**Per-thread sync badge:**
+
+Every comment thread shows a small GitHub icon with a colored dot when a PR is active. The badge sits between the Collapse button and the Delete icon in the thread header:
+- **Green dot** — thread is synced with the remote PR (was pushed or pulled from it)
+- **Amber dot** — thread has not yet been pushed to the PR
+
+Click the badge for per-thread actions: **Push this thread** (push only this one), **Pull all from PR**, or **Sync all**. The dot updates automatically after each operation — no page reload needed.
+
+**Sync status bar:**
+
+The dialog always shows a status bar at the top: green ("✓ All local threads are synced with the PR") or amber ("● N thread(s) not yet pushed to PR"). This reflects the actual database state and persists across close/reopen — you never need to re-run an operation just to see the current status.
+
+**First-open preview ("N new"):**
+
+The first time you open the PR sync dialog in a session, branchdiff runs a dry-run pull against the remote. If any remote threads or replies aren't local yet, the pull section shows an amber **N new** chip and a hint like `2 new threads · 5 new replies · click Pull to fetch`. Once you pull, the chip clears. This answers "is a pull necessary right now?" without you having to actually run the operation.
+
+**Push before Request Changes:**
+
+The Request Changes confirm dialog includes a **"Push N pending comments to PR first"** checkbox, on by default. With it checked, branchdiff posts every unsynced local thread before submitting the review — reviewers see your full local context alongside the changes-requested action. Uncheck it to submit the review without pushing first.
+
+**General PR comments:**
+
+Pull also imports PR-level comments (overall comments not tied to a file or line). On GitHub these are issue comments on the PR thread; on Bitbucket they are PR comments without an inline position. They appear in the **General Comments** panel alongside any general comments you've written locally. General comments cannot be pushed back to the PR as inline review comments.
+
 ### Bitbucket
 
 **Setup — App Password or API Token**
@@ -863,7 +935,7 @@ View a Bitbucket PR by pasting its URL:
 branchdiff https://bitbucket.org/workspace/repo/pull-requests/123
 ```
 
-Push and pull review comments identically to GitHub — click the PR number button in the toolbar. Bitbucket comments sync seamlessly with your local review threads.
+Push and pull review comments identically to GitHub — click the PR number button in the toolbar. Bitbucket comments sync seamlessly with your local review threads. The **Sync All** button, **per-thread sync badge** (amber/green dot), **sync status bar**, and **general PR comment pull** all work identically to GitHub.
 
 ### Creating Pull Requests from the UI
 
@@ -903,12 +975,74 @@ When a PR already exists, the toolbar platform pill becomes a **dropdown menu**.
 | **Mark Ready for Review** | Convert draft → ready | No — only shown for draft PRs |
 | **Mark as Draft** | Convert ready → draft | No — only shown for open PRs |
 | **Edit Title/Description** | Edit the PR title and body inline | Opens edit modal with ⌘+Enter to save |
-| **Sync Comments** | Open the comment sync dialog | No |
+| **Sync Comments** | Open the comment sync dialog (Pull, Push, and Sync All) | No |
 | **Open in Browser** | Open PR on GitHub/Bitbucket | Opens in new tab |
 
 **GitHub** uses the `gh` CLI for all operations (requires `gh auth login`). **Bitbucket** uses the REST API (requires configured credentials).
 
 After any action, the toolbar automatically refreshes to reflect the updated PR state (e.g., a merged PR updates its status).
+
+### CLI Commands for PR, Sync & Session
+
+All PR lifecycle, comment sync, and session management operations are also available from the terminal. Commands target a running branchdiff instance via HTTP — they work from any directory.
+
+**Targeting** — all commands accept `--port <n>` (specific port), `--pid <n>` (specific PID), or default to the instance for the current git repo. When multiple instances exist for the same repo, the command lists matches and asks you to specify with `--port`.
+
+#### PR lifecycle
+
+```bash
+branchdiff pr info                              # show PR status for current branch
+branchdiff pr info --branch feat                # lookup PR for a specific branch
+branchdiff pr create --title "Fix bug" \
+  --source feat --dest main                     # create a PR
+branchdiff pr merge                             # merge (uses repo default strategy)
+branchdiff pr merge --strategy squash           # squash or rebase
+branchdiff pr approve                           # approve the PR
+branchdiff pr approve --comment "LGTM"          # approve with comment
+branchdiff pr request-changes --comment "Fix X" # request changes
+branchdiff pr close                             # close without merging
+branchdiff pr reopen                            # reopen a closed PR
+branchdiff pr draft                             # convert to draft
+branchdiff pr ready                             # mark ready for review
+branchdiff pr edit --title "New title"          # edit PR title
+branchdiff pr edit --body "New description"     # edit PR body
+branchdiff pr comment --body "Nice work"        # add a general PR comment
+```
+
+Platform (GitHub/Bitbucket) is auto-detected from the running instance's remotes. When both are configured, use `--platform github` or `--platform bitbucket` to disambiguate.
+
+#### Comment sync
+
+```bash
+branchdiff sync push                            # push local threads to remote PR
+branchdiff sync pull                            # pull remote PR comments into session
+branchdiff sync push --port 5392                # target a specific instance
+```
+
+Push shows created/updated/skipped counts. Pull shows new threads, new replies, and skipped duplicates.
+
+#### Session management
+
+```bash
+branchdiff session current                      # show active session info
+branchdiff session current --json               # JSON output
+branchdiff session archive                      # archive current session
+branchdiff session history                      # list archived sessions
+branchdiff session history --b1 main --b2 feat  # filter by branch pair
+branchdiff session delete --id <id>             # delete an archived session
+```
+
+#### Agent thread/comment CRUD
+
+These commands access the DB directly (matching existing agent pattern) — only work from the same repo directory where branchdiff is running.
+
+```bash
+branchdiff agent delete-thread <id>             # delete a thread and all its comments
+branchdiff agent clear-threads                  # delete all threads (prompts to confirm)
+branchdiff agent clear-threads --yes            # skip confirmation
+branchdiff agent edit-comment <id> --body "new" # edit a comment's body
+branchdiff agent delete-comment <id>            # delete a single comment
+```
 
 ---
 
@@ -981,7 +1115,7 @@ branchdiff completion bash > ~/.local/share/bash-completion/completions/branchdi
 | `--base` / `--compare` | All git branches |
 | `branchdiff review <tab>` | `context`, `threads`, `import`, `run`, `skill`, `guide` |
 | `branchdiff review context <tab>` | `--format`, `--files`, `--full-files`, `--no-instructions`, `--with-threads` |
-| `branchdiff review run <tab>` | `--exec`, `--mode`, `--prompt`, `--dry-run`, `--files`, `--timeout` |
+| `branchdiff review run <tab>` | `--exec`, `--mode`, `--prompt`, `--url`, `--dry-run`, `--files`, `--timeout` |
 | `branchdiff skill add <tab>` | `--type`, `--name`, `--out`, `--force` |
 | `branchdiff completion <tab>` | `install`, `zsh`, `bash` |
 
@@ -994,7 +1128,7 @@ Branch names come from `git branch -a` at completion time, so remote branches ap
 Multiple repos open at once — each gets its own port starting at 5391. You can also run multiple sessions **within the same repo** when comparing different ref pairs.
 
 ```bash
-branchdiff list              # show all running instances (with URLs)
+branchdiff list              # show all running instances (with URLs); annotates each with the last AI review time and sorts most-recently-reviewed first
 branchdiff open              # reopen browser for this repo (prompts to choose if multiple running sessions)
 branchdiff killall           # stop all instances
 branchdiff kill --port 5391  # stop a specific instance by port
@@ -1011,6 +1145,15 @@ branchdiff state reset  # clear UI state (collapse, viewed markers) without affe
 ```
 
 Rerunning `branchdiff` with the **same ref pair** in a repo that already has a running instance **reuses** it (just reopens the browser). Use `--new` to force a restart. Running with a **different ref pair** starts a new session on the next available port.
+
+### Stale-tab protection across port reuse
+
+If you stop branchdiff and later run a *different* review session on the same port (e.g. port 5391 hosted PR1's review, then later hosts PR2's), any browser tab still pointed at that port will not silently show the new session's comments. branchdiff handles this in two layers:
+
+- Every API request from the UI carries an `X-Branchdiff-Server-Id` header. The server rejects requests carrying the previous process's id with `409 STALE_SERVER`.
+- The UI also polls `/api/info` and detects the mismatch, then shows an amber banner ("a new review session is running on this port — this tab's session is no longer active") with a **Refresh** button. All API traffic is gated until you refresh.
+
+The result: a tab opened for one PR review can never display threads or comments from a later, unrelated review that happens to claim the same port.
 
 ### Background mode
 

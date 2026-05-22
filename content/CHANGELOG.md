@@ -6,6 +6,55 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [1.6.1] - 2026-05-21
+
+### Added
+
+- **Final UI ↔ CLI parity pass** — four CLI commands fill the last UI-only gaps: `agent revert-file`, `agent revert-hunk` (stdin or `--patch`), `agent delete-tour`, and `sync push-thread <id>`. AI agents can now perform every UI mutation from the terminal.
+- **`branchdiff agent guide` Supported Refs section** — documents that `b1`/`b2` accept branches, **tags**, SHAs, and `HEAD~N` (validated via `git rev-parse --verify`), with worked examples.
+- **`branchdiff pr` command group** — 11 subcommands for PR lifecycle operations from the terminal: `info`, `create`, `merge`, `approve`, `request-changes`, `close`, `reopen`, `draft`, `ready`, `edit`, `comment`. Targets a running branchdiff instance via HTTP. Platform (GitHub/Bitbucket) auto-detected; override with `--platform`.
+- **`branchdiff sync` command group** — 2 subcommands for comment sync from the terminal: `push` (local threads → remote PR), `pull` (remote PR → local session). Shows created/updated/skipped counts.
+- **`branchdiff session` command group** — 4 subcommands for session management from the terminal: `current`, `archive`, `history`, `delete`.
+- **Agent thread/comment CRUD** — 4 new `agent` subcommands: `delete-thread`, `clear-threads`, `edit-comment`, `delete-comment`. Use DB directly (matching existing agent pattern).
+- **Multi-instance targeting** — All `pr`, `sync`, and `session` commands accept `--port`, `--pid`, or default to current repo. Lists matching instances when ambiguous.
+- **`branchdiff agent guide`** — Outputs a comprehensive CLI reference for AI agents, covering all commands grouped by workflow (comments, PR lifecycle, sync, sessions, review pipeline). Distinct from `review guide` which covers review/resolve workflows only.
+- **Sync All button in PR dialog** — GitHub and Bitbucket comment sync dialogs now have a one-click **Sync All** that pulls from the PR then pushes local threads, replacing the manual pull-then-push workflow.
+- **Per-thread PR sync badge** — Each comment thread shows a platform icon (GitHub/Bitbucket) with a colored dot: green = synced with the remote PR, amber = not yet pushed. Clicking opens a dropdown with **Push this thread**, **Pull all from PR**, and **Sync all**. Only visible when a PR is active. Visibility requires an active PR.
+- **DB-backed sync tracking** — `synced_at` column on `comment_threads` tracks whether each thread is in sync with the remote PR. Set on successful push or pull (both new and matched threads); cleared when a user adds a reply or edits a comment. Fixes the stale "N threads to push" count that persisted after a successful push.
+- **General PR comments pulled** — Pull now includes PR-level (non-inline) comments from both GitHub (`/issues/{n}/comments`) and Bitbucket (comments without `inline.path`). These appear in the General Comments panel. Previously only inline review comments were pulled.
+- **Persistent sync status bar in dialog** — The sync dialog always shows a green/amber strip with the current sync state ("All local threads synced" or "N not yet pushed"), derived from DB state rather than ephemeral operation results. Survives modal close/reopen.
+- **General-comments jump button** — The toolbar now shows a comment-icon badge with a count of unresolved general comments when any exist. Clicking it expands the General Comments panel and scrolls to its first thread. Symmetric to the existing per-file comment counter.
+- **First-open preview-pull badge** — The PR sync dialog (GitHub and Bitbucket) automatically previews remote comments the first time it opens. If any remote threads or replies aren't local yet, the pull section shows an amber **N new** chip and an inline hint, so users know whether a pull is needed without running one. Works without writing to the DB — uses a dry-run preview endpoint.
+- **Push-pending-comments-first checkbox** — The Request Changes confirm dialog now offers a checkbox (default ON) that pushes any unsynced local comments to the PR before submitting the review. Available for both GitHub and Bitbucket (previously the push-before flow only existed for Bitbucket).
+- **Last-review timestamp in `branchdiff list`** — `branchdiff list` now shows when each running instance last ran a `review run` / `review import` and sorts most-recently-reviewed first. Useful for finding "which session did I just AI-review?" across multi-repo setups.
+- **Page-scrollable commit detail view** — On `/commit?hash=...`, the commit header (subject + body) now scrolls with the diff content instead of locking top space. Long commit messages no longer dominate the viewport.
+- **`branchdiff review run --url <url>`** — new flag accepting a branchdiff localhost URL, a GitHub PR URL (`https://github.com/owner/repo/pull/N`), or a Bitbucket PR URL (`https://bitbucket.org/ws/repo/pull-requests/N`). For PR URLs, branchdiff spawns a detached session (or reuses an existing one for the same repo+refs) before piping context to `--exec`. Identifies the resulting instance via the spawned child's banner output so it works correctly even when multiple sessions are running for the same repo with different ref pairs.
+- **Session locator footer** — `branchdiff review run` and `branchdiff review import` now print the active session's URL, port, pid, and ref at the end of every run, so it's trivial to jump back to the browser view after an AI pass. Lookup is ref-exact (`findInstanceForRepoAndRef`) so the footer points at the correct session when multiple coexist for the same repo.
+- **Expand-commits toggle in sidebar** — Commits filter row now has an expand/collapse button (`ExpandAll`/`CollapseAll` icons) next to the search input. Clicking it grows the commit list to fill the remaining sidebar height and auto-collapses the Files section; clicking again restores both. Guards reset the expansion if the user re-opens Files manually or collapses the Commits header.
+- **PR URL support in `/branchdiff-review` and `/branchdiff-resolve` skills** — the generated Claude Code skill markdown documents three URL forms: branchdiff localhost, GitHub PR, and Bitbucket PR. PR URLs delegate to `branchdiff <pr-url> --no-open` so the existing GitHub/Bitbucket checkout + base/compare derivation is reused. Skills also instruct the AI to always echo the session URL back to the user when finishing.
+
+### Changed
+
+- **Consistent startup output** — All startup paths now print the same banner: title, `PORT`, `pid`, status tag, description, and URL. Covers foreground, `--detach` (Background), "already running", and `branchdiff tree`. Previously `branchdiff tree` showed no PORT/PID and the detach path was missing the `branchdiff` header.
+- Commit view now defaults to **split** instead of unified, matching the diff page behavior.
+- **PR dialog comment count** no longer goes stale after a pull — the count now live-syncs from the fetched PR details without needing to close and reopen the dialog.
+- **"Threads to push" counter** now only counts unsynced threads (not already-pushed ones), fixing the bug where the count remained non-zero after a successful push.
+- **PR dialog pull section layout** — the "N new" indicator moves from an inline chip inside the title text to an amber-colored subtitle line. The Pull button stands alone on the right, giving the left column enough room for the thread count and status text without crowding.
+- **Merge commits visually identified** — both the main commit list and the branch comparison commit sidebar now show a small purple `merge` badge next to any commit with 2+ parents. Detected from `git log --format=%P` (parent hashes), so squash-merged and fast-forwarded commits are correctly excluded.
+
+### Fixed
+
+- **Refresh button now picks up unstaged and newly-staged edits** — clicking Refresh on the staleness banner sometimes still showed old file contents; a full browser reload was the only workaround. Refresh now reliably loads the latest content for both unstaged and staged files.
+- **Refresh preserves your scroll position** — clicking Refresh used to jump you away from the file you were reading because rows briefly collapsed to placeholder heights while diffs reloaded. The view now stays anchored on the file you were on.
+- **Clicking a file in the sidebar lands on the right file** — when the file's diff hadn't been loaded yet, scrolling would land in the wrong place and the file was hard to find. Sidebar clicks (and jumps from staged/unstaged chips and thread links) now load the file's diff first, so it ends up at the top of the view on the first click.
+- **Sync status disappearing after modal reopen** — matched threads (threads that existed locally and corresponded to a remote comment) were not marked `synced_at` in the DB. They now are, so closing and reopening the dialog shows the correct persisted state.
+- **PR badge position** — moved to after the Collapse button and before the Delete icon in the thread header, keeping action buttons uninterrupted.
+- **False "N local threads not pushed" badge after a successful push** — when a single thread in a batch failed (e.g. its file wasn't in the PR diff yet), the old all-or-nothing logic left every other successfully-pushed thread marked as unsynced. Push now returns a `syncedThreadIds` list and the server marks exactly those threads, so partial-success batches no longer leave stale "unpushed" badges. Applies to both GitHub and Bitbucket.
+- **`branchdiff review run` killing long AI calls** — default exec timeout raised from 120s → 600s, stdin writes now honor backpressure (avoids hangs on large diff contexts), `EPIPE` from short-circuiting child processes is swallowed, a force-`SIGKILL` fallback runs 2s after `SIGTERM` so unresponsive tools can't leave zombies, and the result promise is now latched so we don't double-resolve when both timeout and `close` fire.
+- **Port-reuse session safety** — when a browser tab is left open on port 5391 and a *different* review session later runs on the same port, the UI now blocks all API traffic until the user refreshes (previously only a different *repo* triggered the gate). The server also rejects any request carrying a stale `X-Branchdiff-Server-Id` with `409 STALE_SERVER`, closing the race window between server restart and the UI's next `/api/info` poll. Comments from the wrong session can no longer be shown.
+
+---
+
 ## [1.6.0] - 2026-05-13
 
 ### Added
