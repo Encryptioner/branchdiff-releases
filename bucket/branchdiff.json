@@ -1,12 +1,12 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Visual git & file diff in your browser, with AI review support",
   "homepage": "https://encryptioner.github.io/branchdiff-releases",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/encryptioner/branchdiff-releases/releases/download/v1.6.0/branchdiff-win-x64.exe",
-      "hash": "fb8f223cf81bd2e51fcfefdd9c7f3e9b4c87718f68979f1ea7aaae7c8bad791a",
+      "url": "https://github.com/encryptioner/branchdiff-releases/releases/download/v1.6.1/branchdiff-win-x64.exe",
+      "hash": "b9ce8667c84923bcc270afc395f56aeb6f783a57e55da27294b2a43c49dc48c7",
       "bin": [
         [
           "branchdiff-win-x64.exe",
