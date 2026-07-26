@@ -31,11 +31,13 @@ All methods point at the **same** `plugins/branchdiff-skills/skills/<name>/SKILL
 
 | Path | Status | User command | Pulls from |
 |------|--------|--------------|------------|
-| Claude plugin | Live | `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff` | Sparse clone of `plugins/branchdiff-skills/` subtree |
+| Claude plugin | Live | `claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins` (terminal) then `claude plugin install branchdiff-skills@branchdiff` — or the in-chat `/plugin marketplace add ...` + `/plugin install ...` equivalents (full clone, no `--sparse` support there) | Sparse clone of `.claude-plugin/` + `plugins/branchdiff-skills/` (terminal path only) |
 | curl shell | Live | `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh \| sh -s -- <name>` | `raw.githubusercontent.com/.../plugins/branchdiff-skills/skills/<name>/SKILL.md` |
 | npx CLI | **Not published** | `npx @encryptioner/branchdiff-skills add <name>` (won't resolve until published) | Same raw URL as curl, once live |
 
-Why no npx: `npx github:Encryptioner/branchdiff-releases` (installing straight from the repo, no npm registry) was considered as a no-publish alternative, but this repo's working tree is ~330MB (mostly the `apt/` Debian package pool) — every install would download that whole tree for a few KB of `SKILL.md`. Not worth it; `curl` already covers the same ground at near-zero cost. Revisit if `apt/` ever moves to its own repo.
+**`--sparse` only works via the standalone `claude plugin marketplace add` CLI command, run in a real terminal — not the in-chat `/plugin marketplace add` prompt.** The in-chat version is a single free-text "Enter marketplace source:" field; typing `owner/repo --sparse <paths>` into it fails validation because the whole string is checked as one source (`Invalid marketplace source format`). There is also no `marketplace.json` field that makes sparse-checkout a repo-side default — it's a CLI-invocation-only flag either way. So: docs must show **two** options — `claude plugin marketplace add ... --sparse .claude-plugin plugins` (terminal, small/fast) and `/plugin marketplace add ...` (in-chat, full ~330MB clone since `apt/` is included) — never claim `--sparse` works inside the chat prompt. Every doc that shows the in-chat command should also offer the terminal alternative — currently that's this file, the top-level `README.md`, `plugins/branchdiff-skills/README.md`, `packages/skills-cli/README.md`, and the equivalent spots in `../branchdiff/README.md` and `../branchdiff/packages/cli/GUIDELINE.md`.
+
+Why no npx: `npx github:Encryptioner/branchdiff-releases` (installing straight from the repo, no npm registry) was considered as a no-publish alternative, but the same ~330MB working tree makes it just as heavy — npm's `github:` spec has no sparse option. Not worth it; `curl` already covers the same ground at near-zero cost. Revisit if `apt/` ever moves to its own repo.
 
 Future install methods (e.g. a Homebrew skill cask) should point at the same path.
 

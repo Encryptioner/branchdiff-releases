@@ -11,7 +11,15 @@ Both skills work against a running `branchdiff` session (local web UI) or a GitH
 
 ## Install
 
-**Inside Claude Code:**
+**Recommended — from a terminal** (the in-chat `/plugin marketplace add` prompt only takes a bare source, no `--sparse` support):
+
+```bash
+claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins
+claude plugin install branchdiff-skills@branchdiff
+```
+the `--sparse` flag skips this repo's unrelated `apt/` package pool
+
+**Inside a Claude Code chat session (simpler, full clone):**
 
 ```text
 /plugin marketplace add Encryptioner/branchdiff-releases

@@ -50,7 +50,8 @@ BRANCHDIFF_SKILL_REF=v1.6.0 \
 
 ## Alternatives (available today)
 
-- **Inside Claude Code:** `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff`.
+- **Inside Claude Code, from a terminal (recommended, small/fast):** `claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins` then `claude plugin install branchdiff-skills@branchdiff`. `--sparse` skips this repo's unrelated `apt/` package pool — it only works on this standalone CLI form, not the in-chat `/plugin marketplace add` prompt.
+- **Inside a Claude Code chat session (simpler, full ~330MB clone):** `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff`.
 - **Without Node, any `SKILL.md` agent:** `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review` (add `--agent <name>` for opencode, Codex CLI, Gemini CLI, etc).
 
 ## License

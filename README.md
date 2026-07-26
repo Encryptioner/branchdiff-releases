@@ -60,7 +60,14 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 
 Two slash commands ship as a plugin: `/branchdiff-review` (post inline review comments on a diff) and `/branchdiff-resolve` (apply fixes for open review threads). Install one of two ways — no need to clone the repo.
 
-**Inside Claude Code (recommended):**
+**Recommended — from a terminal** (the in-chat `/plugin marketplace add` prompt only takes a bare source, no `--sparse` support):
+```bash
+claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins
+claude plugin install branchdiff-skills@branchdiff
+```
+the `--sparse` flag skips this repo's unrelated `apt/` package pool
+
+**Inside a Claude Code chat session (simpler, full clone):**
 ```text
 /plugin marketplace add Encryptioner/branchdiff-releases
 /plugin install branchdiff-skills@branchdiff
