@@ -1,4 +1,3 @@
-
 ---
 name: branchdiff-resolve
 description: >-
@@ -282,4 +281,3 @@ Extract the URL line (e.g. `http://localhost:5391`) for the current repo and inc
 - A thread can be resolved even if the fix is on a different line than the original comment
 - Use `--reason` in `dismiss` to leave context for other reviewers
 - Run `branchdiff agent list --status resolved` to see everything that has been resolved
-

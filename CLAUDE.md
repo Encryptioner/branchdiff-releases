@@ -47,18 +47,13 @@ README.md                       Public-facing landing doc
 
 Quick rules so you don't break the marketplace. Full detail in [docs/skills.md](docs/skills.md).
 
-**Source of truth is upstream, not here.** The two `plugins/branchdiff-skills/skills/*/SKILL.md` files are the **rendered output** of `../branchdiff/packages/cli/src/review-skill.ts` (functions `reviewSkillContent` / `resolveSkillContent`, called via `generateSkillFiles({ name: 'branchdiff' })`). Never edit SKILL.md directly — edit the templates upstream and re-render. Hand-edits drift from what `branchdiff skill add` writes into user repos.
+- **Source of truth is upstream.** `plugins/branchdiff-skills/skills/*/SKILL.md` are rendered from `../branchdiff/packages/cli/src/review-skill.ts` (`generateSkillFiles({ name: 'branchdiff' })`). Never hand-edit SKILL.md — edit the templates upstream and re-render.
+- **Two live install paths:** `/plugin install` and `curl install-skill.sh | sh` (`--agent <name>` for opencode/Codex/Gemini/etc). `packages/skills-cli`'s `npx` CLI is unpublished — don't document it as usable.
+- **`--sparse` on `marketplace add` only works via the terminal `claude plugin marketplace add` CLI** — never the in-chat `/plugin marketplace add` slash command (it swallows the flag into the source string and errors).
+- **Re-render safely:** `generateSkillFiles()` + `writeFileSync` per file — never awk/sed-split a combined stream (silently breaks frontmatter). Verify `head -c1 SKILL.md` is `-`, not a newline.
+- **Release:** re-render → bump `marketplace.json` + `plugin.json` versions to match the branchdiff CLI version, in lockstep → commit + push to `master`. No npm publish needed or wanted.
 
-**Two live install paths, one artifact.** `/plugin install` and `curl install-skill.sh | sh` both pull the same SKILL.md files. (`npx @encryptioner/branchdiff-skills add` also exists in `packages/skills-cli` but is **not published** — see below — so don't document it as usable today.) Never duplicate content across the channels.
-
-**SKILL.md is a cross-agent standard, not Claude-only.** The `curl` installer accepts `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`) to target opencode, Codex CLI, Gemini CLI, OpenClaw, or a tool-neutral `~/.agents/skills` fallback — see `docs/skills.md` § Multi-agent install. The `/plugin install` path is Claude Code-only by nature (it's Claude's own marketplace mechanism). Keep the `KNOWN_AGENTS`/`agent_dir()` table in `install-skill.sh` and `packages/skills-cli/bin/skills.js` in sync with each other, and prefer upstream `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()` as the source of truth over third-party docs when they disagree (e.g. opencode's real path is XDG-based, not `~/.opencode/skills`).
-
-**When changing skill content** (templates upstream → render → commit here):
-
-1. Re-render and overwrite `plugins/branchdiff-skills/skills/<name>/SKILL.md`.
-2. Bump **both** `.claude-plugin/marketplace.json` (`plugins[0].version` and `metadata.version`) and `plugins/branchdiff-skills/.claude-plugin/plugin.json` (`version`). Keep them in lockstep, and match the `branchdiff` CLI version the content was rendered from (e.g. rendered from CLI `v1.7.0` → plugin `1.7.0`) — see main repo `CLAUDE.md` for the matching note. `packages/skills-cli`'s own version is independent — bump it only when `bin/skills.js` code changes.
-3. Commit + push to `master`. No npm publish needed — plugin and curl both read raw GitHub at runtime.
-4. `packages/skills-cli` is not published (see Common tasks above); no publish step applies unless that changes.
+Full detail (why, smoke tests, agent-targets table) is in [docs/skills.md](docs/skills.md) — read it before changing any of the above.
 
 **When adding a new skill,** update **all** of these or it becomes uninstallable via curl:
 - `KNOWN_SKILLS` in `install-skill.sh`

@@ -1,4 +1,3 @@
-
 ---
 name: branchdiff-review
 description: >-
@@ -312,4 +311,3 @@ Extract the URL line (e.g. `http://localhost:5391`) for the current repo and inc
 > Session: http://localhost:5391
 >
 > When you are ready, run **/branchdiff-resolve** to fix them.
-

@@ -82,9 +82,9 @@ curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh |
 ## Release flow (when skill templates change)
 
 1. **Edit templates** in `../branchdiff/packages/cli/src/review-skill.ts`.
-2. **Re-render** with `name = 'branchdiff'`. Either:
-   - Run a one-off Node script that imports `generateSkillFiles({ name: 'branchdiff' })` and writes the two files, or
-   - Manually read each `reviewSkillContent` / `resolveSkillContent` body and copy into `plugins/branchdiff-skills/skills/<name>/SKILL.md`.
+2. **Re-render** with `name = 'branchdiff'`: import `generateSkillFiles({ name: 'branchdiff' })` from `../branchdiff/packages/cli/src/review-skill.ts` and `writeFileSync` each `file.content` **directly and verbatim** into `plugins/branchdiff-skills/skills/<name>/SKILL.md` — the same way `installSkillFile()` in `../branchdiff/packages/cli/src/commands/skill.ts` does it.
+
+   **Do not** pipe the output through a shell text-processing step (`awk`, `sed`, heredocs, manual copy-paste) to split multiple files out of one combined stream — it's easy to introduce a stray leading or trailing blank line. A blank line *before* the opening `---` breaks YAML frontmatter parsing silently: the skill still mostly works, but `description` stops resolving, so it shows as `---` (empty) in Claude Code's `/plugin` picker instead of the real text — happened once already (2026-07-26, via an `awk`-based render script). Verify with `head -c1 <SKILL.md file> | xxd` → must be `2d` (`-`), never `0a`.
 3. **Bump versions** — the plugin/marketplace version tracks the `branchdiff` CLI version it was rendered from (e.g. skill content rendered from CLI `v1.7.0` → plugin version `1.7.0`), so a user can tell which CLI release a skill matches at a glance:
    - `plugins/branchdiff-skills/.claude-plugin/plugin.json` → `version`
    - `.claude-plugin/marketplace.json` → `plugins[0].version` **and** `metadata.version`
@@ -114,6 +114,11 @@ sh -n install-skill.sh
 BRANCHDIFF_SKILL_DEST=/tmp/skills-smoke \
   node packages/skills-cli/bin/skills.js add branchdiff-review
 ls /tmp/skills-smoke/branchdiff-review/SKILL.md
+
+# 5. Frontmatter starts at byte 0 — no leading blank line (breaks `description` parsing otherwise)
+for f in plugins/branchdiff-skills/skills/*/SKILL.md; do
+  [ "$(head -c1 "$f")" = "-" ] || echo "BROKEN FRONTMATTER: $f"
+done
 ```
 
 ## Gotchas
