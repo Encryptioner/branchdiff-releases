@@ -1,6 +1,6 @@
 # Claude Code Skills — Release & Distribution Guide
 
-This repo ships two agent skills (`branchdiff-review`, `branchdiff-resolve`) via three install paths. `SKILL.md` is a cross-agent open standard (Anthropic's Agent Skills spec) that Claude Code, opencode, Codex CLI, Gemini CLI, Cursor, OpenClaw and others all read unchanged — so while the Claude plugin path is Claude-only, the `npx`/`curl` paths install into any of them. This doc covers the full layout, sync model, release steps, and gotchas.
+This repo ships two agent skills (`branchdiff-review`, `branchdiff-resolve`) via two live install paths — the Claude Code plugin and a `curl` shell installer — plus an unpublished `npx` CLI kept in the repo for a possible future release (see `packages/skills-cli/README.md` for why it isn't published). `SKILL.md` is a cross-agent open standard (Anthropic's Agent Skills spec) that Claude Code, opencode, Codex CLI, Gemini CLI, Cursor, OpenClaw and others all read unchanged — so while the Claude plugin path is Claude-only, `curl` installs into any of them. This doc covers the full layout, sync model, release steps, and gotchas.
 
 ## Where things live
 
@@ -12,8 +12,8 @@ plugins/branchdiff-skills/
   skills/
     branchdiff-review/SKILL.md         # Skill 1 (rendered)
     branchdiff-resolve/SKILL.md        # Skill 2 (rendered)
-install-skill.sh                       # curl|sh installer at repo root
-packages/skills-cli/                   # @encryptioner/branchdiff-skills (npm)
+install-skill.sh                       # curl|sh installer at repo root — the live no-Node path
+packages/skills-cli/                   # @encryptioner/branchdiff-skills — NOT published to npm
   package.json
   bin/skills.js                        # CLI entry — fetches SKILL.md via raw URL
   README.md
@@ -25,21 +25,23 @@ The canonical skill content is **generated** from `../branchdiff/packages/cli/sr
 
 Both `SKILL.md` files in this repo are the rendered output of those templates with `name = 'branchdiff'`. Editing them here drifts from the CLI-generated copy that `branchdiff skill add` writes into user repos. **Always edit the templates in the CLI source, then re-render and copy.**
 
-## Three install paths — single artifact
+## Install paths — single artifact
 
-All three methods point at the **same** `plugins/branchdiff-skills/skills/<name>/SKILL.md` files. There is no duplication.
+All methods point at the **same** `plugins/branchdiff-skills/skills/<name>/SKILL.md` files. There is no duplication.
 
-| Path | User command | Pulls from |
-|------|--------------|------------|
-| Claude plugin | `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff` | Sparse clone of `plugins/branchdiff-skills/` subtree |
-| npx CLI | `npx @encryptioner/branchdiff-skills add <name>` | `raw.githubusercontent.com/.../plugins/branchdiff-skills/skills/<name>/SKILL.md` |
-| curl shell | `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh \| sh -s -- <name>` | Same raw URL as npx |
+| Path | Status | User command | Pulls from |
+|------|--------|--------------|------------|
+| Claude plugin | Live | `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff` | Sparse clone of `plugins/branchdiff-skills/` subtree |
+| curl shell | Live | `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh \| sh -s -- <name>` | `raw.githubusercontent.com/.../plugins/branchdiff-skills/skills/<name>/SKILL.md` |
+| npx CLI | **Not published** | `npx @encryptioner/branchdiff-skills add <name>` (won't resolve until published) | Same raw URL as curl, once live |
+
+Why no npx: `npx github:Encryptioner/branchdiff-releases` (installing straight from the repo, no npm registry) was considered as a no-publish alternative, but this repo's working tree is ~330MB (mostly the `apt/` Debian package pool) — every install would download that whole tree for a few KB of `SKILL.md`. Not worth it; `curl` already covers the same ground at near-zero cost. Revisit if `apt/` ever moves to its own repo.
 
 Future install methods (e.g. a Homebrew skill cask) should point at the same path.
 
 ## Multi-agent install (opencode, Codex CLI, Gemini CLI, ...)
 
-Both `npx` and `curl` paths accept `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`), resolved by a small known-agent table in `install-skill.sh` / `bin/skills.js`:
+The `curl` path (and the not-yet-published `npx` CLI, once it exists) accepts `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`), resolved by a small known-agent table in `install-skill.sh` / `bin/skills.js`:
 
 | Agent | Resolved directory |
 |-------|---------------------|
@@ -52,7 +54,7 @@ Cursor is project-scoped only (`.cursor/skills`, no home dir) — set `BRANCHDIF
 
 This mirrors (but is not identical to) upstream `branchdiff skill add --target`, which additionally supports project-scoped variants (`claude-project`, `opencode-project`, `agents-project`) since it runs inside a checked-out repo — see `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()`. The releases-repo installers only do user-level (global) installs.
 
-Both paths still honor:
+Both installers honor:
 
 | Var | Default | Purpose |
 |-----|---------|---------|
@@ -66,13 +68,13 @@ Example — pin a release tag and install into a project-local skills dir:
 ```bash
 BRANCHDIFF_SKILL_DEST=./.claude/skills \
 BRANCHDIFF_SKILL_REF=v1.6.0 \
-  npx @encryptioner/branchdiff-skills add all
+  curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- all
 ```
 
 Example — install into opencode explicitly:
 
 ```bash
-npx @encryptioner/branchdiff-skills add --agent opencode all
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode all
 ```
 
 ## Release flow (when skill templates change)
@@ -86,11 +88,8 @@ npx @encryptioner/branchdiff-skills add --agent opencode all
    - `.claude-plugin/marketplace.json` → `plugins[0].version` **and** `metadata.version`
 4. **Bump `packages/skills-cli` version** independently (its own semver, not the CLI's) only if `bin/skills.js` itself changed — e.g. the `--agent` flag landing is a minor bump. Skill-content-only syncs don't need it.
 5. **Commit + push to `master`.** GitHub Pages serves `install-skill.sh`; raw GitHub serves SKILL.md; the marketplace fetches both on `/plugin update`.
-6. **Publish CLI to npm** (only when CLI changed):
-   ```bash
-   cd packages/skills-cli
-   npm publish --access public
-   ```
+
+`packages/skills-cli` is **not currently published to npm** (a deliberate choice — see its README) and there's no step 6 to publish it. If that ever changes, publishing would still only be needed when `bin/skills.js` itself changes, independent of skill-content syncs.
 
 Today step 2 is **manual**. Automate via a `pnpm run sync-skills` script when frequency justifies it (similar to the existing `chore: sync content (guideline, changelog, readme)` automation seen in recent commits).
 

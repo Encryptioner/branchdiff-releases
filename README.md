@@ -58,7 +58,7 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 
 ## Claude Code skills
 
-Two slash commands ship as a Claude Code plugin: `/branchdiff-review` (post inline review comments on a diff) and `/branchdiff-resolve` (apply fixes for open review threads). Install one of three ways — no need to clone the repo.
+Two slash commands ship as a plugin: `/branchdiff-review` (post inline review comments on a diff) and `/branchdiff-resolve` (apply fixes for open review threads). Install one of two ways — no need to clone the repo.
 
 **Inside Claude Code (recommended):**
 ```text
@@ -66,21 +66,15 @@ Two slash commands ship as a Claude Code plugin: `/branchdiff-review` (post inli
 /plugin install branchdiff-skills@branchdiff
 ```
 
-**Via `npx` (Node 18+):**
-```bash
-npx @encryptioner/branchdiff-skills add branchdiff-review
-npx @encryptioner/branchdiff-skills add branchdiff-resolve
-# or both at once:
-npx @encryptioner/branchdiff-skills add all
-```
-
-**Via `curl` (no Node required):**
+**Via `curl` (no Node required, works for other SKILL.md agents too):**
 ```bash
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-resolve
+# opencode, Codex CLI, Gemini CLI, etc: add --agent <name>
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
 ```
 
-The `npx` and `curl` paths write `SKILL.md` files into `~/.claude/skills/<name>/`. The plugin path uses Claude Code's native marketplace flow and stays self-updating. Both depend on the `branchdiff` CLI being installed (see [Install](#install) above).
+The `curl` path writes `SKILL.md` files into `~/.claude/skills/<name>/` (or another agent's directory via `--agent`). The plugin path uses Claude Code's native marketplace flow and stays self-updating. Both depend on the `branchdiff` CLI being installed (see [Install](#install) above).
 
 > Per-project install (skills only active inside one repo): set `BRANCHDIFF_SKILL_DEST=./.claude/skills` before the `npx`/`curl` command.
 

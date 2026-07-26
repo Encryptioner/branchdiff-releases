@@ -18,14 +18,7 @@ Both skills work against a running `branchdiff` session (local web UI) or a GitH
 /plugin install branchdiff-skills@branchdiff
 ```
 
-**Outside Claude Code (via `npx`):**
-
-```bash
-npx @encryptioner/branchdiff-skills add branchdiff-review
-npx @encryptioner/branchdiff-skills add branchdiff-resolve
-```
-
-**Via `curl` (shell installer):**
+**Outside Claude Code (via `curl`, no Node required):**
 
 ```bash
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review
@@ -34,14 +27,13 @@ curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh |
 
 **Other agents (opencode, Codex CLI, Gemini CLI, OpenClaw, ...):**
 
-These skills are plain `SKILL.md` files per the cross-agent Agent Skills standard, so the `npx`/`curl` installers work for any agent that reads them — pass `--agent <name>`:
+These skills are plain `SKILL.md` files per the cross-agent Agent Skills standard, so the `curl` installer works for any agent that reads them — pass `--agent <name>`:
 
 ```bash
-npx @encryptioner/branchdiff-skills add --agent opencode branchdiff-review
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
 ```
 
-See [`packages/skills-cli/README.md`](../../packages/skills-cli/README.md) for the full list of known agents and directories.
+See [`install-skill.sh`](../../install-skill.sh) for the full list of known agents and directories.
 
 ## Prerequisites
 

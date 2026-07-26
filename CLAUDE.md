@@ -39,8 +39,9 @@ README.md                       Public-facing landing doc
 | Test the landing page locally | `python3 -m http.server 8080` (see [DEVELOPMENT.md](DEVELOPMENT.md)) |
 | Ship a new CLI release | Cut release in `../branchdiff`; CI bumps `Formula/branchdiff.rb`, `bucket/branchdiff.json`, APT pool, and runs the content-sync commit here. |
 | Edit / release a Claude Code skill | See below + [docs/skills.md](docs/skills.md) for the full walkthrough. |
-| Publish the skills-CLI to npm | `cd packages/skills-cli && npm publish --access public` (only when CLI itself changed; skill content edits don't require a republish). |
 | Update site copy | Edit `index.html` / `styles/main.css` / `scripts/main.js` directly — no build. |
+
+`packages/skills-cli` is **deliberately not published to npm** (decided 2026-07-26 — the repo is ~330MB due to the `apt/` pool, making even a no-registry `npx github:...` fetch too heavy; `curl`/`--agent` already cover the same ground). There is no "publish the skills-CLI" task — if that decision changes, publish only when `bin/skills.js` itself changed.
 
 ## Working on Claude Code skills
 
@@ -48,25 +49,25 @@ Quick rules so you don't break the marketplace. Full detail in [docs/skills.md](
 
 **Source of truth is upstream, not here.** The two `plugins/branchdiff-skills/skills/*/SKILL.md` files are the **rendered output** of `../branchdiff/packages/cli/src/review-skill.ts` (functions `reviewSkillContent` / `resolveSkillContent`, called via `generateSkillFiles({ name: 'branchdiff' })`). Never edit SKILL.md directly — edit the templates upstream and re-render. Hand-edits drift from what `branchdiff skill add` writes into user repos.
 
-**Three install paths, one artifact.** `/plugin install`, `npx @encryptioner/branchdiff-skills add`, and `curl install-skill.sh | sh` all pull the same SKILL.md files. Never duplicate content across the channels.
+**Two live install paths, one artifact.** `/plugin install` and `curl install-skill.sh | sh` both pull the same SKILL.md files. (`npx @encryptioner/branchdiff-skills add` also exists in `packages/skills-cli` but is **not published** — see below — so don't document it as usable today.) Never duplicate content across the channels.
 
-**SKILL.md is a cross-agent standard, not Claude-only.** The `npx`/`curl` installers accept `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`) to target opencode, Codex CLI, Gemini CLI, OpenClaw, or a tool-neutral `~/.agents/skills` fallback — see `docs/skills.md` § Multi-agent install. The `/plugin install` path is Claude Code-only by nature (it's Claude's own marketplace mechanism). Keep the `KNOWN_AGENTS`/`agent_dir()` table in `install-skill.sh` and `packages/skills-cli/bin/skills.js` in sync with each other, and prefer upstream `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()` as the source of truth over third-party docs when they disagree (e.g. opencode's real path is XDG-based, not `~/.opencode/skills`).
+**SKILL.md is a cross-agent standard, not Claude-only.** The `curl` installer accepts `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`) to target opencode, Codex CLI, Gemini CLI, OpenClaw, or a tool-neutral `~/.agents/skills` fallback — see `docs/skills.md` § Multi-agent install. The `/plugin install` path is Claude Code-only by nature (it's Claude's own marketplace mechanism). Keep the `KNOWN_AGENTS`/`agent_dir()` table in `install-skill.sh` and `packages/skills-cli/bin/skills.js` in sync with each other, and prefer upstream `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()` as the source of truth over third-party docs when they disagree (e.g. opencode's real path is XDG-based, not `~/.opencode/skills`).
 
 **When changing skill content** (templates upstream → render → commit here):
 
 1. Re-render and overwrite `plugins/branchdiff-skills/skills/<name>/SKILL.md`.
 2. Bump **both** `.claude-plugin/marketplace.json` (`plugins[0].version` and `metadata.version`) and `plugins/branchdiff-skills/.claude-plugin/plugin.json` (`version`). Keep them in lockstep, and match the `branchdiff` CLI version the content was rendered from (e.g. rendered from CLI `v1.7.0` → plugin `1.7.0`) — see main repo `CLAUDE.md` for the matching note. `packages/skills-cli`'s own version is independent — bump it only when `bin/skills.js` code changes.
-3. Commit + push to `master`. No npm publish needed — plugin/curl/npx all read raw GitHub at runtime.
-4. Only bump + publish `packages/skills-cli` when the CLI's own code (`bin/skills.js`) changes.
+3. Commit + push to `master`. No npm publish needed — plugin and curl both read raw GitHub at runtime.
+4. `packages/skills-cli` is not published (see Common tasks above); no publish step applies unless that changes.
 
-**When adding a new skill,** update **all** of these or it becomes uninstallable via npx/curl:
+**When adding a new skill,** update **all** of these or it becomes uninstallable via curl:
 - `KNOWN_SKILLS` in `install-skill.sh`
-- `KNOWN_SKILLS` in `packages/skills-cli/bin/skills.js`
+- `KNOWN_SKILLS` in `packages/skills-cli/bin/skills.js` (keep in sync even though unpublished, for when/if it ships)
 - Plugin README table in `plugins/branchdiff-skills/README.md`
 - "Claude Code skills" section in top-level `README.md`
 - New folder `plugins/branchdiff-skills/skills/<new-name>/SKILL.md`
 
-The plugin marketplace path picks new skills up automatically from the folder; the npx/curl paths require the hard-coded `KNOWN_SKILLS` list update because they validate names before fetching (guard against HTML 404s).
+The plugin marketplace path picks new skills up automatically from the folder; the curl path requires the hard-coded `KNOWN_SKILLS` list update because it validates names before fetching (guard against HTML 404s).
 
 **Smoke tests before pushing skill changes:**
 ```bash
@@ -76,9 +77,9 @@ node packages/skills-cli/bin/skills.js list                       # CLI lists kn
 sh -n install-skill.sh                                            # installer shell syntax
 ```
 
-**Don't add a build step to `packages/skills-cli`.** It's intentionally plain ESM JS using Node 18+ built-in `fetch`. A bundler would force consumers onto a heavier `npx` download.
+**Don't add a build step to `packages/skills-cli`.** It's intentionally plain ESM JS using Node 18+ built-in `fetch`. It isn't published anyway (see above); a bundler would only matter if that changes.
 
-## Three install channels for end users
+## Install channels for end users
 
 | Channel | What lands | Notes |
 |---------|-----------|-------|
@@ -86,8 +87,8 @@ sh -n install-skill.sh                                            # installer sh
 | `pip install branchdiff` | Same CLI, Python wrapper | Published from `../branchdiff` |
 | `brew install` / `scoop install` / `apt install` | Standalone binaries | This repo hosts the tap / bucket / APT files |
 | `/plugin install branchdiff-skills@branchdiff` | Claude Code skills | Plugin marketplace defined here — see [docs/skills.md](docs/skills.md) |
-| `npx @encryptioner/branchdiff-skills add <name>` | Same skills | Node CLI, fetches raw `SKILL.md` |
-| `curl ... install-skill.sh \| sh -s -- <name>` | Same skills | Shell installer for no-Node users |
+| `curl ... install-skill.sh \| sh -s -- <name>` | Same skills, any `SKILL.md` agent via `--agent` | Shell installer for no-Node users |
+| ~~`npx @encryptioner/branchdiff-skills add <name>`~~ | Not published — don't tell users to run this | `packages/skills-cli` exists in-repo for a possible future release only |
 
 ## Cross-repo dependencies
 

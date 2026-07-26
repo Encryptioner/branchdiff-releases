@@ -1,5 +1,7 @@
 # @encryptioner/branchdiff-skills
 
+> **Not currently published to npm.** `npx @encryptioner/branchdiff-skills` won't resolve yet. For installing skills today, use the [Claude Code plugin](../../plugins/branchdiff-skills/README.md) or the [`curl` installer](../../install-skill.sh) instead — see [Alternatives](#alternatives) below. This README documents the CLI's design for when/if it is published.
+
 CLI to install [branchdiff](https://www.npmjs.com/package/@encryptioner/branchdiff) agent skills (`SKILL.md`, per the cross-agent Agent Skills standard). Defaults to Claude Code, but works with any agent that reads plain `SKILL.md` files — Claude Code, opencode, and others.
 
 ## Usage
@@ -46,10 +48,10 @@ BRANCHDIFF_SKILL_REF=v1.6.0 \
   npx @encryptioner/branchdiff-skills add all
 ```
 
-## Alternatives
+## Alternatives (available today)
 
 - **Inside Claude Code:** `/plugin marketplace add Encryptioner/branchdiff-releases` then `/plugin install branchdiff-skills@branchdiff`.
-- **Without Node:** `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review`.
+- **Without Node, any `SKILL.md` agent:** `curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review` (add `--agent <name>` for opencode, Codex CLI, Gemini CLI, etc).
 
 ## License
 

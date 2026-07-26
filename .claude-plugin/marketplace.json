@@ -2,8 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/marketplace.schema.json",
   "name": "branchdiff",
   "owner": {
-    "name": "Ankur Mursalin",
-    "url": "https://github.com/Encryptioner"
+    "name": "Mir Mursalin Ankur",
+    "email": "mir.ankur.ruet13@gmail.com",
+    "url": "https://encryptioner.github.io/"
   },
   "metadata": {
     "description": "Claude Code skills for branchdiff — review diffs and resolve review comments from the terminal.",
