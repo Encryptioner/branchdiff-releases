@@ -50,10 +50,12 @@ Quick rules so you don't break the marketplace. Full detail in [docs/skills.md](
 
 **Three install paths, one artifact.** `/plugin install`, `npx @encryptioner/branchdiff-skills add`, and `curl install-skill.sh | sh` all pull the same SKILL.md files. Never duplicate content across the channels.
 
+**SKILL.md is a cross-agent standard, not Claude-only.** The `npx`/`curl` installers accept `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`) to target opencode, Codex CLI, Gemini CLI, OpenClaw, or a tool-neutral `~/.agents/skills` fallback — see `docs/skills.md` § Multi-agent install. The `/plugin install` path is Claude Code-only by nature (it's Claude's own marketplace mechanism). Keep the `KNOWN_AGENTS`/`agent_dir()` table in `install-skill.sh` and `packages/skills-cli/bin/skills.js` in sync with each other, and prefer upstream `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()` as the source of truth over third-party docs when they disagree (e.g. opencode's real path is XDG-based, not `~/.opencode/skills`).
+
 **When changing skill content** (templates upstream → render → commit here):
 
 1. Re-render and overwrite `plugins/branchdiff-skills/skills/<name>/SKILL.md`.
-2. Bump **both** `.claude-plugin/marketplace.json` (`plugins[0].version` and `metadata.version`) and `plugins/branchdiff-skills/.claude-plugin/plugin.json` (`version`). Keep them in lockstep.
+2. Bump **both** `.claude-plugin/marketplace.json` (`plugins[0].version` and `metadata.version`) and `plugins/branchdiff-skills/.claude-plugin/plugin.json` (`version`). Keep them in lockstep, and match the `branchdiff` CLI version the content was rendered from (e.g. rendered from CLI `v1.7.0` → plugin `1.7.0`) — see main repo `CLAUDE.md` for the matching note. `packages/skills-cli`'s own version is independent — bump it only when `bin/skills.js` code changes.
 3. Commit + push to `master`. No npm publish needed — plugin/curl/npx all read raw GitHub at runtime.
 4. Only bump + publish `packages/skills-cli` when the CLI's own code (`bin/skills.js`) changes.
 

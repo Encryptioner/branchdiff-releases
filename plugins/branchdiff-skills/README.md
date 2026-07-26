@@ -32,6 +32,17 @@ curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh |
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-resolve
 ```
 
+**Other agents (opencode, Codex CLI, Gemini CLI, OpenClaw, ...):**
+
+These skills are plain `SKILL.md` files per the cross-agent Agent Skills standard, so the `npx`/`curl` installers work for any agent that reads them — pass `--agent <name>`:
+
+```bash
+npx @encryptioner/branchdiff-skills add --agent opencode branchdiff-review
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
+```
+
+See [`packages/skills-cli/README.md`](../../packages/skills-cli/README.md) for the full list of known agents and directories.
+
 ## Prerequisites
 
 The skills shell out to the `branchdiff` CLI. Install it once:

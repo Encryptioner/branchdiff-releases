@@ -1,7 +1,7 @@
 {
   "name": "@encryptioner/branchdiff-skills",
   "version": "1.0.0",
-  "description": "Install branchdiff Claude Code skills (branchdiff-review, branchdiff-resolve) into ~/.claude/skills.",
+  "description": "Install branchdiff agent skills (branchdiff-review, branchdiff-resolve) into Claude Code, opencode, or another SKILL.md-compatible agent.",
   "type": "module",
   "bin": {
     "branchdiff-skills": "bin/skills.js"
@@ -21,9 +21,9 @@
     "diff"
   ],
   "author": {
-    "name": "Ankur Mursalin",
-    "email": "encryptioner@gmail.com",
-    "url": "https://github.com/Encryptioner"
+    "name": "Mir Mursalin Ankur",
+    "email": "mir.ankur.ruet13@gmail.com",
+    "url": "https://encryptioner.github.io/"
   },
   "license": "MIT",
   "homepage": "https://encryptioner.github.io/branchdiff-releases/",

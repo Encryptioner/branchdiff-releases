@@ -1,13 +1,16 @@
 #!/usr/bin/env sh
-# Install a branchdiff Claude Code skill into ~/.claude/skills/<name>/.
+# Install a branchdiff skill (SKILL.md, per the cross-agent Agent Skills
+# standard) into an agent's skills directory. Defaults to Claude Code but
+# works with any agent that reads plain SKILL.md files.
 #
 # Usage:
 #   curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review
-#   curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-resolve
+#   curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
 #   curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- all
 #
 # Env overrides:
-#   BRANCHDIFF_SKILL_DEST   target dir   (default: $HOME/.claude/skills)
+#   BRANCHDIFF_SKILL_AGENT  target agent (default: claude; see KNOWN_AGENTS below)
+#   BRANCHDIFF_SKILL_DEST   target dir   (overrides agent lookup entirely)
 #   BRANCHDIFF_SKILL_REF    git ref      (default: master)
 #   BRANCHDIFF_SKILL_REPO   GH repo      (default: Encryptioner/branchdiff-releases)
 
@@ -15,11 +18,29 @@ set -eu
 
 REPO="${BRANCHDIFF_SKILL_REPO:-Encryptioner/branchdiff-releases}"
 REF="${BRANCHDIFF_SKILL_REF:-master}"
-DEST="${BRANCHDIFF_SKILL_DEST:-$HOME/.claude/skills}"
+AGENT="${BRANCHDIFF_SKILL_AGENT:-claude}"
 BASE_URL="https://raw.githubusercontent.com/${REPO}/${REF}/plugins/branchdiff-skills/skills"
 
 # Skills shipped from this repo. Update when adding a new skill.
 KNOWN_SKILLS="branchdiff-review branchdiff-resolve"
+
+# Agents whose skills dir this installer knows. `claude` and `agents` are the
+# two that matter most: opencode already reads ~/.claude/skills, and `agents`
+# is the tool-neutral ~/.agents/skills location several runtimes (Gemini CLI
+# included) scan as a fallback. `opencode` uses its own XDG config dir.
+# codex/gemini/openclaw are best-effort ~/.<agent>/skills per their own docs.
+# Cursor is project-scoped only (.cursor/skills, no home dir) — use
+# BRANCHDIFF_SKILL_DEST=.cursor/skills directly for it.
+KNOWN_AGENTS="claude opencode agents codex gemini openclaw"
+
+agent_dir() {
+  case "$1" in
+    claude|codex|gemini|openclaw) printf '%s\n' "$HOME/.$1/skills" ;;
+    opencode) printf '%s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills" ;;
+    agents) printf '%s\n' "$HOME/.agents/skills" ;;
+    *) err "unknown agent: $1. Known: ${KNOWN_AGENTS} (or set BRANCHDIFF_SKILL_DEST directly)" ;;
+  esac
+}
 
 log()  { printf '%s\n' "$*" >&2; }
 err()  { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -30,11 +51,13 @@ require_cmd() {
 
 usage() {
   cat <<EOF >&2
-Install branchdiff Claude Code skills.
+Install branchdiff agent skills (SKILL.md).
 
 Usage:
-  install-skill.sh <skill-name> [more-skills...]
-  install-skill.sh all
+  install-skill.sh [--agent <name>] <skill-name> [more-skills...]
+  install-skill.sh [--agent <name>] all
+
+Known agents: ${KNOWN_AGENTS} (default: claude)
 
 Available skills:
   ${KNOWN_SKILLS}
@@ -81,6 +104,16 @@ fetch_skill() {
   log "installed: ${target_file}"
 }
 
+DEST="${BRANCHDIFF_SKILL_DEST:-$(agent_dir "${AGENT}")}"
+
+# Consume a leading "--agent <name>" before the skill list.
+if [ "${1:-}" = "--agent" ]; then
+  [ $# -ge 2 ] || usage
+  AGENT="$2"
+  shift 2
+  DEST="${BRANCHDIFF_SKILL_DEST:-$(agent_dir "${AGENT}")}"
+fi
+
 [ $# -eq 0 ] && usage
 
 # Expand "all" into the known list.
@@ -101,4 +134,4 @@ expand_args "$@" | while IFS= read -r skill; do
   fetch_skill "${skill}"
 done
 
-log "done. Restart Claude Code to pick up new skills."
+log "done. Restart ${AGENT} to pick up new skills."

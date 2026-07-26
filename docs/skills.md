@@ -1,6 +1,6 @@
 # Claude Code Skills — Release & Distribution Guide
 
-This repo ships two Claude Code skills (`branchdiff-review`, `branchdiff-resolve`) via three install paths. This doc covers the full layout, sync model, release steps, and gotchas.
+This repo ships two agent skills (`branchdiff-review`, `branchdiff-resolve`) via three install paths. `SKILL.md` is a cross-agent open standard (Anthropic's Agent Skills spec) that Claude Code, opencode, Codex CLI, Gemini CLI, Cursor, OpenClaw and others all read unchanged — so while the Claude plugin path is Claude-only, the `npx`/`curl` paths install into any of them. This doc covers the full layout, sync model, release steps, and gotchas.
 
 ## Where things live
 
@@ -37,13 +37,27 @@ All three methods point at the **same** `plugins/branchdiff-skills/skills/<name>
 
 Future install methods (e.g. a Homebrew skill cask) should point at the same path.
 
-## Per-project install (advanced)
+## Multi-agent install (opencode, Codex CLI, Gemini CLI, ...)
 
-Both `npx` and `curl` paths honor environment overrides:
+Both `npx` and `curl` paths accept `--agent <name>` (or `BRANCHDIFF_SKILL_AGENT`), resolved by a small known-agent table in `install-skill.sh` / `bin/skills.js`:
+
+| Agent | Resolved directory |
+|-------|---------------------|
+| `claude` (default) | `~/.claude/skills` |
+| `opencode` | `$XDG_CONFIG_HOME/opencode/skills` (opencode follows XDG; also reads `~/.claude/skills`, so this only matters if there's no `.claude` dir) |
+| `agents` | `~/.agents/skills` — tool-neutral fallback location (Gemini CLI reads this as an alias; likely others per the open standard) |
+| `codex`, `gemini`, `openclaw` | `~/.<agent>/skills` — best-effort, per each agent's own docs, not yet in upstream `review-skill.ts`'s `--target` list |
+
+Cursor is project-scoped only (`.cursor/skills`, no home dir) — set `BRANCHDIFF_SKILL_DEST=.cursor/skills` directly.
+
+This mirrors (but is not identical to) upstream `branchdiff skill add --target`, which additionally supports project-scoped variants (`claude-project`, `opencode-project`, `agents-project`) since it runs inside a checked-out repo — see `../branchdiff/packages/cli/src/review-skill.ts`'s `skillTargets()`. The releases-repo installers only do user-level (global) installs.
+
+Both paths still honor:
 
 | Var | Default | Purpose |
 |-----|---------|---------|
-| `BRANCHDIFF_SKILL_DEST` | `~/.claude/skills` | Target directory |
+| `BRANCHDIFF_SKILL_AGENT` | `claude` | Target agent (table above) |
+| `BRANCHDIFF_SKILL_DEST` | *(derived from agent)* | Target directory — overrides agent lookup entirely |
 | `BRANCHDIFF_SKILL_REF`  | `master`           | Git ref to pull from (use a tag to pin) |
 | `BRANCHDIFF_SKILL_REPO` | `Encryptioner/branchdiff-releases` | Source repo |
 
@@ -55,16 +69,22 @@ BRANCHDIFF_SKILL_REF=v1.6.0 \
   npx @encryptioner/branchdiff-skills add all
 ```
 
+Example — install into opencode explicitly:
+
+```bash
+npx @encryptioner/branchdiff-skills add --agent opencode all
+```
+
 ## Release flow (when skill templates change)
 
 1. **Edit templates** in `../branchdiff/packages/cli/src/review-skill.ts`.
 2. **Re-render** with `name = 'branchdiff'`. Either:
    - Run a one-off Node script that imports `generateSkillFiles({ name: 'branchdiff' })` and writes the two files, or
    - Manually read each `reviewSkillContent` / `resolveSkillContent` body and copy into `plugins/branchdiff-skills/skills/<name>/SKILL.md`.
-3. **Bump versions** (semver):
+3. **Bump versions** — the plugin/marketplace version tracks the `branchdiff` CLI version it was rendered from (e.g. skill content rendered from CLI `v1.7.0` → plugin version `1.7.0`), so a user can tell which CLI release a skill matches at a glance:
    - `plugins/branchdiff-skills/.claude-plugin/plugin.json` → `version`
    - `.claude-plugin/marketplace.json` → `plugins[0].version` **and** `metadata.version`
-4. **Bump CLI version** in `packages/skills-cli/package.json` only if the CLI itself changed (it's independent of skill content).
+4. **Bump `packages/skills-cli` version** independently (its own semver, not the CLI's) only if `bin/skills.js` itself changed — e.g. the `--agent` flag landing is a minor bump. Skill-content-only syncs don't need it.
 5. **Commit + push to `master`.** GitHub Pages serves `install-skill.sh`; raw GitHub serves SKILL.md; the marketplace fetches both on `/plugin update`.
 6. **Publish CLI to npm** (only when CLI changed):
    ```bash
@@ -102,6 +122,7 @@ ls /tmp/skills-smoke/branchdiff-review/SKILL.md
 - **Don't pin plugin URLs to a tag.** The marketplace manifest is fetched at install time; users get whatever is on `master`. To force users onto a new skill version, bump `plugin.json` → `version`. Claude Code shows the diff on `/plugin update`.
 - **`.claude/` is gitignored** (see top-level `.gitignore`). Personal Claude Code state never leaks into the public plugin tree. Don't add it.
 - **`KNOWN_SKILLS` is hard-coded** in both `install-skill.sh` and `bin/skills.js`. When adding a new skill, update both lists or the new skill becomes uninstallable through the CLI/curl paths (the plugin path picks it up automatically from the folder).
+- **`KNOWN_AGENTS`/`agent_dir()` is duplicated** the same way, in both installers. If upstream `skillTargets()` in `review-skill.ts` gains or renames a target (e.g. a real Codex/Gemini entry), update both installers to match rather than trusting third-party blog docs about where an agent's skills dir lives — upstream's own comments (e.g. "opencode follows the XDG spec") are the authoritative source when they conflict.
 - **`.code-review-graph/graph.db` was built on `master`.** If you query it from a non-`master` branch, results may be stale — rebuild with `code-review-graph build` first.
 
 ## Adding a new skill

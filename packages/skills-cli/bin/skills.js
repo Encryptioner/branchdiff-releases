@@ -1,13 +1,17 @@
 #!/usr/bin/env node
-// @encryptioner/branchdiff-skills — install branchdiff Claude Code skills.
+// @encryptioner/branchdiff-skills — install branchdiff agent skills (SKILL.md,
+// per the cross-agent Agent Skills standard). Defaults to Claude Code but
+// works with any agent that reads plain SKILL.md files.
 //
 // Usage:
 //   npx @encryptioner/branchdiff-skills add <skill-name> [more-skills...]
+//   npx @encryptioner/branchdiff-skills add --agent opencode <skill-name>
 //   npx @encryptioner/branchdiff-skills add all
 //   npx @encryptioner/branchdiff-skills list
 //
 // Env overrides:
-//   BRANCHDIFF_SKILL_DEST  target dir   (default: ~/.claude/skills)
+//   BRANCHDIFF_SKILL_AGENT target agent (default: claude; see KNOWN_AGENTS below)
+//   BRANCHDIFF_SKILL_DEST  target dir   (overrides agent lookup entirely)
 //   BRANCHDIFF_SKILL_REF   git ref      (default: master)
 //   BRANCHDIFF_SKILL_REPO  GH repo      (default: Encryptioner/branchdiff-releases)
 
@@ -17,19 +21,42 @@ import { join } from 'node:path';
 
 const REPO = process.env.BRANCHDIFF_SKILL_REPO || 'Encryptioner/branchdiff-releases';
 const REF = process.env.BRANCHDIFF_SKILL_REF || 'master';
-const DEST = process.env.BRANCHDIFF_SKILL_DEST || join(homedir(), '.claude', 'skills');
 const BASE_URL = `https://raw.githubusercontent.com/${REPO}/${REF}/plugins/branchdiff-skills/skills`;
 
 const KNOWN_SKILLS = ['branchdiff-review', 'branchdiff-resolve'];
 
+// Agents whose skills dir this installer knows. `claude` and `agents` matter
+// most: opencode already reads ~/.claude/skills, and `agents` is the
+// tool-neutral ~/.agents/skills location several runtimes (Gemini CLI
+// included) scan as a fallback. `opencode` uses its own XDG config dir.
+// codex/gemini/openclaw are best-effort ~/.<agent>/skills per their own docs.
+// Cursor is project-scoped only (.cursor/skills, no home dir) — pass
+// BRANCHDIFF_SKILL_DEST directly for it.
+const KNOWN_AGENTS = ['claude', 'opencode', 'agents', 'codex', 'gemini', 'openclaw'];
+
+function agentDir(agent) {
+  if (!KNOWN_AGENTS.includes(agent)) {
+    fail(`unknown agent: ${agent}. Known: ${KNOWN_AGENTS.join(', ')} (or set BRANCHDIFF_SKILL_DEST directly)`);
+  }
+  if (agent === 'opencode') {
+    return join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'opencode', 'skills');
+  }
+  return join(homedir(), `.${agent}`, 'skills');
+}
+
+let agent = process.env.BRANCHDIFF_SKILL_AGENT || 'claude';
+let DEST = process.env.BRANCHDIFF_SKILL_DEST || agentDir(agent);
+
 function printUsage(stream = process.stderr, code = 2) {
   stream.write(
-`Install branchdiff Claude Code skills.
+`Install branchdiff agent skills (SKILL.md).
 
 Usage:
-  branchdiff-skills add <skill-name> [more-skills...]
-  branchdiff-skills add all
+  branchdiff-skills add [--agent <name>] <skill-name> [more-skills...]
+  branchdiff-skills add [--agent <name>] all
   branchdiff-skills list
+
+Known agents: ${KNOWN_AGENTS.join(', ')} (default: claude)
 
 Available skills:
   ${KNOWN_SKILLS.join('\n  ')}
@@ -95,15 +122,22 @@ async function main() {
   }
 
   if (cmd === 'add') {
-    if (rest.length === 0) {
+    let names = rest;
+    if (names[0] === '--agent') {
+      if (names.length < 2) fail('--agent: provide an agent name');
+      agent = names[1];
+      if (!process.env.BRANCHDIFF_SKILL_DEST) DEST = agentDir(agent);
+      names = names.slice(2);
+    }
+    if (names.length === 0) {
       fail('add: provide one or more skill names (or "all")');
     }
-    const skills = expandArgs(rest);
+    const skills = expandArgs(names);
     for (const s of skills) {
       // eslint-disable-next-line no-await-in-loop
       await fetchSkill(s);
     }
-    process.stderr.write('done. Restart Claude Code to pick up new skills.\n');
+    process.stderr.write(`done. Restart ${agent} to pick up new skills.\n`);
     return;
   }
 
