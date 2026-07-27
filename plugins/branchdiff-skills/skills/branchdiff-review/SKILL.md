@@ -264,6 +264,8 @@ If a pattern repeats across files, comment on the first occurrence and mention t
 - `[suggestion]` — Concrete improvements with clear reasoning. Includes missing tests and incomplete changes.
 - `[question]` — Something unclear needing clarification.
 
+**File paths and commit hashes are auto-appended.** branchdiff adds the `file:line` the finding sits on and the review-time commit to every comment automatically — only include them in `--body` yourself if the user explicitly asks. An AI-guessed commit hash is almost always wrong, so default `--body` to `[severity] <the feedback>` only.
+
 #### Review tone
 
 You are reviewing code written by a human who spent effort on it. Be respectful and constructive:
@@ -292,7 +294,26 @@ branchdiff agent comment --file <path> --line <n> [--end-line <n>] --body "[seve
 branchdiff agent general-comment --body "<overall summary>" $SEL
 ```
 
-### Step 6: Confirm and surface the session
+### Step 6: Post the deterministic verdict (and push only if asked)
+
+branchdiff derives a verdict — **approve** or **request-changes** — from the open `[must-fix]` and human-authored threads. It is **never your call**, so do not decide it yourself or claim "approved"/"request changes" in prose. As a final step, post it so the user sees one clear, deterministic recommendation:
+
+```bash
+branchdiff review verdict $SEL
+```
+
+**Push / approve / request-changes — only if the user explicitly asked.** By default a review is local-only (the user pushes manually). If the user asked you to approve, request changes, or push, add the matching flags — branchdiff pushes the comments and applies the verdict to the PR in one deterministic step:
+
+```bash
+# user asked to approve and push:
+branchdiff review verdict --auto-push --auto-approve $SEL
+# user asked to request changes and push:
+branchdiff review verdict --auto-push --auto-request-changes $SEL
+```
+
+Never call `branchdiff pr approve`, `pr request-changes`, or `sync push` directly — `review verdict` does all of that and computes the verdict from the threads, so two reviewers can't disagree.
+
+### Step 7: Confirm and surface the session
 
 ```bash
 branchdiff agent list $SEL
