@@ -294,15 +294,17 @@ branchdiff agent comment --file <path> --line <n> [--end-line <n>] --body "[seve
 branchdiff agent general-comment --body "<overall summary>" $SEL
 ```
 
-### Step 6: Post the deterministic verdict (and push only if asked)
+### Step 6: Post the deterministic verdict (only if the user asked for one)
 
-branchdiff derives a verdict — **approve** or **request-changes** — from the open `[must-fix]` and human-authored threads. It is **never your call**, so do not decide it yourself or claim "approved"/"request changes" in prose. As a final step, post it so the user sees one clear, deterministic recommendation:
+**Skip this step unless the user explicitly asked for a verdict, approval, or request-changes.** By default a review is comments only — no verdict comment gets posted, nothing changes on the PR.
+
+If the user did ask, branchdiff derives the verdict — **approve** or **request-changes** — from the open `[must-fix]` and human-authored threads. It is **never your call**, so do not decide it yourself or claim "approved"/"request changes" in prose:
 
 ```bash
 branchdiff review verdict $SEL
 ```
 
-**Push / approve / request-changes — only if the user explicitly asked.** By default a review is local-only (the user pushes manually). If the user asked you to approve, request changes, or push, add the matching flags — branchdiff pushes the comments and applies the verdict to the PR in one deterministic step:
+**Pushing (and applying approve/request-changes to the PR) is a second, separate ask — never assume it from the verdict request alone.** Asking for a verdict gets the local comment above; it does not push anything. Only add `--auto-push` (and `--auto-approve`/`--auto-request-changes`) if the user separately asked you to push or to act on the PR — branchdiff then pushes the comments and applies the verdict to the PR in one deterministic step:
 
 ```bash
 # user asked to approve and push:
@@ -310,6 +312,8 @@ branchdiff review verdict --auto-push --auto-approve $SEL
 # user asked to request changes and push:
 branchdiff review verdict --auto-push --auto-request-changes $SEL
 ```
+
+**If the user names a stricter or looser bar** ("also block on suggestions", "require everything addressed before approving", "only block on real bugs"), add the level to whichever flag fires — `--auto-approve 2`, `--auto-request-changes 3`, etc. (1 = must-fix only, the default when no level is given; 5 = every open thread, tagged or not). Say nothing for the level if the user didn't ask for anything stricter than the default.
 
 Never call `branchdiff pr approve`, `pr request-changes`, or `sync push` directly — `review verdict` does all of that and computes the verdict from the threads, so two reviewers can't disagree.
 
