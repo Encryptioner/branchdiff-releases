@@ -141,6 +141,11 @@ SEL="--port <that one port>"
 ```
 
 - **Verify before doing anything else:** run `branchdiff agent list $SEL` and confirm the reported ref/PR is the one you were asked to review. If it is not, STOP.
+- **Refresh remote state** so you review fresh code — pulls the latest PR comments and refuses if your local branch is behind the PR head (the same pull + stale guard `review run` and `auto` apply). No-ops when the session isn't PR-linked:
+  ```bash
+  branchdiff agent refresh $SEL
+  ```
+  Add `--allow-stale` **only** if the user explicitly asked to review the local revision despite being behind. If refresh refuses, STOP and tell the user to update their branch — do not review stale code.
 - Commands without a selector **refuse** when several sessions are live — that error is the safety net working, not a bug to route around. Do **not** add `--yes` to silence it; `--yes` picks the last-active session, which is exactly the drift this prevents.
 - Work only on the verified session for the entire review. Do not run bare `branchdiff` (which could start or repoint a session) mid-review.
 
@@ -294,11 +299,33 @@ branchdiff agent comment --file <path> --line <n> [--end-line <n>] --body "[seve
 branchdiff agent general-comment --body "<overall summary>" $SEL
 ```
 
-### Step 6: Post the deterministic verdict (only if the user asked for one)
+### Step 6: Verdict (only if the user asked for one)
 
 **Skip this step unless the user explicitly asked for a verdict, approval, or request-changes.** By default a review is comments only — no verdict comment gets posted, nothing changes on the PR.
 
-If the user did ask, branchdiff derives the verdict — **approve** or **request-changes** — from the open `[must-fix]` and human-authored threads. It is **never your call**, so do not decide it yourself or claim "approved"/"request changes" in prose:
+#### Step 6a: Reconcile prior open threads
+
+Before the verdict, re-check threads left by EARLIER passes (not the ones you just posted in this run) — the diff may have already fixed them, and a fixed thread should not still block the verdict.
+
+```bash
+branchdiff agent list --status open --json $SEL
+```
+
+For EVERY open thread from an earlier pass — regardless of severity tag or who it's from — check whether the current diff has genuinely fixed the issue it describes. **Leave it untouched if uncertain.**
+
+- If fixed AND the thread's first comment's `author.type` is `"agent"` (your own prior finding) — resolve it directly:
+  ```bash
+  branchdiff agent resolve <id> --summary "Fixed — <what changed>" $SEL
+  ```
+- If fixed AND the thread's first comment's `author.type` is `"user"` (a human reviewer or the PR author) — do **not** resolve it, not even if the fix is obvious. Instead reply with a suggestion:
+  ```bash
+  branchdiff agent reply <id> --body "Looks fixed — <what changed>. OK to close?" $SEL
+  ```
+  Resolving is always the commenter's own call — the thread stays open (and still counts toward the verdict gate below) until they close it themselves.
+
+#### Step 6b: Post the deterministic verdict
+
+branchdiff derives the verdict — **approve** or **request-changes** — from the open `[must-fix]` and human-authored threads. It is **never your call**, so do not decide it yourself or claim "approved"/"request changes" in prose:
 
 ```bash
 branchdiff review verdict $SEL
