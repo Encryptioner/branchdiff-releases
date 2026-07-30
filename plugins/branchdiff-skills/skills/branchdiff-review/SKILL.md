@@ -53,6 +53,8 @@ You are reviewing a git diff and leaving inline comments using the `branchdiff a
 
 - `worktree` (optional, default off): Check the PR out into `.worktrees/pr-<n>` instead of switching the working tree. Use this **only when the user explicitly asks for an isolated/worktree review** (e.g. "review in a worktree", "don't touch my branch"). It only affects PR-URL reviews (GitHub or Bitbucket); for a branchdiff URL the session is already running, and for a bare `ref` there is no checkout to isolate.
 
+- `notify` (optional, default off): Pass `--notify` to fire desktop notifications (review started / review complete) via `branchdiff agent notify`, so the user is pinged even if they step away from the chat. **Standalone only** — when `branchdiff auto` drives this skill it fires its own toasts, so before firing check that the `BRANCHDIFF_PASS_ID` environment variable is **unset**; if it is set you are being orchestrated by `auto` and must skip every `agent notify` call (see the note under Instructions). Best-effort — silently skipped if the OS has no notifier.
+
 ## CLI Reference
 
 ```bash
@@ -64,6 +66,7 @@ branchdiff agent general-comment --body "<text>" $SEL
 branchdiff agent resolve <id> [--summary "<text>"] $SEL
 branchdiff agent dismiss <id> [--reason "<text>"] $SEL
 branchdiff agent reply <id> --body "<text>" $SEL
+branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast (--notify only); no $SEL — needs no session
 ```
 
 - `--file`, `--line`, `--body` are required for `comment`
@@ -150,6 +153,13 @@ SEL="--port <that one port>"
 - Work only on the verified session for the entire review. Do not run bare `branchdiff` (which could start or repoint a session) mid-review.
 
 ## Instructions
+
+> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If `BRANCHDIFF_PASS_ID` is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call to avoid duplicates. You already know this session's local URL from Prerequisites (given directly in a branchdiff URL, or shown in the startup banner when you started the session) — reuse that same URL for `--open-url` below. Do not call `branchdiff list` just to fire a toast.
+
+**Start toast** (once, before Step 1, when notifications are active):
+```bash
+branchdiff agent notify "branchdiff: review started" "<PR # or ref pair>" --open-url <session-url>   # e.g. http://localhost:5391
+```
 
 ### Step 1: Check previous review context
 
@@ -358,8 +368,13 @@ branchdiff list
 
 Extract the URL line (e.g. `http://localhost:5391`) for the current repo and include it in your final message. Tell the user the review is complete, summarize findings, and link the session:
 
+**Completion toast** (when notifications are active — fire it once you have the counts): reuse the same session URL as the start toast (you already know it — no need to call `branchdiff list` again just for this).
+```bash
+branchdiff agent notify "branchdiff: review done" "Review complete — X must-fix, Y suggestions, Z questions" --open-url <session-url>   # e.g. http://localhost:5391
+```
+
 > Review complete — X must-fix, Y suggestions, Z questions.
 >
-> Session: http://localhost:5391
+> Session: <session-url>
 >
 > When you are ready, run **/branchdiff-resolve** to fix them.
