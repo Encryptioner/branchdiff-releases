@@ -49,6 +49,8 @@ You are reading open review comments and resolving them by making the requested 
 
 - `instructions` (optional): Free-form extra guidance for how to resolve, e.g. "skip anything under ai/", "only fix must-fix threads". Apply it in addition to the standard resolve workflow below.
 
+- `notify` (optional, default off): Pass `--notify` to fire desktop notifications (resolve started / resolve complete) via `branchdiff agent notify`, so the user is pinged even if they step away from the chat. **Standalone only** — when `branchdiff auto` drives this skill it fires its own toasts, so before firing check that the `BRANCHDIFF_PASS_ID` environment variable is **unset**; if it is set you are being orchestrated by `auto` and must skip every `agent notify` call (see the note under Instructions). Best-effort — silently skipped if the OS has no notifier.
+
 ## Session isolation (MANDATORY — do this before any `branchdiff agent` call)
 
 Several `branchdiff` sessions can be live for one repo at the same time. Resolve your selector **once**, before anything else, and pass it on every command below (written as `$SEL`). Do not rely on inherited environment — a sub-shell or background Bash call may not see it.
@@ -75,6 +77,7 @@ branchdiff agent general-comment --body "<text>" $SEL
 branchdiff agent resolve <id> [--summary "<text>"] $SEL
 branchdiff agent dismiss <id> [--reason "<text>"] $SEL
 branchdiff agent reply <id> --body "<text>" $SEL
+branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast (--notify only); no $SEL — needs no session
 ```
 
 - `--file`, `--line`, `--body` are required for `comment`
@@ -191,6 +194,13 @@ about is present in the tree you are editing**. Establish that instead.
 
 ## Instructions
 
+> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If `BRANCHDIFF_PASS_ID` is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call to avoid duplicates. You already know this session's local URL from Prerequisites (given directly in a branchdiff URL, or shown in the startup banner when you started the session) — reuse that same URL for `--open-url` below. Do not call `branchdiff list` just to fire a toast.
+
+**Start toast** (once, before Step 1, when notifications are active):
+```bash
+branchdiff agent notify "branchdiff: resolve started" "<PR # or ref pair>" --open-url <session-url>   # e.g. http://localhost:5391
+```
+
 ### Step 1: List open threads
 
 ```bash
@@ -271,9 +281,14 @@ branchdiff list
 
 Extract the URL line (e.g. `http://localhost:5391`) for the current repo and include it in your final message. Tell the user the resolve pass is complete and link the session:
 
+**Completion toast** (when notifications are active — fire it once you have the counts): reuse the same session URL as the start toast (you already know it — no need to call `branchdiff list` again just for this).
+```bash
+branchdiff agent notify "branchdiff: resolve done" "Resolve complete — N resolved, M remaining" --open-url <session-url>   # e.g. http://localhost:5391
+```
+
 > Resolved N threads. Resolved status appears in the browser within ~2 seconds.
 >
-> Session: http://localhost:5391
+> Session: <session-url>
 
 ## Notes
 
