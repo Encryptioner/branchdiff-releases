@@ -20,7 +20,6 @@ Open any git diff in a browser UI with inline comments, split/unified views, and
 - [Install](#install)
 - [Common tasks](#common-tasks)
 - [AI Review](#ai-review)
-- [Claude Code skills](#claude-code-skills)
 - [Usage Guide](#usage-guide)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Why branchdiff?](#why-branchdiff)
@@ -56,37 +55,6 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 
 ---
 
-## Claude Code skills
-
-Two slash commands ship as a plugin: `/branchdiff-review` (post inline review comments on a diff) and `/branchdiff-resolve` (apply fixes for open review threads). Install one of two ways — no need to clone the repo.
-
-**Recommended — from a terminal** (the in-chat `/plugin marketplace add` prompt only takes a bare source, no `--sparse` support):
-```bash
-claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins
-claude plugin install branchdiff-skills@branchdiff
-```
-the `--sparse` flag skips this repo's unrelated `apt/` package pool
-
-**Inside a Claude Code chat session (simpler, full clone):**
-```text
-/plugin marketplace add Encryptioner/branchdiff-releases
-/plugin install branchdiff-skills@branchdiff
-```
-
-**Via `curl` (no Node required, works for other SKILL.md agents too):**
-```bash
-curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-review
-curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- branchdiff-resolve
-# opencode, Codex CLI, Gemini CLI, etc: add --agent <name>
-curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
-```
-
-The `curl` path writes `SKILL.md` files into `~/.claude/skills/<name>/` (or another agent's directory via `--agent`). The plugin path uses Claude Code's native marketplace flow and stays self-updating. Both depend on the `branchdiff` CLI being installed (see [Install](#install) above).
-
-> Per-project install (skills only active inside one repo): set `BRANCHDIFF_SKILL_DEST=./.claude/skills` before the `npx`/`curl` command.
-
----
-
 ## Common tasks
 
 | I want to… | Command |
@@ -97,17 +65,25 @@ The `curl` path writes `SKILL.md` files into `~/.claude/skills/<name>/` (or anot
 | View a GitHub PR | `branchdiff https://github.com/owner/repo/pull/123` |
 | View a Bitbucket PR | `branchdiff https://bitbucket.org/workspace/repo/pull-requests/123` |
 | Browse repo files | `branchdiff tree` |
+| Review a PR without switching branches | `branchdiff <pr-url> --worktree` |
+| Auto-review my open PRs | `branchdiff auto --tool claude` |
+| Auto-review PRs across every repo | `branchdiff auto --repo-paths ~/work --tool claude` |
+| Browse commit history | `branchdiff history` |
+| Browse the repo at an old commit | `branchdiff show HEAD~5` |
+| Browse branches & tags | `branchdiff branches` |
+| Search code across the repo | `branchdiff search "TODO"` |
 | View last commit | `branchdiff HEAD~1` |
 | Compare branch vs parent | `branchdiff -p` |
 | Compare branch vs 3rd commit back | `branchdiff -p 3` |
 | Only unstaged changes | `branchdiff -p 0` |
-| Check PR status | `branchdiff pr info` |
+| Check PR status | `branchdiff pr info [--json]` |
 | Merge a PR | `branchdiff pr merge` |
 | Push comments to PR | `branchdiff sync push` |
 | AI agent reference | `branchdiff agent guide` |
 | Dark mode / unified view | `branchdiff main --dark --unified` |
+| See effective config + its source | `branchdiff config` |
 
-Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
+Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`. Name a branch you have never checked out and branchdiff fetches it from the remote first, so a colleague's branch works the moment they push it.
 
 ---
 
@@ -126,10 +102,27 @@ branchdiff HEAD~3             # review last 3 commits
 
 **Step 2 — pick your AI:**
 
-**Claude Code** — install skills once, then use slash commands:
+**Claude Code and opencode** — install skills once, then use slash commands:
 ```bash
-branchdiff skill add   # creates .claude/skills/branchdiff-{review,resolve}/SKILL.md
+branchdiff skill add                 # creates .claude/skills/branchdiff-{review,resolve}/SKILL.md
+branchdiff skill add --target user   # ~/.claude/skills — every repo on this machine
 ```
+opencode reads `.claude/skills` too, so one install covers both. Re-run after upgrading branchdiff to update the skills in place.
+
+**Want branchdiff's skills through a standard plugin system instead?** [`branchdiff-releases`](https://github.com/Encryptioner/branchdiff-releases) ships the same two skills standalone — its plugin version always tracks this CLI's version.
+
+```bash
+# Run in a terminal — --sparse skips that repo's unrelated apt/ package pool
+# (the in-chat /plugin marketplace add prompt doesn't support --sparse):
+claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins
+claude plugin install branchdiff-skills@branchdiff
+```
+
+```bash
+# opencode, Codex CLI, Gemini CLI, or any other SKILL.md-reading agent (no Node.js needed):
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode branchdiff-review
+```
+
 | Slash command | What it does |
 |---|---|
 | `/branchdiff-review` | AI reads the diff and posts inline comments |
@@ -199,7 +192,51 @@ Start: branchdiff review guide
 branchdiff review context | claude -p "review for security"
 branchdiff review context --refs "main feature" | claude -p "review these changes"
 branchdiff review run --exec "claude" --mode review
+branchdiff review run --exec "claude" --fresh      # ignore existing comments, review independently
+branchdiff review run --exec "claude" --worktree   # review in .worktrees/, your branch untouched
 ```
+
+**Or let branchdiff watch your open PRs:**
+```bash
+branchdiff auto --tool claude                      # asks before reviewing each PR
+branchdiff auto --tool claude --review --skip-author   # never review your own PRs
+branchdiff auto --tool claude --max-files 200 --max-lines 4000   # leave the giant PRs to a human
+branchdiff auto --watch 10 --tool opencode --review --notify
+branchdiff auto --source 'feature/*' --dest main --tool claude --push
+cd ~/work && branchdiff auto --tool claude         # every repo directly under ~/work
+branchdiff auto --repo-paths ~/work/api,../web --tool claude
+```
+
+`auto` finds open PRs on GitHub and Bitbucket, reviews only the ones with new non-merge commits, and streams each session's URL as it goes. Point it at a parent directory (or list repos with `--repo-paths`) and it covers them all: one scan, one combined candidate list, and an end-of-pass report of what was reviewed and where to find it.
+
+| Flag | Default | What it does |
+|---|---|---|
+| *(none)* | **asks** | lists every PR that needs review once, numbered — pick with `1,3`, a range like `1-5`, `a` for all, or `q` to quit |
+| `--review` | off | review without asking |
+| `--skip-author` | off | skip PRs you opened yourself (matched by the authenticated user — GitHub login / Bitbucket uuid), so auto never reviews your own PRs |
+| `--max-files` / `--min-files` | any size | skip PRs changing more (or fewer) than `n` files — send the 900-file bump to a human, don't spend a pass on a typo fix |
+| `--max-lines` / `--min-lines` | any size | same, on diff lines (additions + deletions). Measured against the PR base; a PR whose size can't be determined is reviewed |
+| `--notify` | off | desktop toast on start / done / push / failure; carries a link to the PR when pushed (else the local session view), opening in your browser where the OS allows it |
+| `--push` | off | the only way comments reach the remote PR |
+| `--tool <name>` | — | `claude`, `opencode`, `codex`, `gemini`, `cursor`, `llm` |
+| `--exec "<cmd>"` | — | any CLI that reads a prompt on stdin and prints review JSON |
+| `--skill` | off | drive the built-in review skill directly (no install, nothing to import) instead of the JSON pipe |
+| `--skill-name <name>` | — | drive a custom skill instead (must already be installed via `skill add`) |
+| `--additional-skill <name>` | — | fold another installed skill's guidance into the same pass (repeatable) |
+| `--prompt <text>` | — | extra instructions for this run |
+| `--repo-paths <paths>` | this repo, else its child repos | repos to review — comma-separated, repeatable, absolute/relative/`~`; a non-repo directory expands to its direct child repos |
+| `--repo-concurrency <n>` | 4 | how many repos are scanned at once (reviews still run one repo at a time) |
+| `--keep-servers <n\|all>` | all in one repo; 4 across repos | how many session servers each cycle leaves alive afterwards |
+
+**Reviewing two things at once?** Every review is tied to exactly one session, and branchdiff never guesses which. AI reviews are pinned automatically. For commands you type, add `--port <n>` or `--session <id>` when more than one session is live — branchdiff lists the candidates rather than picking for you:
+
+```bash
+branchdiff list                        # see every running session
+branchdiff agent list --port 5391      # target one
+export BRANCHDIFF_SESSION_ID=<id>      # or pin the whole shell
+```
+
+With a single session open, no flag is needed.
 
 <details>
 <summary><b>Full AI review guide — 8 workflows (security, test coverage, breaking changes, dependency audit...)</b></summary>
@@ -208,19 +245,37 @@ branchdiff review run --exec "claude" --mode review
 
 | I want to… | Go to |
 |---|---|
-| Have AI review the diff and post comments | [Review workflow](#workflow-1--ai-review-1) |
-| Have AI fix the open comments | [Resolve workflow](#workflow-2--ai-resolve-1) |
-| Create a guided code tour for onboarding | [Tour workflow](#workflow-3--ai-tour-1) |
-| Get a PR summary / review summary | [Summary workflow](#workflow-4--ai-summary-1) |
-| Run a focused security scan | [Security audit](#workflow-5--security-audit-1) |
-| Find untested code paths | [Test coverage gaps](#workflow-6--test-coverage-gaps-1) |
-| Check for breaking API / schema changes | [Breaking-change review](#workflow-7--breakingchange-review-1) |
-| Review added/changed dependencies | [Dependency review](#workflow-8--dependency-review-1) |
+| Have AI review the diff and post comments | [Review workflow](#workflow-1--ai-review) |
+| Have AI fix the open comments | [Resolve workflow](#workflow-2--ai-resolve) |
+| Create a guided code tour for onboarding | [Tour workflow](#workflow-3--ai-tour) |
+| Get a PR summary / review summary | [Summary workflow](#workflow-4--ai-summary) |
+| Run a focused security scan | [Security audit](#workflow-5--security-audit) |
+| Find untested code paths | [Test coverage gaps](#workflow-6--test-coverage-gaps) |
+| Check for breaking API / schema changes | [Breaking-change review](#workflow-7--breaking-change-review) |
+| Review added/changed dependencies | [Dependency review](#workflow-8--dependency-review) |
 
-##### Option A — Claude Code: install skills once
+##### Option A — Claude Code / opencode: install skills once
 
 ```bash
-branchdiff skill add    # creates .claude/skills/branchdiff-{review,resolve}/SKILL.md
+branchdiff skill add                 # creates .claude/skills/branchdiff-{review,resolve}/SKILL.md
+branchdiff skill add --target user   # ~/.claude/skills — available in every repo
+branchdiff skill add --dir <path>    # an exact directory, if you keep skills elsewhere
+```
+
+opencode reads `.claude/skills` as well, so the default install serves both tools. Re-running updates skills branchdiff generated and leaves anything you wrote yourself alone.
+
+**Want branchdiff's skills through a standard plugin system instead?** [`branchdiff-releases`](https://github.com/Encryptioner/branchdiff-releases) distributes the same skills standalone — plugin version always matches this CLI's version.
+
+```bash
+# Run in a terminal — --sparse skips that repo's unrelated apt/ package pool
+# (the in-chat /plugin marketplace add prompt doesn't support --sparse):
+claude plugin marketplace add Encryptioner/branchdiff-releases --sparse .claude-plugin plugins
+claude plugin install branchdiff-skills@branchdiff
+```
+
+```bash
+# opencode, Codex CLI, Gemini CLI, or any other SKILL.md-reading agent (no Node.js needed):
+curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode all
 ```
 
 Then use slash commands — no prompt needed:
@@ -387,7 +442,8 @@ Summarize the current branchdiff review session.
 
 1. Run `branchdiff agent list --json` to get all threads.
 2. Output:
-   - One-sentence verdict (approve / changes requested / needs more eyes)
+   - One-sentence status read (e.g. "looks solid", "a few must-fix items left") —
+     informal only; never state approve/request-changes, that's `branchdiff review verdict`'s call
    - Top must-fix items (file:line + one-line reason each)
    - Any recurring themes ("three null-check comments" → suggest a lint rule)
    - Count: open / resolved / dismissed
@@ -493,7 +549,7 @@ Start: branchdiff agent diff
 
 #### Tips
 
-- **Keep branchdiff running while the AI works.** Agents hit `http://localhost:<port>/api/*`.
+- **Keep branchdiff running while the AI works.** The `branchdiff` CLI commands (not raw HTTP) talk to the local server for you by using `branchdiff agent ...` / `branchdiff review ...`
 - **Pass `--json`** when the agent needs structured output.
 - **Short thread IDs work.** First 8 chars of a UUID is enough: `branchdiff agent resolve abc123de`.
 - **Nothing leaves your machine.** No telemetry, no cloud, no API key.
@@ -731,6 +787,8 @@ Toolbar button. Shows what the two modes disagree on:
 | `--new` | Archive current session and start fresh |
 | `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1). Use `-p 0` for unstaged-only view |
 
+**Config file** — stop retyping long flag sets. `~/.branchdiff/config.json` (global) and/or `.branchdiff.json` (a repo root or launch directory) fill in any flag you didn't pass; a flag you actually type always wins, and a repo's own file wins over the launch directory's, which wins over global. A top-level `defaults` key mirrors the root command's flags, `auto` mirrors every `auto` flag — `auto.exec`/`auto.tool` are the one exception, resolved only from global config or a CLI flag, never a `.branchdiff.json` (which can arrive via `git clone`). Run `branchdiff config` to see the fully-merged effective config and where each value came from, or `branchdiff config sample` (`--global` for the global file) to write a starter file with just a few common keys — full details in the [user guide](https://encryptioner.github.io/branchdiff-releases/guideline.html).
+
 ---
 
 #### Instance management
@@ -744,10 +802,12 @@ branchdiff kill         # stop all instances
 branchdiff prune        # delete all stored data (~/.branchdiff)
 branchdiff clear        # reset current repo's review data
 branchdiff doctor       # diagnose install / environment issues
+branchdiff doctor --notify   # also fire a test desktop notification
 branchdiff update       # self-update (auto-detects package manager)
 branchdiff version      # print current version
 branchdiff version --check  # check for updates
 branchdiff info         # show repo fingerprint and state table size
+branchdiff config       # print the effective config (defaults/auto) and each value's source
 branchdiff state reset  # clear UI state without affecting sessions
 branchdiff guide        # open user guide in browser (no repo required)
 branchdiff changelog    # open release notes in browser (no repo required)
@@ -872,6 +932,14 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 - **Working tree toggle** — switch between staged and unstaged changes from the toolbar
 - GitHub & Bitbucket PR integration — push/pull review comments, create PRs from the UI
 - **CLI commands for PR, sync & session** — manage PRs, sync comments, and control sessions from the terminal (`branchdiff pr`, `branchdiff sync`, `branchdiff session`)
+- **Automatic PR review** (`branchdiff auto`) — watches open PRs, reviews the ones with new commits, asks first, notifies on your desktop, publishes only with `--push`; `--skill` drives an actual review skill instead of the JSON pipe, no install needed
+- **Multi-repo review** — `auto --repo-paths ~/work` (or just running it from a parent directory) scans every repo at once, lists their PRs together, and reports what each pass reviewed and where the sessions are
+- **Worktree reviews** (`--worktree`) — review a PR in `.worktrees/` without switching your branch; each AI review is pinned to its own session; `branchdiff list` and the UI show the worktree path when one is active
+- **Commit history browser** — `branchdiff history` (log up to any ref or range), `branchdiff show <ref>` (repo at a commit), per-file history that follows renames
+- **Local-only resolve** — resolving a thread never touches the PR unless you pass `--sync`
+- **Session isolation** — `--session`/`--port` on every review command; with several sessions live branchdiff lists them instead of guessing, so concurrent reviews never cross wires
+- **Skills where you want them** — `branchdiff skill add --target` installs into this repo, your home directory, or opencode's own directories; re-running updates them in place
+- **Remote branches without the ceremony** — comparing a branch that only exists on the remote fetches and tracks it for you
 - Multiple repos open simultaneously on different ports
 - 100% local — no telemetry, no cloud, no API key
 
