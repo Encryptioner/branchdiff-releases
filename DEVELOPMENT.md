@@ -23,6 +23,7 @@ Open `http://localhost:8080` in your browser.
 - **guideline.html** — renders `content/guideline.md` via marked.js
 - **changelog.html** — renders `content/changelog.md` via marked.js
 - **Mobile responsiveness** — use browser DevTools device emulation (Chrome: F12 → toggle device toolbar)
+- **AI chat widget** (bottom-right floating button on `index.html`) — ask it something covered by the guide or changelog and confirm the answer links back to the right page. It needs internet access (loads `private-chat`'s widget + model from `encryptioner.github.io`, ~35MB on first question). See [CLAUDE.md § RAG chat widget](CLAUDE.md#rag-chat-widget) for how to regenerate `site-index.json` after content changes.
 
 ## Notes
 
@@ -41,6 +42,7 @@ Open `http://localhost:8080` in your browser.
 | `styles/main.css` | Custom CSS |
 | `scripts/main.js` | Install cards, version badge, nav |
 | `assets/` | Logo, hero image, screenshots |
+| `site-index.json` | RAG index for the AI chat widget — not CI-managed, regenerate manually after content changes (see [CLAUDE.md § RAG chat widget](CLAUDE.md#rag-chat-widget)) |
 
 ## Files managed by CI (do not edit)
 
