@@ -359,6 +359,14 @@ function buildTOC(contentEl, tocEl, opts) {
     if (activeLink) activeLink.scrollIntoView({ block: 'nearest' });
   }
 
+  // ── Deep-link scroll ──
+  // Content loads via async fetch, so the browser's one-time scroll-to-fragment
+  // on page load fires before headings even exist. Do it ourselves once they do.
+  if (location.hash) {
+    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+
   window.addEventListener('scroll', updateActive, { passive: true });
   updateActive();
 }

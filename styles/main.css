@@ -46,10 +46,9 @@ body { overflow-x: hidden; }
   background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: .5rem;
   overflow-x: auto; max-width: 100%; min-width: 0;
   font-size: .85rem; line-height: 1.5; margin: 1rem 0;
-  white-space: pre-wrap; word-break: break-all; word-wrap: break-word;
 }
 .prose-content pre code,
-.prose-content pre[class*="language-"] code { background: transparent; color: inherit; padding: 0; display: block; white-space: pre-wrap; word-break: break-all; word-wrap: break-word; }
+.prose-content pre[class*="language-"] code { background: transparent; color: inherit; padding: 0; display: block; }
 .prose-content a { color: #4338ca; text-decoration: underline; text-decoration-color: #c7d2fe; overflow-wrap: break-word; }
 .prose-content a:hover { text-decoration-color: #4338ca; }
 .prose-content p, .prose-content li { overflow-wrap: break-word; }
@@ -64,6 +63,16 @@ body { overflow-x: hidden; }
   .prose-content h1 { font-size: 1.5rem; }
   .prose-content h2 { font-size: 1.25rem; }
   .prose-content pre { font-size: .75rem; padding: .75rem; }
+  /* Mobile has no room for horizontal code scroll — wrap instead of letting
+     it push the page width (see 32af10d); desktop/tablet keep it scrollable. */
+  .prose-content pre,
+  .prose-content pre[class*="language-"] {
+    white-space: pre-wrap; word-break: break-all; word-wrap: break-word;
+  }
+  .prose-content pre code,
+  .prose-content pre[class*="language-"] code {
+    white-space: pre-wrap; word-break: break-all; word-wrap: break-word;
+  }
 }
 
 /* Doc layout: stacked on mobile, side-by-side on desktop */
