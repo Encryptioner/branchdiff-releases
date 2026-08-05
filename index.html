@@ -344,7 +344,17 @@
   <script>
     window.PRIVATE_CHAT_CONFIG = {
       label: "branchdiff",
-      siteIndexUrl: "/site-index.json",
+      // Prod: fully-qualified, NOT "/site-index.json" — the widget iframe lives
+      // at encryptioner.github.io/private-chat/, a sibling path on the SAME
+      // origin. A root-relative path resolves against that shared origin root,
+      // which is encryptioner.github.io/'s OWN site-index.json (a different
+      // project) — not this one. See private-chat docs/SITE-INTEGRATION.md
+      // § "Gotcha — siteIndexUrl on a shared origin".
+      // Local (python3 -m http.server / npx serve): a bare relative path — no
+      // shared-origin ambiguity when testing on localhost.
+      siteIndexUrl: /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+        ? "site-index.json"
+        : "https://encryptioner.github.io/branchdiff-releases/site-index.json",
       getSections: (doc) => {
         const out = [];
         doc.querySelectorAll("main > section").forEach((sec) => {
