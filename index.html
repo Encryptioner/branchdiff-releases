@@ -335,4 +335,35 @@
       });
     });
   </script>
+
+  <!-- Site-aware AI chat (private-chat). A custom scraper feeds the landing
+       page's content sections to the widget so it grounds on branchdiff's
+       features, install, and usage — not the bare viewer chrome. Set BEFORE the
+       embed script loads; embed.js runs getSections in this page's context and
+       bridges sections to the chat iframe. See private-chat docs/SITE-INTEGRATION.md -->
+  <script>
+    window.PRIVATE_CHAT_CONFIG = {
+      label: "branchdiff",
+      siteIndexUrl: "/site-index.json",
+      getSections: (doc) => {
+        const out = [];
+        doc.querySelectorAll("main > section").forEach((sec) => {
+          const heading = sec.querySelector("h1, h2");
+          const title = (heading ? heading.textContent : "Section").trim().replace(/\s+/g, " ").slice(0, 80);
+          const anchor = sec.id || (heading && heading.id) || "";
+          const text = (sec.textContent || "").replace(/\s+/g, " ").trim();
+          if (text.length > 30) {
+            out.push({
+              anchor: anchor,
+              title: title,
+              url: anchor ? location.origin + location.pathname + "#" + anchor : location.href,
+              text: text,
+            });
+          }
+        });
+        return out;
+      },
+    };
+  </script>
+  <script id="aiChatEmbedScript" defer src="https://encryptioner.github.io/private-chat/embed.js"></script>
 </html>
