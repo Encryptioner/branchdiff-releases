@@ -49,8 +49,7 @@
           if (!md.trim()) continue;
           CONTENT_EL.innerHTML = marked.parse(md);
           Prism.highlightAll();
-          // Changelog: version-level (h2) only — h3 are "Added/Fixed/Changed" repetitions
-          buildTOC(CONTENT_EL, TOC_EL, { selector: 'h2' });
+          buildTOC(CONTENT_EL, TOC_EL, md);
           trackEvent({ name: 'content_loaded', params: { page: 'changelog' } });
           return;
         } catch { /* try next source */ }

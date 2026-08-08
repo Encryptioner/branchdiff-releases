@@ -216,157 +216,328 @@ function slugify(text) {
     .replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
+// ── TOC tree helpers ─────────────────────────────────────────────────────────
+// Ported from ../branchdiff/packages/ui/src/lib/toc.ts. Framework-free string
+// manipulation — verbatim except scanHeadings skips fenced code blocks (the
+// static site's marked.js already excludes them, so the tree and the rendered
+// DOM must agree on heading count). See docs/superpowers/specs/2026-08-08-nested-toc.md.
+
+const TOC_HEADING_RE = /^(#{2,5})\s+(.+)$/;
+const TOC_PART_RE = /^Part\s+\d+/i;
+const TOC_FENCE_RE = /^\s*(`{3,}|~{3,})/;
+
+function scanHeadings(lines) {
+  const headings = [];
+  let inFence = false;
+  lines.forEach((line, i) => {
+    if (TOC_FENCE_RE.test(line)) { inFence = !inFence; return; }
+    if (inFence) return;
+    const m = TOC_HEADING_RE.exec(line);
+    if (m) headings.push({ level: m[1].length, text: m[2].trim(), line: i });
+  });
+  return headings;
+}
+
+// Nested h2–h5 tree. Each node's fullText spans its heading through the next
+// same-or-higher heading, so it includes every descendant — one substring check
+// per node is enough to know if it (or anything under it) matches a search.
+function buildTocTree(markdown) {
+  const lines = markdown.split('\n');
+  const headings = scanHeadings(lines);
+  const nodes = headings.map((h, i) => {
+    let endLine = lines.length;
+    for (let j = i + 1; j < headings.length; j++) {
+      if (headings[j].level <= h.level) { endLine = headings[j].line; break; }
+    }
+    return {
+      id: slugify(h.text),
+      text: h.text,
+      level: h.level,
+      isPart: TOC_PART_RE.test(h.text),
+      fullText: lines.slice(h.line, endLine).join('\n'),
+      children: [],
+    };
+  });
+  const roots = [];
+  const stack = [];
+  for (const node of nodes) {
+    while (stack.length && stack[stack.length - 1].level >= node.level) stack.pop();
+    if (stack.length === 0) roots.push(node);
+    else stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  }
+  return roots;
+}
+
+function filterTocTree(nodes, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return nodes;
+  const result = [];
+  for (const node of nodes) {
+    if (!node.fullText.toLowerCase().includes(q)) continue;
+    result.push({ ...node, children: filterTocTree(node.children, q) });
+  }
+  return result;
+}
+
+// Depth-first in document order — matches the rendered DOM heading order, so the
+// i-th node pairs with the i-th rendered <hN>.
+function flattenNodes(nodes) {
+  const out = [];
+  for (const n of nodes) { out.push(n); out.push(...flattenNodes(n.children)); }
+  return out;
+}
+
+function containsId(node, id) {
+  if (!id) return false;
+  return node.children.some(c => c.id === id || containsId(c, id));
+}
+
 /**
- * Build a TOC from headings inside contentEl and inject into tocEl.
- * Mobile: sticky collapsible strip below site header.
- * Desktop (≥1024px): sticky left sidebar, always visible.
- * opts.selector — CSS selector for headings (default: 'h2, h3')
+ * Build a nested h2–h5 table of contents from markdown and inject into tocEl.
+ * contentEl holds the already-rendered markdown (marked.parse); md is the raw
+ * source the tree is built from. One tree element is reused as a desktop sticky
+ * sidebar (≥1024px) and a mobile slide-in drawer (<1024px) via CSS.
  */
-function buildTOC(contentEl, tocEl, opts) {
-  const selector = (opts && opts.selector) || 'h2, h3';
-  const headings = Array.from(contentEl.querySelectorAll(selector));
-  if (headings.length < 3) {
+function buildTOC(contentEl, tocEl, md) {
+  const tree = buildTocTree(md);
+  const flat = flattenNodes(tree);
+  const domHeadings = Array.from(contentEl.querySelectorAll('h2,h3,h4,h5'));
+
+  // Safety net: bail (hide TOC) if the markdown tree and rendered DOM disagree.
+  // Positional pairing below guarantees id sync when they agree.
+  if (!flat.length || flat.length !== domHeadings.length || flat.length < 3) {
     tocEl.hidden = true;
     return;
   }
+  flat.forEach((node, i) => { domHeadings[i].id = node.id; });
 
-  // Assign unique slug IDs to headings
-  const seen = {};
-  headings.forEach(h => {
-    let base = slugify(h.textContent);
-    seen[base] = (seen[base] || 0) + 1;
-    h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base;
-  });
+  const idMap = new Map(flat.map(n => [n.id, n]));
+  const isDesktop = () => window.innerWidth >= 1024;
 
-  // ── List ──
-  const ul = document.createElement('ul');
-  ul.className = 'toc-list';
-  headings.forEach(h => {
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = `#${h.id}`;
-    a.textContent = h.textContent;
-    a.className = h.tagName === 'H2' ? 'toc-link toc-h2' : 'toc-link toc-h3';
-    a.dataset.id = h.id;
-    li.appendChild(a);
-    ul.appendChild(li);
-  });
+  let search = '';
+  let activeId = null;
+  const collapsed = new Set();
+  let elById = new Map(); // id → rendered row element (rebuilt each render)
 
-  // ── Mobile toggle button ──
-  const chevron = `<svg class="toc-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M5 7l5 5 5-5"/>
-  </svg>`;
-  const toggle = document.createElement('button');
-  toggle.className = 'toc-toggle';
-  toggle.setAttribute('aria-expanded', 'false');
-  toggle.setAttribute('aria-controls', 'toc-body');
-  toggle.innerHTML = `<span class="toc-toggle-label">On this page</span>${chevron}`;
+  tocEl.innerHTML = '';
 
-  function closeTOC() {
-    tocEl.classList.remove('toc-open');
-    toggle.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
+  // ── Shell: trigger (mobile) + backdrop + panel (tree host) ──
+  const trigger = document.createElement('button');
+  trigger.className = 'toc-trigger';
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.setAttribute('aria-controls', 'toc-panel');
+  trigger.innerHTML =
+    '<span class="toc-trigger-label">On this page</span>' +
+    '<svg class="toc-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 7l5 5 5-5"/></svg>';
 
-  toggle.addEventListener('click', () => {
-    const open = tocEl.classList.toggle('toc-open');
-    toggle.setAttribute('aria-expanded', String(open));
-    // Lock page scroll while TOC is open on mobile
-    document.body.style.overflow = open ? 'hidden' : '';
-  });
+  const backdrop = document.createElement('div');
+  backdrop.className = 'toc-backdrop';
 
-  // ── Search input ──
+  const panel = document.createElement('div');
+  panel.className = 'toc-panel';
+  panel.id = 'toc-panel';
+
+  const head = document.createElement('div');
+  head.className = 'toc-panel-head';
+  head.innerHTML =
+    '<span class="toc-panel-title">Sections</span>' +
+    '<button type="button" class="toc-panel-close" aria-label="Close table of contents">' +
+      '<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>' +
+    '</button>';
+
+  const desktopTitle = document.createElement('span');
+  desktopTitle.className = 'toc-desktop-title';
+  desktopTitle.textContent = 'On this page';
+
   const searchWrap = document.createElement('div');
   searchWrap.className = 'toc-search';
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
   searchInput.className = 'toc-search-input';
-  searchInput.placeholder = 'Filter headings…';
-  searchInput.setAttribute('aria-label', 'Filter table of contents');
+  searchInput.placeholder = 'Search sections & content…';
+  searchInput.setAttribute('aria-label', 'Search table of contents');
   const clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
   clearBtn.className = 'toc-search-clear';
-  clearBtn.setAttribute('aria-label', 'Clear filter');
-  clearBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>';
+  clearBtn.setAttribute('aria-label', 'Clear search');
+  clearBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>';
   clearBtn.hidden = true;
   searchWrap.appendChild(searchInput);
   searchWrap.appendChild(clearBtn);
 
-  const noResults = document.createElement('div');
+  const treeEl = document.createElement('nav');
+  treeEl.className = 'toc-tree';
+  treeEl.setAttribute('aria-label', 'Section navigation');
+
+  const noResults = document.createElement('p');
   noResults.className = 'toc-no-results';
-  noResults.textContent = 'No matches';
+  noResults.textContent = 'No matching sections';
   noResults.hidden = true;
 
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.toLowerCase().trim();
-    clearBtn.hidden = !q;
-    let visible = 0;
-    ul.querySelectorAll('li').forEach(li => {
-      const match = !q || li.textContent.toLowerCase().includes(q);
-      li.hidden = !match;
-      if (match) visible++;
-    });
-    noResults.hidden = visible > 0;
+  panel.appendChild(head);
+  panel.appendChild(desktopTitle);
+  panel.appendChild(searchWrap);
+  panel.appendChild(treeEl);
+  panel.appendChild(noResults);
+  tocEl.appendChild(trigger);
+  tocEl.appendChild(backdrop);
+  tocEl.appendChild(panel);
+
+  // ── Render ──
+  function renderNode(node) {
+    const wrap = document.createElement('div');
+    wrap.className = 'toc-node toc-l' + node.level;
+
+    const row = document.createElement('div');
+    row.className = 'toc-row';
+    row.dataset.id = node.id;
+    if (node.isPart) wrap.classList.add('toc-part');
+
+    const hasKids = node.children.length > 0;
+    if (hasKids) {
+      const chev = document.createElement('button');
+      chev.type = 'button';
+      chev.className = 'toc-chevron-btn' + (collapsed.has(node.id) ? '' : ' toc-chevron-open');
+      chev.setAttribute('aria-label', (collapsed.has(node.id) ? 'Expand' : 'Collapse') + ' section');
+      chev.innerHTML = '<svg class="toc-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 5l5 5-5 5"/></svg>';
+      chev.addEventListener('click', e => {
+        e.stopPropagation();
+        if (collapsed.has(node.id)) collapsed.delete(node.id);
+        else collapsed.add(node.id);
+        render();
+      });
+      row.appendChild(chev);
+    } else {
+      const spacer = document.createElement('span');
+      spacer.className = 'toc-chevron-spacer';
+      row.appendChild(spacer);
+    }
+
+    const label = document.createElement('button');
+    label.type = 'button';
+    label.className = 'toc-text';
+    label.textContent = node.text;
+    row.appendChild(label);
+
+    wrap.appendChild(row);
+    if (!collapsed.has(node.id)) {
+      node.children.forEach(c => wrap.appendChild(renderNode(c)));
+    }
+    return wrap;
+  }
+
+  function render() {
+    const filtered = filterTocTree(tree, search);
+    treeEl.innerHTML = '';
+    if (filtered.length === 0) {
+      noResults.hidden = false;
+      elById = new Map();
+      return;
+    }
+    noResults.hidden = true;
+    filtered.forEach(n => treeEl.appendChild(renderNode(n)));
+    elById = new Map();
+    treeEl.querySelectorAll('.toc-row[data-id]').forEach(el => elById.set(el.dataset.id, el));
+    updateActive();
+  }
+
+  // Click any row (or its label) → scroll. Chevron has its own listener + stopPropagation.
+  treeEl.addEventListener('click', e => {
+    const row = e.target.closest('.toc-row[data-id]');
+    if (row && treeEl.contains(row)) scrollToId(row.dataset.id);
   });
 
+  // ── Scroll + drawer close ──
+  function scrollToId(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!isDesktop()) closeDrawer(); // unlock body scroll before smooth-scroll
+    el.scrollIntoView({ behavior: 'smooth' });
+    history.replaceState(null, '', '#' + id);
+  }
+
+  // ── Search ──
+  searchInput.addEventListener('input', () => {
+    search = searchInput.value;
+    clearBtn.hidden = !search;
+    render();
+  });
   clearBtn.addEventListener('click', () => {
     searchInput.value = '';
+    search = '';
     clearBtn.hidden = true;
-    noResults.hidden = true;
-    ul.querySelectorAll('li').forEach(li => { li.hidden = false; });
+    render();
     searchInput.focus();
   });
 
-  // ── Collapsible body ──
-  const body = document.createElement('div');
-  body.className = 'toc-body';
-  body.id = 'toc-body';
-
-  const desktopTitle = document.createElement('span');
-  desktopTitle.className = 'toc-desktop-title';
-  desktopTitle.textContent = 'On this page';
-  body.appendChild(desktopTitle);
-  body.appendChild(searchWrap);
-  body.appendChild(ul);
-  body.appendChild(noResults);
-
-  tocEl.appendChild(toggle);
-  tocEl.appendChild(body);
-
-  // Close mobile TOC on link click; hash URL + scroll-padding-top handle the rest
-  ul.querySelectorAll('.toc-link').forEach(a => {
-    a.addEventListener('click', () => {
-      if (window.innerWidth < 1024) closeTOC();
-    });
+  // ── Mobile drawer open/close ──
+  function openDrawer() {
+    tocEl.classList.add('toc-open');
+    trigger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    tocEl.classList.remove('toc-open');
+    trigger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  trigger.addEventListener('click', () => {
+    if (tocEl.classList.contains('toc-open')) closeDrawer(); else openDrawer();
+  });
+  head.querySelector('.toc-panel-close').addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && tocEl.classList.contains('toc-open')) closeDrawer();
   });
 
-  // ── Active section tracking (desktop only — mobile TOC is closed while reading) ──
-  let activeId = null;
-
+  // ── Active-section spy (desktop only — mobile drawer is closed while reading) ──
+  // One IntersectionObserver tracks every visible heading; pick the topmost in
+  // document order (many short h4s can intersect at once). Highlight the active
+  // node plus all its ancestors.
   function updateActive() {
-    if (window.innerWidth < 1024) return;
-    const scrollY = window.scrollY + 68;
-    let active = headings[0];
-    for (const h of headings) {
-      if (h.offsetTop <= scrollY) active = h;
-      else break;
+    if (!isDesktop()) return;
+    for (const el of elById.values()) el.classList.remove('toc-active');
+    if (!activeId) return;
+    for (const [id, el] of elById) {
+      const node = idMap.get(id);
+      if (node && (node.id === activeId || containsId(node, activeId))) el.classList.add('toc-active');
     }
-    if (!active || active.id === activeId) return;
-    activeId = active.id;
-    ul.querySelectorAll('.toc-link').forEach(a => {
-      a.classList.toggle('toc-active', a.dataset.id === activeId);
-    });
-    const activeLink = ul.querySelector('.toc-active');
-    if (activeLink) activeLink.scrollIntoView({ block: 'nearest' });
+    const first = treeEl.querySelector('.toc-active');
+    if (first) first.scrollIntoView({ block: 'nearest' });
   }
 
-  // ── Deep-link scroll ──
-  // Content loads via async fetch, so the browser's one-time scroll-to-fragment
-  // on page load fires before headings even exist. Do it ourselves once they do.
+  const ids = flat.map(n => n.id);
+  const visible = new Set();
+  const observer = new IntersectionObserver(entries => {
+    for (const ent of entries) {
+      if (ent.isIntersecting) visible.add(ent.target.id);
+      else visible.delete(ent.target.id);
+    }
+    const topmost = ids.find(id => visible.has(id));
+    if (topmost && topmost !== activeId) { activeId = topmost; updateActive(); }
+  }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+  domHeadings.forEach(h => observer.observe(h));
+
+  window.addEventListener('resize', () => {
+    if (isDesktop()) document.body.style.overflow = '';
+    updateActive();
+  }, { passive: true });
+
+  // ── In-page #anchor links inside the rendered markdown ──
+  contentEl.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = decodeURIComponent(a.getAttribute('href').slice(1));
+    if (document.getElementById(id)) { e.preventDefault(); scrollToId(id); }
+  });
+
+  // ── Deep-link on load (content is async-fetched; the browser's auto-scroll
+  //    to the fragment fires before headings exist, so do it ourselves) ──
   if (location.hash) {
-    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
   }
 
-  window.addEventListener('scroll', updateActive, { passive: true });
-  updateActive();
+  render();
 }

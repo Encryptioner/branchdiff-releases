@@ -49,7 +49,7 @@
           if (!md.trim()) continue;
           CONTENT_EL.innerHTML = marked.parse(md);
           Prism.highlightAll();
-          buildTOC(CONTENT_EL, TOC_EL);
+          buildTOC(CONTENT_EL, TOC_EL, md);
           trackEvent({ name: 'content_loaded', params: { page: 'guideline' } });
           return;
         } catch { /* try next source */ }
