@@ -28,6 +28,7 @@ You are reviewing a git diff and leaving inline comments using the `branchdiff a
   - **Base branch (b1)** → URL-decode the `b1` param (e.g. `origin/development`)
   - **Source branch (b2)** → URL-decode the `b2` param (e.g. `origin/feature`)
   - **Mode** → the `mode` param (`git`, `file`, etc.)
+  - **Staged/unstaged inclusion** → `includeStaged=1`/`includeUnstaged=1` if present (mirrors the browser's "Include staged"/"Include unstaged" checkboxes — set only when the URL's own tab had them checked). When either is present, pass the matching `--include-staged`/`--include-unstaged` flag to `agent diff` in Step 2, and use `agent file --staged`/no-`--ref` (not `--ref <b2>`) for any file that turns out to be uncommitted — see Step 4.
 
   **B. GitHub PR URL** (no session needed — branchdiff auto-creates one):
   ```
@@ -58,8 +59,8 @@ You are reviewing a git diff and leaving inline comments using the `branchdiff a
 ## CLI Reference
 
 ```bash
-branchdiff agent diff $SEL  # Output unified diff for current session
-branchdiff agent file <path> [--ref <ref>] $SEL  # Print <path> as it exists at <ref>
+branchdiff agent diff [--include-staged] [--include-unstaged] $SEL  # Output unified diff for current session
+branchdiff agent file <path> [--ref <ref> | --staged] $SEL  # Print <path> as it exists at <ref>, the index (--staged), or the working tree (neither)
 branchdiff agent list [--status open|resolved|dismissed] [--json] $SEL
 branchdiff agent comment --file <path> --line <n> [--end-line <n>] [--side new|old] --body "<text>" $SEL
 branchdiff agent general-comment --body "<text>" $SEL
@@ -74,6 +75,7 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 - `--side` defaults to `new`
 - `general-comment` creates a diff-level comment not tied to any file or line
 - `<id>` accepts full UUID or 8-char prefix
+- `agent diff --include-staged`/`--include-unstaged` and `agent file --staged` only apply when your checked-out branch is b1 or b2 of the current session — otherwise they no-op with a warning, since staged/unstaged content doesn't belong to either side of an unrelated branch pair
 
 ## Prerequisites
 
@@ -84,6 +86,7 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
    **If a branchdiff URL was provided** (`http://localhost:5391/diff?b1=...&b2=...`):
    - URL-decode the `b1` and `b2` query params to get the base and source branches.
    - Note the host+port (e.g. `http://localhost:5391`) — the server is already running.
+   - Note `includeStaged`/`includeUnstaged` if present (see Arguments above).
    - Run `branchdiff agent list $SEL` to confirm an active session exists. If it does, proceed.
    - If there is no active session (or the session refs don't match b1/b2), start one:
      ```bash
@@ -175,6 +178,8 @@ If there are resolved/dismissed threads:
 - **Check if dismissed issues were truly safe to dismiss** — only flag if new evidence contradicts the dismissal reason.
 - **Acknowledge improvements** in your general comment when the author clearly addressed prior feedback.
 
+**Match by what the comment describes, never by its stored `file:line`.** A prior thread's line number is a snapshot from when it was posted — later commits shift code up/down, so the same issue can now sit at a different line, and an unrelated line can now occupy the old one. Before treating something as "still broken" or "a new finding", re-read the comment body and compare it against what the code at the relevant *area* (not just that exact line) currently does. A thread whose described issue no longer matches any current code is fixed, regardless of whether its old line number still contains something that looks superficially similar.
+
 This makes nth-time reviews additive, not repetitive.
 
 ### Step 2: Get the diff
@@ -183,9 +188,11 @@ This makes nth-time reviews additive, not repetitive.
 branchdiff agent diff $SEL
 ```
 
+If the URL had `includeStaged=1`/`includeUnstaged=1` (see Arguments), append the matching flag(s) instead: `branchdiff agent diff --include-staged --include-unstaged $SEL`. Without those params, never pass the flags — they only belong when the URL's own tab had the checkbox checked.
+
 This outputs the full unified diff for the current session. Line numbers are in the `@@` hunk headers.
 
-**Important: read from git, never the working tree.** The diff covers the branches from the URL (b1 → b2), NOT the currently checked-out git branch. Do NOT use `git branch --show-current`, and do NOT read files from the working tree (plain `cat`/editor open / `Read` of the on-disk path) to determine what is being reviewed — the checked-out branch may be something else entirely, so on-disk content can be the wrong code. Always use the b1/b2 from the provided URL or ref argument, and read full-file content via `branchdiff agent file <path> --ref <b2>` (see Step 4). The review session targets a specific comparison; the working-tree branch is irrelevant.
+**Important: read from git, never the ambient working tree — except the layers the URL explicitly requested.** The diff covers the branches from the URL (b1 → b2), NOT the currently checked-out git branch. Do NOT use `git branch --show-current`, and do NOT read files from the working tree (plain `cat`/editor open / `Read` of the on-disk path) to guess what is being reviewed — the checked-out branch may be something else entirely, so ad-hoc on-disk reads can be the wrong code. Always use the b1/b2 from the provided URL or ref argument, and read full-file content via `branchdiff agent file <path> --ref <b2>` (see Step 4). This rule is about not guessing, not about excluding staged/unstaged content categorically: when the URL's `includeStaged`/`includeUnstaged` params are set, `agent diff`'s staged/unstaged content (Step 2) and `agent file --staged`/no-`--ref` (Step 4) are the CORRECT, sanctioned sources for that layer — not a violation of this rule.
 
 ### Step 3: Understand the change
 
@@ -213,7 +220,11 @@ For each changed file, read the **entire file** (not just the diff hunks) to und
 branchdiff agent file <path> --ref <b2> $SEL
 ```
 
-This prints `<path>` exactly as it exists at b2 (the reviewed source), regardless of what is checked out. Prefer it even when `BD_WORKTREE` is set: a worktree that was left dirty by an earlier run is deliberately not refreshed, so its files can lag behind b2. Never rely on the ambient checked-out copy. Then apply these analysis passes:
+This prints `<path>` exactly as it exists at b2 (the reviewed source), regardless of what is checked out. Prefer it even when `BD_WORKTREE` is set: a worktree that was left dirty by an earlier run is deliberately not refreshed, so its files can lag behind b2. Never rely on the ambient checked-out copy.
+
+If `--ref <b2>` errors ("does not exist at ref") for a file that DID appear in Step 2's diff, and the URL had `includeStaged`/`includeUnstaged` set, the file is uncommitted — that's expected, not a bug. Read it via `branchdiff agent file <path> --staged $SEL` (staged/index content) or `branchdiff agent file <path> $SEL` (no `--ref` — working-tree content) instead, matching whichever layer the file's diff came from.
+
+Then apply these analysis passes:
 
 **Data flow analysis** — Trace values through the changed code:
 - Can a value be null/undefined where the code assumes it isn't?
@@ -321,17 +332,23 @@ Before the verdict, re-check threads left by EARLIER passes (not the ones you ju
 branchdiff agent list --status open --json $SEL
 ```
 
-For EVERY open thread from an earlier pass — regardless of severity tag or who it's from — check whether the current diff has genuinely fixed the issue it describes. **Leave it untouched if uncertain.**
+For EVERY open thread from an earlier pass — regardless of severity tag or who it's from — check whether the current diff has genuinely fixed the issue it describes. **Judge by the comment's content against the current code, not by whether its stored line number still looks similar** — commits shift lines, so re-locate the relevant code by what changed, not by position; the fix may now live at a different line, or even a different file, than the one originally flagged. **Leave it untouched if uncertain.**
 
-- If fixed AND the thread's first comment's `author.type` is `"agent"` (your own prior finding) — resolve it directly:
+Then read the thread's **last** comment (the most recent reply, if any — not just the root) for a sign-off, regardless of who opened the thread:
+
+- If the **last comment's** `author.type` is `"user"` and it signals agreement or closure — "fixed", "done", "ok", "lgtm", "not needed", "wontfix", "nvm", "please close", "thanks" — the commenter already made the call. Resolve it directly, quoting them:
+  ```bash
+  branchdiff agent resolve <id> --summary "Resolved per <name>'s reply: \"<their words>\"" $SEL
+  ```
+- Otherwise, if the diff fixed the issue and the thread's **first** comment's `author.type` is `"agent"` (your own prior finding) — resolve it directly:
   ```bash
   branchdiff agent resolve <id> --summary "Fixed — <what changed>" $SEL
   ```
-- If fixed AND the thread's first comment's `author.type` is `"user"` (a human reviewer or the PR author) — do **not** resolve it, not even if the fix is obvious. Instead reply with a suggestion:
+- Otherwise, if the diff fixed the issue and the thread's first comment's `author.type` is `"user"` (a human reviewer or the PR author, and their last reply didn't already sign off) — do **not** resolve it, not even if the fix is obvious. Instead reply with a suggestion:
   ```bash
   branchdiff agent reply <id> --body "Looks fixed — <what changed>. OK to close?" $SEL
   ```
-  Resolving is always the commenter's own call — the thread stays open (and still counts toward the verdict gate below) until they close it themselves.
+  Resolving an unaddressed human concern is always the commenter's own call — the thread stays open (and still counts toward the verdict gate below) until they close it themselves, either on the platform or with a reply that signals closure as above.
 
 #### Step 6b: Post the deterministic verdict
 

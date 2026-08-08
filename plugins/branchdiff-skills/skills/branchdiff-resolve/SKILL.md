@@ -27,7 +27,7 @@ You are reading open review comments and resolving them by making the requested 
   ```
   http://localhost:5391/diff?b1=origin%2Fdevelopment&b2=origin%2Ffeature&mode=git
   ```
-  The skill extracts host+port and `b1`/`b2` from the query.
+  The skill extracts host+port and `b1`/`b2` from the query. Also extracts `includeStaged=1`/`includeUnstaged=1` if present (mirrors the browser's working-changes checkboxes) — when set, use `agent file --staged`/no-`--ref` (not `--ref <b2>`) for a file that turns out to be uncommitted, same as the review skill.
 
   **B. GitHub PR URL** (auto-creates a session if none exists):
   ```
@@ -69,8 +69,8 @@ Verify with `branchdiff agent list $SEL` and confirm the ref/PR is the one you w
 ## CLI Reference
 
 ```bash
-branchdiff agent diff $SEL  # Output unified diff for current session
-branchdiff agent file <path> [--ref <ref>] $SEL  # Print <path> as it exists at <ref>
+branchdiff agent diff [--include-staged] [--include-unstaged] $SEL  # Output unified diff for current session
+branchdiff agent file <path> [--ref <ref> | --staged] $SEL  # Print <path> as it exists at <ref>, the index (--staged), or the working tree (neither)
 branchdiff agent list [--status open|resolved|dismissed] [--json] $SEL
 branchdiff agent comment --file <path> --line <n> [--end-line <n>] [--side new|old] --body "<text>" $SEL
 branchdiff agent general-comment --body "<text>" $SEL
@@ -166,6 +166,10 @@ about is present in the tree you are editing**. Establish that instead.
      ```bash
      branchdiff agent file <path> --ref <b2> $SEL
      ```
+     If this errors ("does not exist at ref") and the URL that started this session had
+     `includeStaged`/`includeUnstaged` set, the file was only staged/unstaged when
+     reviewed, not committed — re-fetch it via `agent file --staged $SEL` or
+     `agent file <path> $SEL` (no `--ref`) instead before comparing.
      - **Identical** → the reviewed code is here verbatim. Edit here.
      - **Different, but the code the comment describes is present** → the branches
        have diverged elsewhere; the finding still applies. Edit here, judging
@@ -218,6 +222,12 @@ For each open thread, check the `comments` array and `author.type` field (`"user
 a. **Skip** general comments (filePath `__general__`) — these are summaries, not actionable code changes.
 
 b. **Skip** threads where the last comment is an agent reply that asks the user a question (e.g. "Could you clarify...?") and the user hasn't responded yet — the agent is waiting for user input. Still process threads where the agent left the original comment (code suggestion, review feedback) — those are actionable.
+
+b'. **Resolve directly, no code change, if the last comment is a human sign-off.** If the thread's most recent comment has `author.type: "user"` and signals agreement or closure ("fixed", "done", "ok", "lgtm", "not needed", "wontfix", "nvm", "please close", "thanks") — the commenter already made the call, whether or not you can find a matching code change:
+   ```bash
+   branchdiff agent resolve <thread-id> --summary "Resolved per <name>'s reply: \"<their words>\"" $SEL
+   ```
+   Then move on to the next thread — skip c–e for this one.
 
 c. **Read the comment body** and understand what change is requested. Interpret the intent:
    - If it suggests a code change, make the change.
