@@ -244,13 +244,17 @@ function scanHeadings(lines) {
 function buildTocTree(markdown) {
   const lines = markdown.split('\n');
   const headings = scanHeadings(lines);
+  const slugCounts = new Map(); // dedupe: changelog repeats "Added"/"Fixed"/etc. per version
   const nodes = headings.map((h, i) => {
     let endLine = lines.length;
     for (let j = i + 1; j < headings.length; j++) {
       if (headings[j].level <= h.level) { endLine = headings[j].line; break; }
     }
+    const base = slugify(h.text);
+    const count = (slugCounts.get(base) || 0) + 1;
+    slugCounts.set(base, count);
     return {
-      id: slugify(h.text),
+      id: count === 1 ? base : `${base}-${count}`,
       text: h.text,
       level: h.level,
       isPart: TOC_PART_RE.test(h.text),
