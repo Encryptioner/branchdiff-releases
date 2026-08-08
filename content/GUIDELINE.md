@@ -428,7 +428,7 @@ The top toolbar adapts to your current session and shows relevant controls:
 - **File / Git / Delta** mode switcher — choose how diffs are compared
 - **Expand all / Collapse all** buttons — expand or collapse all file diffs at once (toggle based on current state)
 - **Unified / Split / Full** view mode toggle — choose your diff layout
-- **Working tree toggle** — switch between staged and unstaged changes (appears when viewing uncommitted work)
+- **Include staged / Include unstaged** — layer your staged or unstaged changes onto a branch comparison (appear when your checked-out branch is one side of it)
 - **Comment actions** — navigate threads (previous/next), comment count, copy for AI review, archive session, view history
 - **3-dot menu** — theme toggle, whitespace display, keyboard shortcuts, this guideline, changelog, and links
 
@@ -437,14 +437,17 @@ The top toolbar adapts to your current session and shows relevant controls:
 Filter badges appear at the top of the file sidebar to narrow the file list by state:
 
 - **Commented** / **Uncommented** — files with or without open review comments
+- **Resolved** — files with resolved comment threads, whether resolved locally or on the remote platform (GitHub/Bitbucket) — the fastest way to find review feedback that's already been addressed
 - **Viewed** / **Unviewed** — files marked as reviewed or not yet seen
 - **Stale** — files that were viewed but have since changed (amber dot indicator)
 - **Collapsed** / **Expanded** — minimized or expanded diffs
 - **Staged** / **Unstaged** — files with staged or unstaged changes (visible in working tree mode)
 
-File rows also show inline status badges: **S** (staged, accent), **U** (unstaged, amber), amber dot (stale — file changed since viewed), and checkmark (viewed).
+File rows also show inline status badges: **S** (staged, accent), **U** (unstaged, amber), amber dot (stale — file changed since viewed), checkmark (viewed), an accent comment-count pill (open threads), and a green check-circle pill (resolved threads, same local-or-remote scope as the **Resolved** filter).
 
-Badges auto-hide when inapplicable (e.g., "Commented" disappears if no comments exist, "Staged"/"Unstaged" hidden outside working tree mode). Clicking a badge activates it; clicking again clears it. Only one badge in each pair is active at a time. The **Clear** button resets all filters.
+Badges auto-hide when inapplicable (e.g., "Commented"/"Resolved" disappear if no matching comments exist, "Staged"/"Unstaged" hidden outside working tree mode). Clicking a badge activates it; clicking again clears it. Only one badge in each pair is active at a time. The **Clear** button resets all filters.
+
+With the **Commented** or **Resolved** badge active, clicking a file in the tree does more than open it — it scrolls straight to that file's first matching thread and expands it (even a resolved thread whose line falls outside the diff's visible hunks, which otherwise sits collapsed inside a closed "outdated comments" panel). With neither badge active, clicking a file just opens it at the top, same as before.
 
 Filters stack with the search box — narrow by text and state simultaneously.
 
@@ -798,6 +801,16 @@ branchdiff agent file src/app.ts                 # working-tree content
 ```
 
 The generated skills use `agent file --ref` instead of reading files off disk, so a review can't be skewed by whatever happens to be checked out.
+
+### Reviewing your own uncommitted work too
+
+A branch-pair comparison is committed-only by default — exactly `git diff b1..b2`, nothing more. When you want to also see your currently staged or unstaged changes layered onto it (only meaningful once your checked-out branch is one side of the comparison), two independent toggles cover it. Both are off unless you turn them on, and the page URL is the single source of truth — there's no separate saved preference, so whoever opens a link (you, a teammate, or an AI) sees exactly the layers the sender had on.
+
+- **In the browser** — "Include staged"/"Include unstaged" checkboxes appear in the toolbar once your checked-out branch matches `b1` or `b2`. Checking them updates the diff, file tree, and commit list live, and writes the current state into the page URL (`includeStaged=1`/`includeUnstaged=1`); reloading or sharing the link reopens with the same layers on.
+- **From the CLI** — `branchdiff <b1> [b2] --include-staged --include-unstaged` seeds a freshly started session's URL the same way, so the browser opens with those layers on.
+- **For an AI** — the review and resolve skills read `includeStaged`/`includeUnstaged` straight off a branchdiff URL you hand them (same as `b1`/`b2`/`mode`) and pass matching flags through: `branchdiff agent diff --include-staged --include-unstaged` layers the extra content onto the unified diff, and `branchdiff agent file <path> --staged` (index) or `branchdiff agent file <path>` with no `--ref` (working tree) reads full context for a file that's only staged/unstaged, not yet committed. The staged layer is the index against `HEAD` (`git diff --cached`) everywhere — the file list, the per-file diff, and `agent diff` — and the unstaged layer is the index against the working tree (`git diff`) everywhere, so clicking a staged or unstaged file shows exactly the hunks the list implied, never a wider change set.
+
+This is deliberately **not** available to `branchdiff auto` or `review run` — automated PR review always stays committed-only, so comments stay anchored to stable content instead of a resolve pass's own in-progress edits.
 
 ### Remote comments are pulled first
 
@@ -1586,26 +1599,17 @@ The PR description shows in the sync dialog under the title, for both GitHub and
 
 ### Bitbucket
 
-**Setup — API Token or App Password**
-
-**Option A — Atlassian API Token** (recommended)
+**Setup — Atlassian API Token**
 
 1. Go to **[id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)** → Create API token with scopes
 2. Pick the Bitbucket app, and grant it **Read** + **Write** access to repositories and pull requests
 3. Set `BITBUCKET_USERNAME` to your **email address** — Atlassian tokens require email, not username
 
-**Option B — Bitbucket App Password**
-
-1. Go to **bitbucket.org/account/settings/app-passwords** → Create app password
-2. Enable scopes: **Repositories: Read** + **Pull requests: Read** + **Pull requests: Write**
-3. Set `BITBUCKET_USERNAME` to your **Bitbucket username** (the one shown in your profile URL, not your email)
-
-> **Important:** Using an App Password with an email (or an Atlassian token with a username) will cause a 401 error.
-> Repositories: Read is required for private repos — without it, the PR list API returns 401 even if Pull requests scopes are set.
+> **Important:** Repositories: Read is required for private repos — without it, the PR list API returns 401 even if Pull requests scopes are set.
 
 ```bash
 # Environment variables (restart branchdiff after setting)
-export BITBUCKET_USERNAME="your-username-or-email"
+export BITBUCKET_USERNAME="your-email@example.com"
 export BITBUCKET_API_TOKEN="your-token"
 
 # Or a config file instead
@@ -1960,7 +1964,7 @@ The dashboard shows:
 - **By platform** — GitHub vs Bitbucket split, when your sessions span both.
 - **Recent PRs** — a table per pull request: review pass count (every re-review of the same PR counts, not just its first), verdict, severity-tagged comment counts (must-fix / suggestion / nit / question), and resolved-thread fraction. Each PR number links to the PR on its forge (GitHub or Bitbucket) in a new tab. Comment bodies and PR descriptions are never included — counts only.
 - **Per-repo breakdown** — a table of reviews, comments, threads, and last-reviewed date for every repo (hidden when scoped to one repo), plus a compact summary per repo: passes (times reviewed), distinct PRs, approved, changes-requested, and suggestions (`Passes`/`PRs`/`A`/`CR`/`S`; the summary tooltip expands every code).
-- **Quick commands** — three collapsible sections (`branchdiff list`, `branchdiff auto list`, `branchdiff auto cron list`) that fetch live data on expand from dedicated endpoints (`/api/instances`, `/api/auto-sessions`, `/api/cron-schedules`), grouped by repo and refreshed on every expand — and let you act on any entry directly: **Kill** an instance, **Attach** (copies the log-tail command to your clipboard) or **Stop** a running auto session, and **Remove** a cron schedule (also stopping its live session, if one is running). Every button's tooltip names the exact CLI command it performs. A foreground (non-detached) auto session shows no buttons — it can only be stopped from the terminal it's running in.
+- **Quick commands** — three collapsible sections (`branchdiff list`, `branchdiff auto list`, `branchdiff auto cron list`) that fetch live data on expand from dedicated endpoints (`/api/instances`, `/api/auto-sessions`, `/api/cron-schedules`), grouped by repo, and let you act on any entry directly: **Kill** an instance, **Attach** (copies the log-tail command to your clipboard) or **Stop** a running auto session, and **Remove** a cron schedule (also stopping its live session, if one is running). Every collapsible section — these three plus **Configs** below — has a **Refresh** button beside its Copy button to reload on demand if a list has gone stale while it stayed open. A **refresh icon at the top of the dashboard** reloads the whole page at once — the usage-stats query behind every section together with whichever of these live sections you currently have expanded — and spins while it works, toasting success or naming any section that failed to refresh. Every action button's tooltip names the exact CLI command it performs. A foreground (non-detached) auto session shows no buttons — it can only be stopped from the terminal it's running in.
 - **Configs** — a fourth collapsible section, after Cron schedules: the same config-file resolution `branchdiff config` prints, browsable per launch directory. See [Config File](#config-file) below for the full precedence model and what this section shows.
 
 **My activity vs Whole PR.** A toggle at the top of the dashboard switches the author-scoped numbers — comments, threads, replies, verdict breakdown, severity counts, and the trends comments series — between **My activity** (the default) and **Whole PR**:
@@ -2096,10 +2100,12 @@ BRANCHDIFF_DEBUG=1 branchdiff origin/main origin/my-feature
 
 **Common fixes from debug output:**
 
-- **Bitbucket 401** — mismatch between token type and username field. App Password → use Bitbucket username. Atlassian API Token → use email address. Also ensure **Repositories: Read** scope is enabled (required for private repos).
+- **Bitbucket 401** — `BITBUCKET_USERNAME` must be your email address (Atlassian API tokens use email, not username). Also ensure **Repositories: Read** scope is enabled (required for private repos).
 - **Bitbucket resultCount: 0** — verify the branch name shown matches the PR's source branch exactly on Bitbucket, and that the PR's destination matches the branch you're comparing against (a branch with open PRs to more than one destination only matches the one branchdiff is actually comparing).
 - **repoSlug or workspace wrong** — check your git remote URL: `git remote get-url origin`.
 - **getBlobMap error** — the branch ref passed to branchdiff doesn't exist locally; run `git fetch` first.
+
+**`--debug` — full stack traces on a fatal error.** Separate from `BRANCHDIFF_DEBUG=1`: that env var streams the diagnostic detail in the table above while a command runs *normally*; `--debug` is a leading global flag that only matters when a command *fails*, printing the full stack trace under the one-line `Error:` message. Place it before the subcommand — `branchdiff --debug auto`, not `branchdiff auto --debug` — because it's a root-level option read before the subcommand dispatches. Whether or not `--debug` is set, every fatal prints a red `Error:` line and names the per-run log file under `~/.branchdiff/logs/` where that invocation's full output is kept; `--debug` just brings the stack trace into the terminal too.
 
 ---
 
@@ -2108,6 +2114,10 @@ BRANCHDIFF_DEBUG=1 branchdiff origin/main origin/my-feature
 #### "Not a git repository"
 
 Run from inside a git working tree.
+
+#### A fatal error with no detail, or just a non-zero exit
+
+Rerun with `--debug` placed before the command — `branchdiff --debug <command>` — for the full stack trace (see [Debug Mode](#debug-mode)). Every fatal also names the per-run log file under `~/.branchdiff/logs/` where the invocation's full output, including the trace, is kept.
 
 #### branchdiff can't see a remote that `git remote -v` clearly shows
 
@@ -2380,5 +2390,5 @@ Each feature links to the section that covers it:
 - [**Multiple instances**](#instance-management) — run several sessions simultaneously: different repos each on their own port, or different branch comparisons within the same repo
 - [**Close session from browser**](#close-session-from-the-browser) — stop the server and close the tab from any 3-dot menu, no terminal needed
 - [**UI state persistence**](#navigating-the-diff-view) — collapse state, viewed file markers, and filter preferences persist across port changes and machines via repo fingerprinting
-- [**Sidebar filtering**](#sidebar-filtering) — filter files by 9 states: Commented, Uncommented, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged
+- [**Sidebar filtering**](#sidebar-filtering) — filter files by 10 states: Commented, Uncommented, Resolved, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged
 - [**Working tree toggle**](#working-tree-changes) — switch between staged and unstaged changes from the toolbar
