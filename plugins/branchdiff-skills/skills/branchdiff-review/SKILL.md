@@ -212,6 +212,8 @@ Then read all relevant CLAUDE.md (or GEMINI.md, AGENTS.md) files — the root on
 
 No matter the size, **read and review every changed file**. Do not skip or spot-check.
 
+**Use subagents when your runtime supports them and the diff is large enough to benefit** (e.g. Claude Code's Task tool, or an equivalent parallel-task mechanism). Dispatch one subagent per independent file group to read and analyze — subagents only return findings as data, they never call `branchdiff agent comment`/`resolve`/`general-comment` themselves. You collect their findings and post everything yourself in Step 5, so comments stay in one consistent voice and the shared-operation gate (see Session isolation) isn't touched by more than one actor. Skip this for small/medium diffs, or if the runtime has no subagent mechanism — sequential review is the default and is fine.
+
 ### Step 4: Analyze the code
 
 For each changed file, read the **entire file** (not just the diff hunks) to understand full context. **Read the file's content at the reviewed ref, not from disk** — the working tree may be on a different branch:

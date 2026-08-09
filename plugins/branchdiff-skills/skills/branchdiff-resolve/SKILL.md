@@ -217,6 +217,8 @@ If there are no open threads, tell the user there's nothing to resolve.
 
 ### Step 2: Process each thread
 
+**Use subagents when your runtime supports them and there are enough independent threads to benefit** (e.g. Claude Code's Task tool, or an equivalent parallel-task mechanism) — one subagent per thread whose file doesn't overlap with another thread being worked in parallel. A subagent reads the file, makes the Edit, and reports back what it changed; it never calls `branchdiff agent resolve`/`dismiss`/`reply` itself — you make those calls after reviewing its report, so exactly one actor mutates thread state. Threads touching the same file, or fewer than a handful of threads total, are cheaper to just do sequentially yourself.
+
 For each open thread, check the `comments` array and `author.type` field (`"user"` or `"agent"`):
 
 a. **Skip** general comments (filePath `__general__`) — these are summaries, not actionable code changes.
