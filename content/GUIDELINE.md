@@ -1980,6 +1980,18 @@ branchdiff's verdict is approve or request-changes only, so the **My activity** 
 
 **Sharing:** **Copy summary** copies a markdown block (the same shape `--share` prints) to your clipboard; **Export PNG** downloads the dashboard as an image, matching your current theme.
 
+### Platform activity
+
+The **Platform activity** button opens a modal that pulls *your* cross-platform pull-request activity — across **both GitHub and Bitbucket** — over a date range you choose, preseeded from the dashboard's current window, into four dimensions: **PRs authored**, **PRs approved/reviewed**, **Commits pushed**, and **Comments/reviews given**.
+
+It's a query-builder, not an auto-load: you pick a date range, toggle which platforms and which dimensions you want, then click **Fetch**. Nothing runs until you do, so a quick glance at a single dimension costs only that one query. Each dimension carries a cost badge — **fast** (authored, approved: list searches), **medium** (commits), or **slow · per-PR walk** (comments, which has to fetch each PR's review history) — so you can drop the expensive one when all you need is a tally. The **fast** dimensions (authored, approved) come checked by default; the costlier **commits** and **comments** start unchecked, so the expensive ones are opt-in. While it runs, a spinner shows the two platforms fetching independently.
+
+**Platforms default to both.** GitHub and Bitbucket run independently: each is fetched on its own, so one can come back with results while the other reports a missing credential or rate-limit (shown inline under its section, never aborting the other). Deselect a platform you don't care about, or have no credential for, before fetching.
+
+**Scope is your tracked repos** — the repos you've run `branchdiff` in. The modal names how many that is, and to track another repo you simply run `branchdiff` in it; there's no separate registration step.
+
+Results open in a near-full-screen modal with a sticky filter bar that holds a **repo** filter and a free-text **Search** box, plus a **platform toggle** (**All** / **GitHub** / **Bitbucket**, All by default) — shown only when both platforms actually came back with data, since a single-platform report has nothing to toggle between — all client-side, no re-fetch. The whole report scrolls as one page (the modal is the single scroll context), with the header and filter bar staying pinned and a floating **↑** button to jump back to the top once you've scrolled down. Below the filter bar, an **Insights** card summarizes the report at a glance, tracking both the platform toggle and the dimensions you queried: at **All** it summarizes both platforms combined; switch to **GitHub** or **Bitbucket** and every figure re-derives for just that platform (both variants are computed up front, so switching never re-fetches), with the header naming which scope is active. Each figure only appears for a dimension you actually checked — the four activity counts (PRs authored, reviews given, comments, commits); how many of your reviews and comments landed on **other people's PRs** versus your own — the collaboration signal the raw dimensions mix together, counting a review or comment on someone else's PR regardless of who opened it; the review-verdict breakdown (approved / changes-requested / commented); commits split by category and grouped under their top ticket IDs; and your busiest day. An unchecked dimension's figure is simply absent rather than showing a misleading zero. It's the headline before the detail, and the combined (All) view is the same data the **Copy all** markdown leads with. A **By PR** rollup tops the results — one row per PR across both platforms that you authored **or** reviewed **or** commented on, showing whether you authored it, your review verdict, and how many comments you left; the platform toggle narrows it to one forge. Each row carries a 💬 button in the Comments column. For **Bitbucket** it fetches that PR's comments on demand and lists them inline — the automatic comment scan only covers PRs you authored or reviewed, so this is the intentional, per-PR way to pull comments for any tracked Bitbucket PR rather than widening that scan across every PR; for **GitHub** the comments are already complete in the report (the global events feed, walked across all its pages — GitHub caps it near 90 days and 300 events, so older comments may not surface), so the button just reveals them inline with no fetch. The count shows from the start on **GitHub** (the data is already in the report) and appears after the first 💬 click on **Bitbucket**; either way, once the count is known it always stays visible. The 💬 button only opens and closes the inline list — collapsing hides the comments, never the number — so a 💬 with no number beside it just means Bitbucket hasn't fetched that PR yet. Below it, per-platform collapsible sections render one table per dimension, every PR linking out to its forge. The **commits** table carries a **Ticket** column that pulls each branch's ticket ID out of its name (so `BSP-146/dev/v1/…` shows `BSP-146`), grouping work by ticket across branches. The **approved/reviewed** table carries a **Verdict** column — approved, changes-requested, or commented — on every row; on a changes-requested row it also shows **who approved it instead** (the other reviewers who approved) when that's available — Bitbucket has it from the PR's participants, and GitHub fetches it for the changes-requested set. Bitbucket counts every review you gave (approved, changes-requested, and comment alike). **Copy all** copies the whole report as markdown; each platform section has its own **Copy** for just that slice, both confirming with an in-button ✓. **Reconfigure** takes you back to the query form to change the range or dimensions.
+
 Reachable three ways: `branchdiff stats` (auto-opens the dashboard, reusing an already-running instance for the repo if one exists), the **3-dot menu** → **Stats**, or any of the `--no-open`/`--json`/`--share` flags for scripting and AI agents.
 
 ---
@@ -2165,6 +2177,18 @@ You ran it somewhere without a terminal to prompt in (a script, CI, a pipe). Add
 #### `branchdiff auto` skips a PR you expected it to review
 
 It only reviews PRs with *non-merge* commits since their last review, so merging main into your branch doesn't retrigger one. `--fresh` forces a clean review of the current state.
+
+#### `auto` can't start a PR's session
+
+`auto` checks each PR out into a review session before the AI reviewer runs, and that checkout can fail — a `git`/`gh` problem, not an AI one. The usual culprit is a stale worktree or `index.lock` left behind by an earlier interrupted run (a crash, a `kill`, or a `--worktree --detach` server that never retired). Clear it and retry:
+
+```bash
+branchdiff killall          # retire any leftover detached servers
+git worktree prune          # drop worktrees git no longer sees
+rm -rf .worktrees/pr-<n>    # only if a pr-<n> dir lingers after prune
+```
+
+The same step can fail for other checkout-time reasons — an unauthenticated `gh`, a rate limit, missing `gh`, or missing Bitbucket creds — each shown on the failure line with its one-line fix. See [When a PR's session fails to start](#when-a-prs-session-fails-to-start) for the full list, and run `branchdiff <pr-url>` directly in the repo to see the raw `git`/`gh` output for the failing checkout.
 
 #### "detected dubious ownership" when using `--worktree`
 
