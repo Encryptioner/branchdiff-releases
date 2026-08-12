@@ -49,7 +49,7 @@ npm install -g @encryptioner/branchdiff
 
 Tab-completion installs automatically — restart your terminal after install.
 
-Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn installs (not required for standalone binaries).
+Requires `git` on your PATH (any version, including older distro-default builds like Ubuntu 18.04/20.04's). Node.js 18+ is needed only for npm/pnpm/yarn installs (not required for standalone binaries). Runs on Linux, macOS, and Windows — `auto cron add`/`cron list`/`cron remove` are Unix-only (`cron`/`crond`-backed); everything else works identically on all three.
 
 > See the [**full installation guide**](https://encryptioner.github.io/branchdiff-releases/guideline.html) for platform-specific instructions (Homebrew, Scoop, pip, apt, standalone binaries).
 
@@ -59,6 +59,7 @@ Requires `git` on your PATH. Node.js 18+ is needed only for npm/pnpm/yarn instal
 
 | I want to… | Command |
 |---|---|
+| View all commands and flags | `branchdiff -h` |
 | See my uncommitted changes | `branchdiff` |
 | Compare with main | `branchdiff main` |
 | Compare two branches | `branchdiff main feat` |
@@ -600,18 +601,9 @@ When branchdiff detects an open PR, a GitHub button appears in the toolbar showi
 
 ## Prerequisites
 
-**Option A — Bitbucket App Password** (recommended)
-
-1. Go to [bitbucket.org/account/settings/app-passwords](https://bitbucket.org/account/settings/app-passwords) → **Create app password**
-2. Enable scopes: **Repositories: Read** + **Pull requests: Read** + **Pull requests: Write**
-3. Set `BITBUCKET_USERNAME` to your **Bitbucket username** (shown at bitbucket.org/account/settings/)
-
-**Option B — Atlassian API Token**
-
-1. Go to [id.atlassian.com](https://id.atlassian.com/manage-profile/security/api-tokens) → Security → API tokens → Create API token
-2. Set `BITBUCKET_USERNAME` to your **email address** (not Bitbucket username) — Atlassian tokens use email for auth
-
-> **Important:** App Password uses Bitbucket username; Atlassian API Token uses email. Mixing these causes 401.
+1. Go to [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens) → **Create API token with scopes**
+2. Pick the Bitbucket app, and grant it **Read** + **Write** access to repositories and pull requests
+3. Set `BITBUCKET_USERNAME` to your **email address** (not Bitbucket username) — Atlassian tokens use email for auth
 
 ---
 
@@ -619,14 +611,14 @@ Set credentials after creating the token:
 
 ```bash
 # Environment variables (restart branchdiff after setting)
-export BITBUCKET_USERNAME="your-username-or-email"
+export BITBUCKET_USERNAME="your-email@example.com"
 export BITBUCKET_API_TOKEN="your-token"
 ```
 
 ```bash
 # Config file (more convenient — no restart needed on next run)
 mkdir -p ~/.branchdiff
-echo '{"bitbucket":{"username":"your-username-or-email","apiToken":"your-token"}}' > ~/.branchdiff/credentials.json
+echo '{"bitbucket":{"username":"your-email@example.com","apiToken":"your-token"}}' > ~/.branchdiff/credentials.json
 chmod 600 ~/.branchdiff/credentials.json
 ```
 
