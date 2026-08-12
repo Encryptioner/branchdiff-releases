@@ -59,6 +59,52 @@ body { overflow-x: hidden; }
 .prose-content th { background: #f8fafc; font-weight: 600; }
 .prose-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
 
+/* Copy-link buttons on doc headings (guide / changelog). Hidden until the
+   heading is hovered on hover-capable devices; always faintly visible on
+   touch so it's discoverable. */
+.prose-content h2, .prose-content h3, .prose-content h4, .prose-content h5 { position: relative; }
+.copy-link-btn {
+  display: inline-flex; align-items: center;
+  position: relative;
+  margin-left: .4rem; padding: .15rem;
+  border: 0; background: transparent;
+  color: #94a3b8; border-radius: .3rem;
+  cursor: pointer; vertical-align: middle;
+  opacity: 0;
+  transition: color .15s, opacity .15s, background .15s;
+}
+.copy-link-btn .copy-link-icon { width: 1rem; height: 1rem; display: block; }
+.copy-link-btn:hover { color: #4338ca; background: #eef2ff; }
+.copy-link-btn:focus-visible { outline: 2px solid #4338ca; outline-offset: 2px; opacity: 1; }
+.copy-link-btn.copy-link-done { color: #16a34a; }
+
+/* Tooltip — also shown briefly on success ("Copied!") on every device */
+.copy-link-tip {
+  position: absolute; top: calc(100% + .35rem); left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #0f172a; color: #fff;
+  font-size: .7rem; font-weight: 500;
+  padding: .2rem .45rem; border-radius: .3rem;
+  pointer-events: none; opacity: 0;
+  transition: opacity .12s; z-index: 20;
+}
+.copy-link-btn:hover .copy-link-tip,
+.copy-link-btn:focus-visible .copy-link-tip,
+.copy-link-btn.copy-link-done .copy-link-tip { opacity: 1; }
+
+/* Touch / no-hover: keep the button discoverable */
+@media (hover: none) {
+  .copy-link-btn { opacity: .5; }
+}
+/* Hover-capable: reveal on heading hover */
+@media (hover: hover) {
+  .prose-content h2:hover .copy-link-btn,
+  .prose-content h3:hover .copy-link-btn,
+  .prose-content h4:hover .copy-link-btn,
+  .prose-content h5:hover .copy-link-btn { opacity: 1; }
+}
+
 @media (max-width: 640px) {
   .prose-content h1 { font-size: 1.5rem; }
   .prose-content h2 { font-size: 1.25rem; }

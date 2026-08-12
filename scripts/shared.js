@@ -545,3 +545,71 @@ function buildTOC(contentEl, tocEl, md) {
 
   render();
 }
+
+// ── Copy-link buttons on doc headings (guide / changelog) ─────────────────────
+// Each h2–h5 gets a small link-icon button that copies the section's URL.
+// Reads the id buildTOC already stamped (canonical — matches the TOC scroll
+// target, deduped for repeat changelog headings); falls back to slugify only if
+// a heading has none (e.g. buildTOC bailed on very short content). Uses a
+// <button>, not <a href="#id"> — buildTOC's delegated click handler would
+// intercept the latter into a scroll instead of a copy.
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // ponytail: execCommand fallback for non-secure contexts (file://, old browsers)
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch { return false; }
+  }
+}
+
+const _LINK_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>';
+const _CHECK_ICON = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>';
+
+function addCopyLinkButtons(contentEl) {
+  const headings = contentEl.querySelectorAll('h2, h3, h4, h5');
+  headings.forEach(h => {
+    if (h.querySelector('.copy-link-btn')) return; // idempotent on re-render
+    if (!h.id) h.id = slugify(h.textContent);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-link-btn';
+    btn.setAttribute('aria-label', 'Copy link to section');
+    btn.innerHTML =
+      '<span class="copy-link-tip" aria-hidden="true">Copy link</span>' +
+      '<svg class="copy-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' + _LINK_ICON + '</svg>';
+
+    btn.addEventListener('click', async () => {
+      const url = new URL(location.href);
+      url.hash = h.id;
+      const ok = await copyText(url.toString());
+      if (!ok) return;
+      const tip = btn.querySelector('.copy-link-tip');
+      const icon = btn.querySelector('.copy-link-icon');
+      btn.classList.add('copy-link-done');
+      btn.setAttribute('aria-label', 'Copied!');
+      if (tip) tip.textContent = 'Copied!';
+      if (icon) icon.innerHTML = _CHECK_ICON;
+      trackEvent({ name: 'copy_section_link', params: { section: h.id } });
+      setTimeout(() => {
+        btn.classList.remove('copy-link-done');
+        btn.setAttribute('aria-label', 'Copy link to section');
+        if (tip) tip.textContent = 'Copy link';
+        if (icon) icon.innerHTML = _LINK_ICON;
+      }, 1600);
+    });
+    h.appendChild(btn);
+  });
+}

@@ -50,6 +50,7 @@
           CONTENT_EL.innerHTML = marked.parse(md);
           Prism.highlightAll();
           buildTOC(CONTENT_EL, TOC_EL, md);
+          addCopyLinkButtons(CONTENT_EL);
           trackEvent({ name: 'content_loaded', params: { page: 'changelog' } });
           return;
         } catch { /* try next source */ }

@@ -17,6 +17,7 @@
  *   | { name: 'resource_card_clicked', params: { title: string, destination: string } }
  *   | { name: 'section_scrolled',      params: { section: string } }
  *   | { name: 'content_loaded',        params: { page: string } }
+ *   | { name: 'copy_section_link',     params: { section: string } }
  *   | { name: 'error_occurred',        params: { category: string, action: string, error: string } }
  * } AnalyticsEvent
  */

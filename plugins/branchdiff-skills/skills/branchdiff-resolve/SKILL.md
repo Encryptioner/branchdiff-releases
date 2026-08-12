@@ -88,7 +88,7 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 
 ## Prerequisites
 
-1. Check that `branchdiff` is available: run `which branchdiff`. If not found, install it with `npm install -g @encryptioner/branchdiff`.
+1. Check that `branchdiff` is available: run `which branchdiff`. If not found and `PATH` was passed a hint (an automated run appends one below), `export PATH` with it and retry `which branchdiff` before installing anything. Still not found? Install it with `npm install -g @encryptioner/branchdiff`. If install also fails (no network/permission in this sandbox), STOP — report the exact error and do not review the diff manually outside branchdiff. Same rule if a `branchdiff agent` command that worked a moment ago suddenly fails mid-review: STOP the whole pass rather than switching to a manual/mixed reading of the checkout. A manual review posts nothing branchdiff can track or dedupe, and reposts as a duplicate on the next automated pass.
 
 2. **Resolve session from argument:**
 
