@@ -434,3 +434,59 @@ body { overflow-x: hidden; }
 @media (max-width: 1023px) {
   html:has(.doc-layout) { scroll-padding-top: 6.5rem; }
 }
+
+/* ── Parts quick-jump strip (guideline) ──
+   Horizontal tab row pinned under the site header; one tab per "Part N"
+   heading. Only visible when <html> has .has-parts-nav (≥2 parts — set by
+   buildTOC). The strip is sticky, so when present we push the TOC sidebar
+   and the scroll-anchor offset down past it (two sticky siblings at the
+   same top would overlap; sticky elements don't push each other). */
+.parts-nav {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 20;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+.parts-nav[hidden] { display: none; }
+.parts-nav-inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.parts-nav-inner::-webkit-scrollbar { display: none; }
+.parts-nav-tab {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background .12s, color .12s;
+}
+.parts-nav-tab:hover { background: #e2e8f0; color: #1e293b; }
+.parts-nav-tab:focus-visible { outline: 2px solid #4338ca; outline-offset: 2px; }
+.parts-nav-tab-active,
+.parts-nav-tab-active:hover { background: #4338ca; color: #fff; }
+
+/* Strip present → lower the sticky TOC sidebar + scroll-anchor offset past it. */
+html.has-parts-nav { scroll-padding-top: 6.5rem; }
+.has-parts-nav #toc-sidebar { top: 6rem; }
+@media (min-width: 1024px) {
+  .has-parts-nav #toc-sidebar,
+  .has-parts-nav .toc-panel { max-height: calc(100vh - 6rem); }
+}
+@media (max-width: 1023px) {
+  /* header(56) + parts strip(~40) + toc trigger bar(~42) */
+  html.has-parts-nav { scroll-padding-top: 8.75rem; }
+}

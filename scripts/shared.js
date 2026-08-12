@@ -216,6 +216,12 @@ function slugify(text) {
     .replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
+// "Part 2 · View & explore" → "View & explore" (subtitle after the middot).
+// No middot → returns the text unchanged.
+function partLabel(text) {
+  return (text || '').split('·').pop().trim() || (text || '');
+}
+
 // ── TOC tree helpers ─────────────────────────────────────────────────────────
 // Ported from ../branchdiff/packages/ui/src/lib/toc.ts. Framework-free string
 // manipulation — verbatim except scanHeadings skips fenced code blocks (the
@@ -306,6 +312,7 @@ function containsId(node, id) {
 function buildTOC(contentEl, tocEl, md) {
   const tree = buildTocTree(md);
   const flat = flattenNodes(tree);
+  const flatIndex = new Map(flat.map((n, i) => [n.id, i])); // id → document-order index
   const domHeadings = Array.from(contentEl.querySelectorAll('h2,h3,h4,h5'));
 
   // Safety net: bail (hide TOC) if the markdown tree and rendered DOM disagree.
@@ -318,6 +325,11 @@ function buildTOC(contentEl, tocEl, md) {
 
   const idMap = new Map(flat.map(n => [n.id, n]));
   const isDesktop = () => window.innerWidth >= 1024;
+
+  // Parts quick-jump strip (#parts-nav). Only top-level "Part N" roots count.
+  const partsNavEl = document.getElementById('parts-nav');
+  const parts = tree.filter(n => n.isPart);
+  const partTabEls = new Map(); // partId → tab button (populated when rendered)
 
   let search = '';
   let activeId = null;
@@ -500,6 +512,8 @@ function buildTOC(contentEl, tocEl, md) {
   // document order (many short h4s can intersect at once). Highlight the active
   // node plus all its ancestors.
   function updateActive() {
+    // Parts strip tracks scroll on mobile too — desktop-only TOC highlight is below.
+    updateActivePart();
     if (!isDesktop()) return;
     for (const el of elById.values()) el.classList.remove('toc-active');
     if (!activeId) return;
@@ -507,8 +521,20 @@ function buildTOC(contentEl, tocEl, md) {
       const node = idMap.get(id);
       if (node && (node.id === activeId || containsId(node, activeId))) el.classList.add('toc-active');
     }
+    // Keep the active row visible inside the sidebar tree. Avoid scrollIntoView
+    // here — a second scrollIntoView cancels any in-flight smooth-scroll to a
+    // heading (sidebar, parts-strip, and in-content #anchor links all route
+    // through scrollToId), so far targets would abort partway. Move only the
+    // tree's own scrollTop.
     const first = treeEl.querySelector('.toc-active');
-    if (first) first.scrollIntoView({ block: 'nearest' });
+    if (first) {
+      const rowTop = first.getBoundingClientRect().top - treeEl.getBoundingClientRect().top;
+      if (rowTop < 8) treeEl.scrollTop += rowTop - 8;
+      else {
+        const below = rowTop + first.offsetHeight - treeEl.clientHeight;
+        if (below > 8) treeEl.scrollTop += below + 8;
+      }
+    }
   }
 
   const ids = flat.map(n => n.id);
@@ -541,6 +567,64 @@ function buildTOC(contentEl, tocEl, md) {
   if (location.hash) {
     const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
     if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+
+  // ── Parts quick-jump strip ──
+  // One tab per top-level "Part N" heading, rendered into #parts-nav when the
+  // page hosts it and ≥2 parts exist (guideline only — changelog's version
+  // headings aren't "Part N", so the strip stays hidden there). Reuses this
+  // closure's scrollToId + scroll-spy. updateActivePart() (below) is hoisted,
+  // so updateActive can call it even though this block runs first.
+  if (partsNavEl && parts.length >= 2) {
+    partsNavEl.hidden = false;
+    document.documentElement.classList.add('has-parts-nav');
+    partsNavEl.innerHTML = '';
+    const inner = document.createElement('div');
+    inner.className = 'parts-nav-inner';
+    parts.forEach(p => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'parts-nav-tab';
+      tab.textContent = partLabel(p.text);
+      tab.setAttribute('aria-label', p.text);
+      tab.addEventListener('click', () => scrollToId(p.id));
+      inner.appendChild(tab);
+      partTabEls.set(p.id, tab);
+    });
+    partsNavEl.appendChild(inner);
+  }
+
+  // Highlight the tab whose Part owns the active heading, and keep it in view.
+  // Ownership is positional, not tree-containment: a Part owns everything from
+  // its heading up to the next Part. The guide has non-Part top-level sections
+  // between Parts (e.g. "## Code tours" between Part 2 and Part 3) — those are
+  // sibling roots in the TOC tree, so containsId() can't assign them, but they
+  // belong to the preceding Part's run (matches the reference app's breadcrumb).
+  function updateActivePart() {
+    if (!partsNavEl || partTabEls.size === 0) return;
+    const activeIdx = activeId ? flatIndex.get(activeId) : -1;
+    let activePartId = null;
+    if (activeIdx >= 0) {
+      for (const p of parts) {
+        if (flatIndex.get(p.id) <= activeIdx) activePartId = p.id; // last Part at/before active
+      }
+    }
+    for (const [pid, el] of partTabEls) {
+      const on = pid === activePartId;
+      el.classList.toggle('parts-nav-tab-active', on);
+      if (on) el.setAttribute('aria-current', 'true');
+      else el.removeAttribute('aria-current');
+    }
+    // Keep the active chip in horizontal view WITHOUT scrollIntoView — a second
+    // scrollIntoView cancels the user's in-flight smooth-scroll to the Part
+    // heading (the observer fires mid-scroll), so adjust scrollLeft directly.
+    const activeTab = activePartId && partTabEls.get(activePartId);
+    if (activeTab) {
+      const inner = activeTab.parentElement; // .parts-nav-inner
+      const left = activeTab.offsetLeft, right = left + activeTab.offsetWidth;
+      if (left < inner.scrollLeft) inner.scrollLeft = left - 8;
+      else if (right > inner.scrollLeft + inner.clientWidth) inner.scrollLeft = right - inner.clientWidth + 8;
+    }
   }
 
   render();
