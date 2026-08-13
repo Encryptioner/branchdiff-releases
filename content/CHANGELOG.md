@@ -1,6 +1,25 @@
+<!-- AUTO-GENERATED - DO NOT EDIT IN THIS REPO. Source of truth: private repo. Edits here will be overwritten on the next release. -->
+
 # Changelog
 
 All notable changes to `branchdiff` are documented here.
+
+---
+
+## [2.1.1] -2026-08-12
+
+### Added
+
+- **Bulk stop/kill/remove across Instances, Auto sessions, and Cron schedules — CLI and Stats dashboard** — `branchdiff auto stopall` and `branchdiff auto cron removeall` join the existing `killall` as standalone bulk commands, and the Stats dashboard's three live sections (Running instances, Auto sessions, Cron schedules) each gain a matching page-level **Kill all** / **Stop all** / **Remove all** button, shown once the section is expanded with at least one entry and using the same click-to-arm, click-again-to-confirm pattern as every per-row action. A failure on one entry never aborts the rest of a sweep — each is attempted independently, and the result names anything that failed to stop or remove alongside a summary count of what succeeded.
+- **The Stats dashboard marks which running instance is serving the page you're viewing** — the Instances section badges the row whose port matches the one you're on as **this session**, purely informational: **Kill** (single-row or **Kill all**) still works on it exactly like any other row, so forcing a restart of your own server stays one click away.
+- **An `auto` session found only through its live per-repo lock — no matching registry entry — now shows up everywhere a registered session does** — `auto list`, the Stats dashboard's Auto sessions section, and every stop path (single, `stopall`, and cron-schedule removal by `cronId`) resolve "what's live" through one reconciled view (the session registry unioned with every live per-repo lock), flagging such a session **unregistered** so it's distinguishable at a glance while remaining stoppable exactly like any other row. `auto cron remove`/`removeall` reach a schedule's live session the same way, even when that session's own registry entry never landed.
+- **`auto`'s session registry writes atomically** — a crash or partial write mid-write can no longer leave `auto-registry.json` silently recovered to an empty list. Every `--detach` or cron-fired `auto` startup also logs the exact `~/.branchdiff` paths it wrote (or failed to write) its lock/registry entries to, in its own session log — a diagnostic for tracking down a session that never shows up anywhere.
+
+### Fixed
+
+- **A worktree-conflict skip message no longer names `git worktree remove` as the fix for a conflict held by the main checkout** — when a PR's branch is already checked out somewhere branchdiff won't touch (your own linked worktree, or the main checkout), the message now points you at `git worktree list` to see which one it is before naming the right escape hatch: switch that branch off there, or `git worktree remove <path>` only when it's actually a linked worktree — the command errors on the main checkout, so it's no longer presented as a one-size-fits-all fix regardless of which case applies.
+- **The classic (non-`--skill`) `auto`/`review run` review and resolve passes now carry the same AI-reviewer PATH self-heal hint skill mode already had** — the literal `export PATH=...` prompt text that lets the AI recover `branchdiff`'s location when its own tool sandbox strips inherited environment variables was only ever appended to skill/resolve prompts; the classic diff+JSON pipe's instructions (which tell the AI to run the exact same `branchdiff agent comment`/`general-comment`/`resolve`/`dismiss` commands) carried no such hint, so on a machine or sandbox where the AI's nested shell dropped `PATH`, the reviewer could report `branchdiff` unreachable with nothing posted — and, with nothing new to publish, the verdict push never reached the PR either. Both classic-mode instruction blocks (review and resolve) now carry the identical hint, closing the one mode this class of fix (v2.1.0) missed.
+- **A named, specific failure line when the AI reviewer can reach `--exec`/`--tool` but not `branchdiff` itself** — this exact failure used to fall through to either the generic "reviewer command not found" reason (whose fix, "check `--exec`/`--tool` and PATH", points at the wrong binary — the AI ran fine; `branchdiff` is the one it couldn't resolve) or, when the AI's wording didn't match, an unhelpful raw-output dump with no named reason at all. The per-PR failure line and `--notify` toast now name this case on its own and point at the actual fix: retry once (often a one-off sandbox glitch) or install `branchdiff` globally so it's on the machine's default PATH regardless of what the AI's own sandbox strips.
 
 ---
 
