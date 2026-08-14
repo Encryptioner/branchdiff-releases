@@ -59,6 +59,48 @@ body { overflow-x: hidden; }
 .prose-content th { background: #f8fafc; font-weight: 600; }
 .prose-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
 
+/* Collapsible "Technical breakdown" callouts (<details> in the synced guide).
+   Native <details> is collapsed-by-default and toggleable; this only styles the
+   disclosure so it reads as an intentional callout, not raw browser chrome. */
+.prose-content details {
+  margin: 1.25rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: .5rem;
+  background: #f8fafc;
+  padding: 0 .9rem .75rem;          /* body horizontal inset; summary cancels it */
+}
+.prose-content details > summary {
+  list-style: none;                 /* kill native disclosure triangle (FF) */
+  cursor: pointer;
+  margin: 0 -.9rem;                 /* stretch the summary bar to the card edges */
+  padding: .6rem .9rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #4338ca;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  border-radius: .5rem .5rem 0 0;   /* match card top corners when collapsed */
+  transition: background .12s, border-color .12s;
+}
+.prose-content details > summary::-webkit-details-marker { display: none; } /* Safari/Chrome triangle */
+.prose-content details > summary:hover { background: #f1f5f9; }
+.prose-content details > summary::before {
+  content: '';
+  flex-shrink: 0;
+  width: .5rem; height: .5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);        /* points right (▶) when collapsed */
+  transition: transform .15s ease;
+  margin-top: -.15rem;              /* optical baseline align */
+}
+.prose-content details[open] > summary { border-bottom-color: #e2e8f0; background: #fff; }
+.prose-content details[open] > summary::before { transform: rotate(45deg); } /* points down (▼) when open */
+.prose-content details[open] > summary + * { margin-top: .75rem; }
+
 /* Copy-link buttons on doc headings (guide / changelog). Hidden until the
    heading is hovered on hover-capable devices; always faintly visible on
    touch so it's discoverable. */
@@ -125,7 +167,7 @@ body { overflow-x: hidden; }
 .doc-layout {
   display: flex;
   flex-direction: column;
-  max-width: 80rem;
+  max-width: 72rem;
   margin: 0 auto;
 }
 .doc-layout .prose-content {
@@ -383,6 +425,10 @@ body { overflow-x: hidden; }
     align-items: flex-start;
   }
 
+  /* Cap the reading column so wide screens get breathing room on both sides
+     instead of text stretching edge-to-edge of the slot beside the TOC. */
+  .doc-layout .prose-content { max-width: 52rem; margin: 0 auto; }
+
   #toc-sidebar {
     width: 15rem;
     flex-shrink: 0;
@@ -450,7 +496,7 @@ body { overflow-x: hidden; }
 }
 .parts-nav[hidden] { display: none; }
 .parts-nav-inner {
-  max-width: 80rem;
+  max-width: 72rem;
   margin: 0 auto;
   display: flex;
   align-items: center;
