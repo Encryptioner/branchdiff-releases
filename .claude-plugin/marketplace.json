@@ -8,14 +8,14 @@
   },
   "metadata": {
     "description": "Claude Code skills for branchdiff — review diffs and resolve review comments from the terminal.",
-    "version": "2.1.0"
+    "version": "2.1.2"
   },
   "plugins": [
     {
       "name": "branchdiff-skills",
       "source": "./plugins/branchdiff-skills",
       "description": "Two skills: /branchdiff-review (post inline review comments on a diff) and /branchdiff-resolve (apply fixes for open review threads).",
-      "version": "2.1.0",
+      "version": "2.1.2",
       "category": "code-review",
       "keywords": [
         "branchdiff",

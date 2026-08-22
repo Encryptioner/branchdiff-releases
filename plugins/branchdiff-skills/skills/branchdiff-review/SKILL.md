@@ -285,11 +285,12 @@ If a pattern repeats across files, comment on the first occurrence and mention t
 
 ### Step 5: Post comments
 
-**Order by severity.** Post all `[must-fix]` first, then `[suggestion]`, then `[question]`.
+**Order by severity.** Post all `[must-fix]` first, then `[suggestion]`, then `[nit]`, then `[question]`.
 
 **Severity tags** (prefix `--body` with exactly one):
 - `[must-fix]` — Bugs, security issues, data loss risks. Code that will break.
 - `[suggestion]` — Concrete improvements with clear reasoning. Includes missing tests and incomplete changes.
+- `[nit]` — Style, naming, cosmetic.
 - `[question]` — Something unclear needing clarification.
 
 **File paths and commit hashes are auto-appended.** branchdiff adds the `file:line` the finding sits on and the review-time commit to every comment automatically — only include them in `--body` yourself if the user explicitly asks. An AI-guessed commit hash is almost always wrong, so default `--body` to `[severity] <the feedback>` only.
@@ -389,10 +390,10 @@ Extract the URL line (e.g. `http://localhost:5391`) for the current repo and inc
 
 **Completion toast** (when notifications are active — fire it once you have the counts): reuse the same session URL as the start toast (you already know it — no need to call `branchdiff list` again just for this).
 ```bash
-branchdiff agent notify "branchdiff: review done" "Review complete — X must-fix, Y suggestions, Z questions" --open-url <session-url>   # e.g. http://localhost:5391
+branchdiff agent notify "branchdiff: review done" "Review complete — X must-fix, Y suggestions, Z nits, W questions" --open-url <session-url>   # e.g. http://localhost:5391
 ```
 
-> Review complete — X must-fix, Y suggestions, Z questions.
+> Review complete — X must-fix, Y suggestions, Z nits, W questions.
 >
 > Session: <session-url>
 >
