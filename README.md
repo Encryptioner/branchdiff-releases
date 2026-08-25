@@ -294,7 +294,7 @@ Then use slash commands — no prompt needed:
 ```
 You are reviewing code using branchdiff agent commands (not any other tool).
 Run `branchdiff review guide` first to load the full reference, then:
-1. Run `branchdiff agent diff` to read the full diff.
+1. Run `branchdiff agent refresh` to pull latest PR comments, then `branchdiff agent diff` to read the full diff.
 2. Post inline comments: branchdiff agent comment --file <path> --line <n> --body "[tag] message"
    Tags: [must-fix] bugs/security · [suggestion] improvements · [nit] style · [question] unclear
 3. For multi-line: add --end-line <n>. Diff-wide: branchdiff agent general-comment --body "..."
@@ -312,7 +312,7 @@ branchdiff review context --refs "main feature" | your-ai-tool
 You are resolving open review comments using branchdiff agent commands.
 Run `branchdiff review guide` first to load the full reference, then:
 1. Run `branchdiff agent list --status open --json` to get open threads.
-2. For each thread: fix the code, then:
+2. For each thread (skip general comments and threads awaiting a user reply): locate the code by what the comment describes, not its line number, then fix it:
    branchdiff agent resolve <id> --summary "what you did"
    branchdiff agent dismiss <id> --reason "why not fixing"
    branchdiff agent reply <id> --body "answer"  (for questions)
@@ -340,7 +340,9 @@ branchdiff agent guide     # complete AI agent reference (all commands)
 #### Agent command reference
 
 ```bash
+branchdiff agent refresh [--allow-stale]                      # pull latest PR comments; refuses if local branch is behind PR head
 branchdiff agent diff                                         # read the full diff
+branchdiff agent file <path> --ref <ref>                      # read a file's full content AT a ref, not the working tree
 branchdiff agent list --json                                  # all threads
 branchdiff agent list --status open --json                    # only open threads
 branchdiff agent comment \
@@ -355,8 +357,9 @@ branchdiff agent resolve <thread-id> --summary "Fixed"       # mark resolved
 branchdiff agent dismiss <thread-id> --reason "By design"    # mark won't fix
 branchdiff agent reply <thread-id> --body "Can you clarify?" # reply to thread
 branchdiff agent delete-thread <thread-id>                   # delete thread + comments
-branchdiff agent clear-threads                                # delete all threads
-branchdiff agent edit-comment <id> --body "updated"          # edit a comment
+branchdiff agent clear-threads                                # delete all threads (prompts to confirm)
+branchdiff agent clear-threads --yes                          # skip confirmation
+branchdiff agent edit-comment <id> --body "updated text"     # edit a comment
 branchdiff agent delete-comment <id>                          # delete a single comment
 ```
 
@@ -912,6 +915,7 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 <summary><b>Full feature list</b></summary>
 
 - Syntax highlighting (150+ languages), split and unified views
+- **Binary file handling** — type badges (Image, PDF, Font, Archive, ...); recognized images render inline, old vs new side by side at the compared refs
 - Inline comments with severity tags (`[must-fix]`, `[suggestion]`, `[nit]`, `[question]`)
 - **Markdown preview** in comment editor — toggle between Write and Preview before posting
 - **Persistent review sessions** — comments survive new commits when comparing named branches

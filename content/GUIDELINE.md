@@ -249,6 +249,14 @@ The theme applies to the entire UI: toolbar, diff view, comments, file browser, 
 
 Switch via the toolbar toggle or keyboard: press `s` for split, `u` for unified.
 
+### Binary files
+
+A binary file's badge names its type — Image, PDF, Font, Archive, Video, Audio — so you can tell what changed without opening it elsewhere.
+
+Recognized image types (PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, TIFF, HEIC) render inline: the old and new versions appear side by side, right where the diff would normally show hunks. An added or deleted file shows only the side that exists. Other binary types show a placeholder — no preview, just the type label. Full file view isn't available for binary files.
+
+A text file that git calls binary only because it contains a stray NUL byte is diffed as text instead, with each stray NUL shown as a visible `\0` — real binaries and NUL-structured encodings (like UTF-16) keep the binary treatment.
+
 ### Full file view
 
 When comparing branches, a **Full** option appears in the view mode toggle. This renders the complete file content side-by-side — useful when you need to see the full picture, not just changed lines.
@@ -306,6 +314,15 @@ branchdiff origin/main feat     # remote + local
 
 Anything `git rev-parse --verify` accepts works.
 
+**Order matters: base first, reviewed branch second** (`branchdiff main feature`, not `branchdiff feature main`). Naming the reviewed branch first is corrected automatically — with a printed note — so the diff is never silently empty, but the right order avoids that hint in the first place.
+
+<details>
+<summary>Technical breakdown</summary>
+
+A two-branch comparison shows changes unique to the second branch since it diverged from the first — so if the second-named branch is actually the older/base one, there's nothing unique to show and the diff renders empty, indistinguishable from "no changes." Naming the reviewed branch first is the natural gesture for a branch checked out in a linked worktree, since git won't let you check it out a second time where you're already standing — branchdiff detects this exact inversion (the first-named branch is strictly ahead of the second) and swaps the pair, printing a line naming the correction. The CLI, `/api/compare`, and a URL you build by hand (`?b1=…&b2=…`) all apply the same fix, so the file list and every per-file diff always agree on direction. Comparing branches that have genuinely diverged (each has commits the other doesn't) is never swapped — an empty result for identical branches is left as the truthful answer.
+
+</details>
+
 #### Branches are brought up to date first
 
 Comparing `development..feature` compares your **local** copies of those branches. A destination branch you haven't checked out in weeks would otherwise be compared as it looked back then, and every review built on that diff would describe an old revision.
@@ -317,6 +334,7 @@ So before opening a comparison, branchdiff fetches and fast-forwards the branche
 - **Diverged** (you have local commits the remote doesn't) → left exactly as it is, with a warning. Your commits are never discarded.
 - **Currently checked out with uncommitted changes** → left alone, with a warning. Nothing touches your working files.
 - **Currently checked out and clean** → fast-forwarded like `git pull --ff-only`, reported prominently since it moves files under you.
+- **Checked out in a linked worktree** (not your current checkout) → skipped with a plain-dim reason, the local ref used as-is — never git's own raw "already checked out at …" error.
 - **No remote, a tag, a SHA, `HEAD~3`, or a working-tree ref** → nothing to sync, skipped silently.
 
 Pass `--no-sync` to skip the step — useful offline, or when you deliberately want to compare the local revision:
@@ -918,16 +936,17 @@ Run `branchdiff review guide` first to load the full reference, then:
    branchdiff agent refresh          # pull latest PR comments; refuses if the local branch is behind the PR head (--allow-stale to override)
    branchdiff agent diff
 
-3. For each changed file, read the ENTIRE file (not just diff hunks) for full context.
+3. Read root CLAUDE.md/AGENTS.md/GEMINI.md (+ any in touched directories) — violations are findings, quote the exact rule. Then for each changed file, read the ENTIRE file at the reviewed ref, not the working tree (which may be on a different branch):
+   branchdiff agent file <path> --ref <ref>
    Analyze: data flow (null/undefined?), state/lifecycle (resource cleanup?), contracts (callers updated?), boundaries (input validation?), edge cases.
 
 4. Validate each finding before commenting — re-read surrounding code, grep for imports, read actual call sites.
    Flag: logic errors, security issues, race conditions, broken contracts, missing tests.
    Skip: style, linter-catchable issues, pre-existing problems in unchanged code.
 
-5. Post comments (order: [must-fix] first, then [suggestion], then [question]):
+5. Post comments (order: [must-fix] first, then [suggestion], then [nit], then [question]):
    branchdiff agent comment --file <path> --line <n> --body "[tag] message"
-   Tags: [must-fix] bugs/security/data-loss · [suggestion] improvements/missing tests · [question] unclear
+   Tags: [must-fix] bugs/security/data-loss · [suggestion] improvements/missing tests · [nit] style/naming · [question] unclear
    For multi-line: add --end-line <n>
 
    Tone: lead with the problem, not a judgment. "This returns undefined when X is empty" not "this is wrong".
@@ -953,7 +972,7 @@ Run `branchdiff review guide` first to load the full reference, then:
    - Skip threads where the last comment is an agent asking a question and the user hasn't responded.
    - Read the comment body to understand the requested change. Interpret intent:
      code suggestion → make the change; documentation suggestion → update docs; unclear → ask for clarification.
-   - Read the ENTIRE source file around the commented lines for full context, then make the fix.
+   - Locate the code by what the comment describes, not by its line number (only accurate on b2 at review time) — read the ENTIRE source file for full context, then make the fix.
    - Resolve: branchdiff agent resolve <id> --summary "Fixed: <what you did>"
    - Or dismiss if the fix shouldn't apply: branchdiff agent dismiss <id> --reason "<why>"
 
@@ -1092,7 +1111,9 @@ Start: branchdiff agent diff
 Every command below also takes `--session <id>` / `--port <n>`. With one session open you can leave them off; with several, add one or branchdiff will ask which you meant (see [One AI, one session](#one-ai-one-session)).
 
 ```bash
+branchdiff agent refresh [--allow-stale]                      # pull latest PR comments; refuses if local branch is behind PR head
 branchdiff agent diff                                         # read the full diff
+branchdiff agent file <path> --ref <ref>                      # read a file's full content AT a ref, not the working tree
 branchdiff agent list --json                                  # all threads
 branchdiff agent list --status open --json                    # only open threads
 branchdiff agent comment \
@@ -1566,6 +1587,33 @@ This registers as a plain `manual` session (no `cronId`) sharing each repo's loc
 
 </details>
 
+#### `--stop-at` — give a run a deadline
+
+A `--watch` run otherwise keeps going until you Ctrl-C it, and a cron-scheduled one until you remove its schedule by hand. `--stop-at <deadline>` gives either one a time to stop on its own — an ISO 8601 datetime or an epoch-millisecond number:
+
+```bash
+branchdiff auto --watch 10 --tool claude --review --stop-at 2026-08-25T09:00:00Z
+branchdiff auto cron add --start "0 9 * * 1-5" --end "0 20 * * 1-5" \
+  --repo-paths "~/work" --tool claude --review --stop-at 2026-09-01T00:00:00Z
+branchdiff prune-worktrees cron add --schedule "*/30 * * * *" \
+  --repo-paths ~/work --stop-at 2026-08-29T09:00:00Z
+```
+
+It stops at the next cycle boundary once the deadline passes — never mid-review — and logs the reason. A cron-fired run additionally removes its own entire schedule once stopped, including a fire that lands after its own deadline (no review pass that time), so a schedule with a deadline never keeps firing past it. A one-shot run (no `--watch`) just validates the flag. `auto list`, `--json`, `/api/auto-sessions`, and the Stats page's Auto sessions section all show it as "stops at `<time>` (in `<duration>`)", switching to "stopping…" once a still-running session is past due; a cron schedule that carries `--stop-at` shows the same deadline next to its next-fire time, both in `auto cron list` and the Stats page's Cron schedules panel.
+
+`prune-worktrees` takes the same flag with the same schedule-lifetime meaning: a fire that lands past the deadline removes its own schedule and prunes nothing, a manual `prune-worktrees --stop-at` run just validates the flag, and `prune-worktrees cron list` plus the same Stats panel show the deadline. It never governs what a run removes — only how long its schedule lives.
+
+<details>
+<summary>Technical breakdown</summary>
+
+A deadline already in the past is a startup error for a manually-started run (exit 1, naming the parsed time) — a run that would never do anything is refused up front rather than silently no-op. A cron-fired run is the one exception: firing after its own deadline (the window's start job caught up with, or landed after, an already-passed deadline) is not an error — it performs the same clean stop-and-remove-schedule instead of a review pass, so a catch-up fire can never loop forever. Same contract for `prune-worktrees`: a scheduled fire past its deadline removes the schedule and exits 0 without a prune pass.
+
+The fired process knows which schedule is its via an env var the generated script exports (`BRANCHDIFF_AUTO_CRON_ID` / `BRANCHDIFF_PRUNE_CRON_ID`) — the script is the single carrier that works identically under launchd and crontab, so removal stays scoped to the firing schedule's own namespace (a prune deadline can never remove an `auto` schedule or vice versa).
+
+A deadline that passes with no live run to self-remove its schedule (the gap between one fire ending and the next starting) has no daemon watching for it — `auto cron list`, `prune-worktrees cron list`, and `/api/cron-schedules` sweep it themselves on every read instead, so no schedule with a passed deadline survives more than one list/render past it.
+
+</details>
+
 ### Running your own PR-review bot
 
 branchdiff's self-hosted alternative to a hosted bot like CodeRabbit — your infra, your token, your model choice. Everything below is pieces already covered above, assembled end to end:
@@ -1633,9 +1681,15 @@ branchdiff pulls automatically the moment a session opens against a PR-linked br
 2. Click **Pull from PR** — all review comments from the GitHub PR are imported as local threads
 3. Duplicate comments are automatically skipped
 
+Every pulled thread remembers its PR-side comment id. A later push matches the PR comment by that identity — even if the PR's line numbers or the comment wording have drifted — and only adds genuinely new replies, so a comment that originated on the PR keeps its original author; it is never re-posted under your account.
+
 **Sync All (pull + push in one click):**
 1. Click the PR number button
 2. Click **Sync All** — pulls remote comments first, then pushes any remaining local unsynced threads
+
+**Include resolved threads not yet resolved on the PR:**
+
+Push and Sync All pick up every thread with unsynced local changes, plus — via a checkbox in the dialog, **on by default** — threads you resolved locally whose resolution hasn't reached the PR (resolved while offline, or a later pull re-stamped the thread as synced). With it on, pushing such a thread posts any new replies and marks the thread resolved on the PR. Uncheck it to push only unresolved threads.
 
 **Per-thread sync badge:**
 
@@ -1659,7 +1713,7 @@ The Request Changes confirm dialog includes a **"Push N pending comments to PR f
 
 **General PR comments:**
 
-Pull also imports PR-level comments (overall comments not tied to a file or line). On GitHub these are issue comments on the PR thread; on Bitbucket they are PR comments without an inline position. They appear in the **General Comments** panel alongside any general comments you've written locally. General comments cannot be pushed back to the PR as inline review comments.
+Pull also imports PR-level comments (overall comments not tied to a file or line). On GitHub these are issue comments on the PR thread; on Bitbucket they are PR comments without an inline position. They appear in the **General Comments** panel alongside any general comments you've written locally. General comments cannot be pushed back to the PR as inline review comments. When you push, inline file comments are posted first and any general comment last — on both platforms — so the general summary sits at the top of the PR's comment activity.
 
 **Review bodies (GitHub only):**
 
@@ -2038,8 +2092,8 @@ The dashboard shows:
 - **By platform** — GitHub vs Bitbucket split, when your sessions span both.
 - **Recent PRs** — a table per pull request: review pass count (every re-review of the same PR counts, not just its first), verdict, severity-tagged comment counts (must-fix / suggestion / nit / question), and resolved-thread fraction. Each PR number links to the PR on its forge (GitHub or Bitbucket) in a new tab. Comment bodies and PR descriptions are never included — counts only.
 - **Per-repo breakdown** — a table of reviews, comments, threads, and last-reviewed date for every repo (hidden when scoped to one repo), plus a compact summary per repo: passes (times reviewed), distinct PRs, approved, changes-requested, and suggestions (`Passes`/`PRs`/`A`/`CR`/`S`; the summary tooltip expands every code).
-- **Quick commands** — four collapsible sections mirroring CLI commands you'd otherwise run in a terminal: **Instances** (`branchdiff list`), **Auto sessions** (`branchdiff auto list`), **Cron schedules** (`branchdiff auto cron list`), and **Configs** (`branchdiff config` — see [Config File](#config-file) below for the precedence model). Each fetches live data on expand, grouped by repo, with a **Refresh** button, and lets you act on any entry directly — **Kill** an instance, **Attach**/**Stop** an auto session, **Remove** a cron schedule — every action button's tooltip naming the exact CLI command it performs.
-- **Bulk actions** — once a section has at least one entry, a page-level **Kill all** / **Stop all** / **Remove all** button appears, matching the per-row commands (`branchdiff killall`, `auto stopall`, `auto cron removeall`), with the same click-to-arm, click-again-to-confirm pattern as every per-row action.
+- **Quick commands** — four collapsible sections mirroring CLI commands you'd otherwise run in a terminal: **Instances** (`branchdiff list`), **Auto sessions** (`branchdiff auto list`), **Cron schedules** (`branchdiff auto cron list` **and** `branchdiff prune-worktrees cron list` — both namespaces in one list, each row tagged by kind), and **Configs** (`branchdiff config` — see [Config File](#config-file) below for the precedence model). Each fetches live data on expand, grouped by repo, with a **Refresh** button, and lets you act on any entry directly — **Kill** an instance, **Attach**/**Stop** an auto session, **Remove** a cron schedule (works on either kind) — every action button's tooltip naming the exact CLI command it performs.
+- **Bulk actions** — once a section has at least one entry, a page-level **Kill all** / **Stop all** / **Remove all** button appears, matching the per-row commands (`branchdiff killall`, `auto stopall`); the Cron schedules section's **Remove all** clears both namespaces (`auto cron removeall` and `prune-worktrees cron removeall` together, since the one section already shows both). Same click-to-arm, click-again-to-confirm pattern as every per-row action.
 
 <details>
 <summary>Technical breakdown</summary>
@@ -2486,7 +2540,32 @@ Or manually:
 rm -rf ~/.branchdiff
 ```
 
-This removes all review sessions, comment threads, code tours, credentials, and UI state for every repository. The operation is irreversible.
+This removes all review sessions, comment threads, code tours, credentials, and UI state for every repository. The operation is irreversible. Before wiping, `prune` also stops every detached `auto` run and removes every cron schedule (both `auto`'s and `prune-worktrees`'s) — nothing is left alive to rewrite state mid-wipe, or to keep firing against a directory that no longer exists.
+
+<details>
+<summary>Technical breakdown</summary>
+
+Order: stop detached `auto` runs, remove cron schedules (crontab lines, launchd plists, generated scripts — both namespaces), stop session servers, then wipe the directory. The stop is an abrupt `SIGTERM`, not the graceful `SIGINT` a normal `auto stop` sends — there's no cycle-boundary handler to wait on for an explicit wipe, and everything the run might write is about to be deleted anyway. The confirmation prompt lists what's about to be stopped and removed (servers, auto runs, schedules) before asking. The schedule sweep runs even if `~/.branchdiff` was already deleted by hand, so a stale crontab/launchd entry doesn't outlive a manual cleanup either; a cron backend that can't be reached (e.g. no `crontab` binary) warns and the wipe continues rather than being blocked by it.
+
+</details>
+
+### Prune stale worktrees
+
+`branchdiff prune-worktrees` (see [`auto` can't start a PR's session](#auto-cant-start-a-prs-session) above for the recovery use case) also stops the session server running on each worktree it removes, and can be put on its own schedule:
+
+```bash
+branchdiff prune-worktrees --repo-paths ~/work
+branchdiff prune-worktrees cron add --schedule "*/30 * * * *" --repo-paths ~/work
+branchdiff prune-worktrees cron list                        # cronId, schedule, next/last fire
+branchdiff prune-worktrees cron remove --id <cronId>
+branchdiff prune-worktrees cron removeall
+```
+
+A schedule can be given a self-removal deadline with `--stop-at` — same flag, same semantics as [`auto`'s](#--stop-at--give-a-run-a-deadline): a fire that lands past it removes the schedule and prunes nothing, so a temporary pruning window needs no manual `cron remove` afterwards.
+
+A session server running on a worktree about to be removed is stopped first — never an unrelated repo's same-named worktree, since matching is scoped to the repo, not just the worktree name. A worktree kept for holding uncommitted/untracked changes keeps its session running. Review data (threads, comments) is never deleted this way — only the live server stops. If a live `auto --worktree` run is watching the same repo, it would just recreate a worktree this command removes on its next cycle, so that case prints a warning naming the session instead of being fought.
+
+`cron add` schedules on the same launchd/crontab backend `auto cron` uses, but in its own namespace (its own marker, its own generated-script directory) — removing every `auto cron` schedule never touches a `prune-worktrees` one, and vice versa. Unlike `auto cron`'s start/stop window, this is a single one-shot fire: no live session in between, output redirected to a per-cron log, and `cron list`'s "last fire" read from that log's timestamp. **Also from the browser** — the Stats page's Cron schedules panel lists these alongside `auto`'s schedules, tagged by kind, with the same Remove action.
 
 ---
 

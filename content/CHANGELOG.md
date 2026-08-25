@@ -6,7 +6,32 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.1.1] -2026-08-12
+## [2.1.2] -2026-08-25
+
+### Added
+
+- **`auto --push` retries only the publish step after a failed push, not a full re-review** — a pass whose comments post locally but whose push to the PR fails (rate limit, network blip) is retried next cycle without re-running the AI review; only the publish step repeats, and any verdict comment from the failed attempt is reused instead of duplicated.
+- **"Include resolved threads not yet resolved on the PR" — a checkbox in the GitHub and Bitbucket sync dialogs, on by default** — a thread you resolved in branchdiff whose resolution never reached the PR (resolved while offline, or a later pull re-stamped the thread as synced) can now be pushed as-is: its new replies land and the thread is marked resolved on the PR, with no need to reopen it first. Uncheck it to push only unresolved threads.
+- **`prune-worktrees` stops the sessions living on the worktrees it removes, and gains its own cron scheduling** — a session server running on a `.worktrees/pr-*` checkout is stopped (never an unrelated repo's same-named worktree) before that worktree is removed; a worktree kept for having uncommitted changes keeps its session running. `prune-worktrees cron add/list/remove/removeall` schedules recurring runs the same way `auto cron` does, in its own namespace, and shows up alongside `auto`'s schedules in the Stats dashboard.
+- **`--stop-at <deadline>` gives a watch or cron-scheduled run a stop time, on both `auto` and `prune-worktrees cron`** — accepts an ISO 8601 datetime or an epoch-ms timestamp; a `--watch` run stops cleanly at its next cycle boundary once the deadline passes, and a cron-fired run (either namespace) also removes its own schedule so nothing keeps firing past it — a scheduled `prune-worktrees` that fires past its deadline removes its schedule and prunes nothing. Shown wherever a session or schedule is listed — CLI, API, and the Stats dashboard.
+- **`prune` closes every dangling reference before wiping `~/.branchdiff`** — stops detached `auto` runs and every cron schedule (both `auto` and `prune-worktrees` namespaces) before wiping the directory, so nothing keeps running or firing against data that no longer exists; the sweep runs even if the directory was already removed by hand.
+- **Binary files show what kind of file changed, and images render inline** — the diff view labels a binary file by type (Image, PDF, Font, Archive, Video, Audio, ...); for a recognized image, the old and new versions render side by side in the diff (just the one side that exists, for an added or deleted file). A text file that git labels binary only because it contains a stray NUL byte is diffed as text instead, with each stray NUL shown as a visible `\0` escape.
+
+### Fixed
+
+- **A minified vendor file with an extremely long single line no longer freezes the diff view** — syntax highlighting skips any line past a length threshold and falls back to plain text, the same protection the inline word-diff already has for this exact case.
+- **A teammate's PR comment can no longer be re-posted under your account by a push** — every thread pulled from a PR now remembers its PR-side comment id, so a later push matches the existing PR comment by identity — even after the PR's line numbers or the comment wording drift — and adds only genuinely new replies; the original author stays on the original comment. As a backstop, a thread whose root comment originated on the PR is never re-posted: if its stored link is too stale to match anything, the push reports the thread and tells you to Pull to re-link it. Resolutions travel the same link — a pulled thread you resolve locally gets marked resolved on the PR too.
+- **The general (PR-level) comment is pushed last on Bitbucket, matching GitHub** — inline file comments land first and the general summary lands last, so it stays at the top of the PR's comment activity instead of being buried under the file comments that follow it.
+- **Naming the reviewed branch first no longer renders a silently empty diff** — branchdiff detects the inverted order (the natural gesture for a worktree branch) and corrects it automatically, printing a line naming the correction; the CLI, the API, and URL-built comparisons all apply the same fix, so the file list and every per-file diff agree on direction.
+
+### Documentation
+
+- **The in-app Guide separates everyday usage from deep implementation detail** — what a feature does and how to use it stays in view; edge cases, exact internal mechanics, and rare failure modes are tucked into collapsible "Technical breakdown" sections you open only when you need them. The `branchdiff auto`/cron scheduling section and the Stats dashboard's Platform activity walkthrough get the heaviest pass.
+- **CLI commands and their browser equivalent are cross-referenced together** — `branchdiff auto cron list`, `branchdiff config`, and `branchdiff list`/`auto list` each point at the matching Stats dashboard panel that does the same thing by click instead of by terminal, and vice versa, so day-to-day management doesn't require hunting between sections to find the other side of the same feature.
+
+---
+
+## [2.1.1] -2026-08-13
 
 ### Added
 
