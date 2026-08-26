@@ -13,58 +13,46 @@ user-invocable: true
 
 # branchdiff Resolve Skill
 
-You are reading open review comments and resolving them by making the requested code changes.
+You are reading open review threads and resolving them by making the code changes they ask for.
 
 ## Resolve is local-only
 
-`branchdiff agent resolve` and `dismiss` change **only local review state** — they never post to or mutate the remote PR (GitHub/Bitbucket). Resolving a thread here does not resolve it on the remote. Remote resolution is opt-in via `--sync` (off by default). Do not push, sync, or resolve anything remotely from this skill unless `--sync` was explicitly requested.
+`branchdiff agent resolve` and `dismiss` change **local review state only** — they never post to or mutate the remote PR (GitHub/Bitbucket). Remote resolution is opt-in via `--sync` (off by default). Do not push, sync, or resolve anything remotely from this skill unless `--sync` was explicitly requested.
 
 ## Arguments
 
-- `url` (optional, **preferred**): A URL identifying what to resolve. Three forms are accepted:
-
-  **A. Branchdiff URL** (session is already running):
-  ```
-  http://localhost:5391/diff?b1=origin%2Fdevelopment&b2=origin%2Ffeature&mode=git
-  ```
-  The skill extracts host+port and `b1`/`b2` from the query. Also extracts `includeStaged=1`/`includeUnstaged=1` if present (mirrors the browser's working-changes checkboxes) — when set, use `agent file --staged`/no-`--ref` (not `--ref <b2>`) for a file that turns out to be uncommitted, same as the review skill.
-
-  **B. GitHub PR URL** (auto-creates a session if none exists):
-  ```
-  https://github.com/owner/repo/pull/123
-  ```
-
-  **C. Bitbucket PR URL** (same — auto-creates a session):
-  ```
-  https://bitbucket.org/workspace/repo/pull-requests/123
-  ```
-
-- `thread-id` (optional): Resolve a specific thread by ID instead of all open threads. Example: `/branchdiff-resolve abc123`
-
-- `ref` (optional, fallback): The git ref that was reviewed. If a matching session is already active it is reused; if not, a new session is started. Accepts:
-  - Single ref: `HEAD~3`, `main`, `v1.0.0`
-  - Range: `main..feature`, `HEAD~5..HEAD`
-  - Two refs (branch comparison): `main feature`
-  Defaults to working tree session.
-
-- `instructions` (optional): Free-form extra guidance for how to resolve, e.g. "skip anything under ai/", "only fix must-fix threads". Apply it in addition to the standard resolve workflow below.
-
-- `notify` (optional, default off): Pass `--notify` to fire desktop notifications (resolve started / resolve complete) via `branchdiff agent notify`, so the user is pinged even if they step away from the chat. **Standalone only** — when `branchdiff auto` drives this skill it fires its own toasts, so before firing check that the `BRANCHDIFF_PASS_ID` environment variable is **unset**; if it is set you are being orchestrated by `auto` and must skip every `agent notify` call (see the note under Instructions). Best-effort — silently skipped if the OS has no notifier.
+- `url` (optional, **preferred**) — one of three forms:
+  - **branchdiff URL** — `http://localhost:5391/diff?b1=origin%2Fdevelopment&b2=origin%2Ffeature&mode=git`. The session is already running: take host+port from it, URL-decode `b1`/`b2`, and note `includeStaged=1`/`includeUnstaged=1` if present (they mirror the browser's working-changes checkboxes — when set, read an uncommitted file with `agent file --staged` or no `--ref`, never `--ref <b2>`, same as the review skill).
+  - **GitHub PR URL** — `https://github.com/owner/repo/pull/123`. Auto-creates a session.
+  - **Bitbucket PR URL** — `https://bitbucket.org/workspace/repo/pull-requests/123`. Same.
+- `thread-id` (optional): resolve one thread instead of every open one — `/branchdiff-resolve abc123`.
+- `ref` (optional, fallback): the git ref that was reviewed. A matching live session is reused; otherwise a new one starts. Single ref (`HEAD~3`, `main`, `v1.0.0`), range (`main..feature`), or two refs (`main feature`). Defaults to the working tree.
+- `instructions` (optional): free-form guidance for this pass, e.g. "skip anything under ai/", "only fix must-fix threads". Apply it in addition to the workflow below.
+- `notify` (optional, default off): fire desktop toasts (resolve started / complete) via `branchdiff agent notify`, so the user is pinged even away from the chat. **Standalone only** — see the gate under Instructions. Best-effort; silently skipped if the OS has no notifier.
 
 ## Session isolation (MANDATORY — do this before any `branchdiff agent` call)
 
-Several `branchdiff` sessions can be live for one repo at the same time. Resolve your selector **once**, before anything else, and pass it on every command below (written as `$SEL`). Do not rely on inherited environment — a sub-shell or background Bash call may not see it.
+Several `branchdiff` sessions run at once on one repo (two PRs in two terminals, or several automated passes in parallel). Work on exactly one and never drift onto another PR's session.
+
+**Resolve your session selector once, before anything else.** Every command below is written with a `$SEL` placeholder — compute it first and pass it on **every** call. Do not rely on inherited environment: a sub-shell, a background Bash call, or a nested agent may not see it.
 
 ```bash
-# First that applies wins:
-SEL="--session $BRANCHDIFF_SESSION_ID"     # if BRANCHDIFF_SESSION_ID is set
-SEL="--port $BRANCHDIFF_PORT"              # else, if BRANCHDIFF_PORT is set
-branchdiff list                            # else: exactly one live → use its port
+# In order of preference — stop at the first that applies:
+SEL="--session $BRANCHDIFF_SESSION_ID"     # 1. pinned by the runner (branchdiff review run / auto set this)
+SEL="--port $BRANCHDIFF_PORT"              # 2. else, a known port
+branchdiff list                            # 3. else: exactly one session live for this repo → take its port
 SEL="--port <that one port>"
-# More than one live and nothing pins you → STOP and ask. Never guess.
+# 4. More than one live and nothing pins you → STOP and ask the human. Never guess.
 ```
 
-Verify with `branchdiff agent list $SEL` and confirm the ref/PR is the one you were asked to work on. A command that refuses because several sessions are live is the safety net working — do not silence it with `--yes`, which picks the last-active session.
+- **Verify first:** run `branchdiff agent list $SEL` and confirm the reported ref/PR is the one you were asked to work on. If it is not, STOP.
+- **Refresh remote state** so you work on fresh code — pulls the latest PR comments and refuses if your local branch is behind the PR head (the same pull + stale guard `review run` and `auto` apply). No-ops when the session isn't PR-linked:
+  ```bash
+  branchdiff agent refresh $SEL
+  ```
+  Add `--allow-stale` **only** if the user explicitly asked to work on the local revision despite being behind. If refresh refuses, STOP and tell the user to update their branch — do not review or fix stale code.
+- Commands without a selector **refuse** when several sessions are live — that error is the safety net working, not a bug to route around. Do **not** add `--yes` to silence it; `--yes` picks the last-active session, which is exactly the drift this prevents.
+- Work only on the verified session for the whole pass. Do not run bare `branchdiff` (which could start or repoint a session) mid-pass.
 
 ## CLI Reference
 
@@ -74,9 +62,10 @@ branchdiff agent file <path> [--ref <ref> | --staged] $SEL  # Print <path> as it
 branchdiff agent list [--status open|resolved|dismissed] [--json] $SEL
 branchdiff agent comment --file <path> --line <n> [--end-line <n>] [--side new|old] --body "<text>" $SEL
 branchdiff agent general-comment --body "<text>" $SEL
-branchdiff agent resolve <id> [--summary "<text>"] $SEL
-branchdiff agent dismiss <id> [--reason "<text>"] $SEL
+branchdiff agent resolve <id> [--summary "<text>"] [--sync] $SEL
+branchdiff agent dismiss <id> [--reason "<text>"] [--sync] $SEL
 branchdiff agent reply <id> --body "<text>" $SEL
+branchdiff agent refresh [--allow-stale] $SEL   # pull remote PR comments; refuse if the branch is behind the PR head
 branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast (--notify only); no $SEL — needs no session
 ```
 
@@ -85,120 +74,59 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 - `--side` defaults to `new`
 - `general-comment` creates a diff-level comment not tied to any file or line
 - `<id>` accepts full UUID or 8-char prefix
+- `resolve`/`dismiss` are local-only; `--sync` also resolves the thread on the remote PR — pass it only when the user asked for it
+- `agent diff --include-staged`/`--include-unstaged` and `agent file --staged` only apply when your checked-out branch is b1 or b2 of the current session — otherwise they no-op with a warning, since staged/unstaged content doesn't belong to either side of an unrelated branch pair
 
 ## Prerequisites
 
-1. Check that `branchdiff` is available: run `which branchdiff`. If not found and `PATH` was passed a hint (an automated run appends one below), `export PATH` with it and retry `which branchdiff` before installing anything. Still not found? Install it with `npm install -g @encryptioner/branchdiff`. If install also fails (no network/permission in this sandbox), STOP — report the exact error and do not review the diff manually outside branchdiff. Same rule if a `branchdiff agent` command that worked a moment ago suddenly fails mid-review: STOP the whole pass rather than switching to a manual/mixed reading of the checkout. A manual review posts nothing branchdiff can track or dedupe, and reposts as a duplicate on the next automated pass.
+1. **`branchdiff` must be runnable.** Run `which branchdiff`. Not found, but a `PATH` hint was appended below (automated runs add one)? `export PATH` with it and retry before installing anything. Still not found: `npm install -g @encryptioner/branchdiff`. If that also fails (no network or permission in this sandbox), STOP and report the exact error. Same rule if a `branchdiff agent` command that worked a moment ago starts failing mid-pass: STOP. Never fall back to reading, reviewing or fixing the checkout by hand — manual work posts nothing branchdiff can track or dedupe, and reposts as a duplicate on the next automated pass.
 
-2. **Resolve session from argument:**
-
-   **If a branchdiff URL was provided** (`http://localhost:5391/diff?b1=...&b2=...`):
-   - URL-decode the `b1` and `b2` query params to get the base and source branches.
-   - Note the host+port (e.g. `http://localhost:5391`) — the server is already running.
-   - Run `branchdiff agent list $SEL` to confirm an active session exists. If it does, proceed.
-   - If there is no active session, start one:
-     ```bash
-     branchdiff <b1> <b2> --no-open
-     ```
-     Use Bash tool with `run_in_background: true`. Wait 2 seconds, then verify with `branchdiff agent list $SEL`.
-
-   **If a GitHub/Bitbucket PR URL was provided** (e.g. `https://github.com/owner/repo/pull/123` or `https://bitbucket.org/ws/repo/pull-requests/123`):
-   - Pass the PR URL directly to branchdiff — it checks out the PR, derives base/compare refs, and starts the session:
-     ```bash
-     branchdiff <pr-url> --no-open
-     ```
-     Use Bash tool with `run_in_background: true`. PR URLs can take 5–15 seconds (network calls). Wait, then verify with `branchdiff agent list $SEL`.
-   - Prerequisites:
-     - **GitHub**: `gh` CLI installed and authenticated (`gh auth status`).
-     - **Bitbucket**: `BITBUCKET_USERNAME` and `BITBUCKET_API_TOKEN` env vars set.
-
-   **If only a `ref` was provided (no URL):**
-   - Start a session matching the ref if one isn't already active:
-     - Working tree: `branchdiff --no-open`
-     - Specific ref or HEAD: `branchdiff HEAD~3 --no-open`
-     - Branch comparison: `branchdiff <base> <compare> --no-open`
-     (Or run the **/branchdiff-review** skill first — it starts the session.)
-     Use Bash tool with `run_in_background: true`. Wait 2 seconds, then verify with `branchdiff agent list $SEL`.
+2. **Get a session.** Start commands run via the Bash tool with `run_in_background: true`; then wait and verify with `branchdiff agent list $SEL`.
+   - **branchdiff URL** — the server is already running, so just verify. Only if no session is live (or its refs don't match b1/b2), start one: `branchdiff <b1> <b2> --no-open` (e.g. `branchdiff origin/development origin/feature --no-open`; wait 2 seconds).
+   - **PR URL** — `branchdiff <pr-url> --no-open` checks the PR out, derives the base/compare refs, and starts the session; wait 5–15 seconds (network calls). Needs `gh` installed and authenticated (`gh auth status`) for GitHub, or `BITBUCKET_USERNAME` + `BITBUCKET_API_TOKEN` for Bitbucket.
+   - **`ref` only** — `branchdiff --no-open` (working tree), `branchdiff HEAD~3 --no-open` (a ref), or `branchdiff <base> <compare> --no-open` (branch comparison); wait 2 seconds. Or run **/branchdiff-review** first — it starts the session.
 
 ## Need more context?
 
-If you are unsure about any command, flag, or workflow detail, run:
-
-```bash
-branchdiff review guide
-```
-
-This prints the full agent reference — CLI commands, review/resolve workflows, multi-instance safety rules, and the JSON schema for import. Read it before proceeding if anything below is unclear.
+Unsure about a command, flag, or workflow detail? `branchdiff review guide` prints the full agent reference — CLI commands, review/resolve workflows, multi-instance safety rules, and the import JSON schema. Read it before proceeding.
 
 ## Where your edits land (MANDATORY — settle this before the first Edit)
 
-Reviewing only reads; resolving **writes**. An edit goes to whatever tree you are
-standing in, and that is not always the branch that was reviewed.
+Reviewing only reads; resolving **writes**. An edit goes to whatever tree you are standing in, and that is not always the branch that was reviewed.
 
-**Do not gate on the branch name.** Fixing on a branch other than b2 is routine and
-legitimate — the fix may belong on a branch that later merges into b2, on a
-rebased or renamed successor, on a shared base that several review branches feed
-from, or b2 may already have been merged into where you stand. A name check would
-reject all of those. What actually matters is whether **the code the comment is
-about is present in the tree you are editing**. Establish that instead.
+**Do not gate on the branch name.** Fixing on a branch other than b2 is routine: the fix may belong on a branch that later merges into b2, on a rebased or renamed successor, on a shared base several review branches feed from, or b2 may already be merged into where you stand. A name check rejects all of those. What matters is whether **the code the comment is about is present in the tree you are editing**.
 
-1. **Get the reviewed refs.** `BD_B1`/`BD_B2` if set, otherwise read them from:
-   ```bash
-   branchdiff agent list --json $SEL   # the session's b1/b2
-   ```
+1. **Get the reviewed refs** — `BD_B1`/`BD_B2` if set, else the session's b1/b2 from `branchdiff agent list --json $SEL`.
 
-2. **If `BD_WORKTREE` is set, do not edit there.** That directory is a *detached*
-   checkout branchdiff made so the reviewer could read b2 without disturbing your
-   branch. It is not on any branch, so commits made in it belong to nothing and
-   are lost on the next prune. Change directory to a real checkout before editing.
+2. **If `BD_WORKTREE` is set, do not edit there.** That directory is a *detached* checkout branchdiff made so the reviewer could read b2 without disturbing your branch. Commits made in it belong to no branch and are lost on the next prune — change directory to a real checkout first.
 
-3. **Establish that the reviewed code is here.** Take the cheapest check that
-   answers it:
+3. **Establish that the reviewed code is here.**
 
    ```bash
    git merge-base --is-ancestor <b2> HEAD && echo "contains b2"
    ```
 
-   - **Succeeds** → HEAD already contains every reviewed commit. Edit here; this
-     covers both the plain case and "b2 was merged into this branch already".
-   - **Otherwise**, decide per file, not per branch. For each file you are about to
-     change, compare the reviewed copy against the one on disk:
-     ```bash
-     branchdiff agent file <path> --ref <b2> $SEL
-     ```
-     If this errors ("does not exist at ref") and the URL that started this session had
-     `includeStaged`/`includeUnstaged` set, the file was only staged/unstaged when
-     reviewed, not committed — re-fetch it via `agent file --staged $SEL` or
-     `agent file <path> $SEL` (no `--ref`) instead before comparing.
-     - **Identical** → the reviewed code is here verbatim. Edit here.
-     - **Different, but the code the comment describes is present** → the branches
-       have diverged elsewhere; the finding still applies. Edit here, judging
-       against the surrounding code you actually see.
-     - **The code the comment describes is absent** → do not guess. See step 5.
+   Succeeds → HEAD already contains every reviewed commit; edit here (this also covers "b2 was merged into this branch"). Otherwise decide **per file, not per branch**: fetch the reviewed copy and compare it against the one on disk.
 
-4. **Locate findings by code, not by line number.** Line numbers come from the b1→b2
-   diff and are only valid there. On any other branch — and on b2 itself after later
-   commits — they will point at the wrong place. Find the code the comment quotes or
-   describes, confirm it is the same construct, and fix that. If you cannot find it,
-   treat it as absent.
+   ```bash
+   branchdiff agent file <path> --ref <b2> $SEL
+   ```
 
-   A file that has moved on since the review may also mean the issue is **already
-   fixed**. Check before editing; if it is, resolve the thread with a summary saying
-   so instead of changing anything.
+   - **Identical** → the reviewed code is here verbatim. Edit here.
+   - **Different, but the code the comment describes is present** → the branches diverged elsewhere; the finding still applies. Edit here, judging against the surrounding code you actually see.
+   - **The code the comment describes is absent** → do not guess. See step 5.
 
-5. **When a thread cannot be placed, stop on that thread — not on the whole run.**
-   Do not check anything out yourself; the user may have uncommitted work. Reply on
-   the thread saying the code was not found in the current tree, name the branch you
-   are on and the reviewed ref, and move to the next thread. Report the unplaced
-   threads at the end.
+   If that fetch errors ("does not exist at ref") and the URL that started this session had `includeStaged`/`includeUnstaged` set, the file was staged or unstaged when reviewed, not committed — re-fetch with `agent file <path> --staged $SEL` or `agent file <path> $SEL` (no `--ref`) before comparing.
 
-6. **Say where the fix landed.** If the tree you edited is not b2, include that in
-   every `resolve --summary` — e.g. "Fixed on `<branch>`". The session records the
-   b1→b2 comparison, so a later reader has no other way to find the fix.
+4. **Locate findings by code, not by line number.** Line numbers come from the b1→b2 diff and are valid only there — on any other branch, and on b2 itself after later commits, they point at the wrong place. Find the code the comment quotes or describes, confirm it is the same construct, and fix that; if you cannot find it, treat it as absent. A file that has moved on may also mean the issue is **already fixed** — check before editing, and if it is, resolve the thread with a summary saying so instead of changing anything.
+
+5. **A thread you cannot place stops that thread, not the run.** Do not check anything out yourself; the user may have uncommitted work. Reply on the thread saying the code was not found in the current tree, naming the branch you are on and the reviewed ref, then move to the next thread. Report the unplaced threads at the end.
+
+6. **Say where the fix landed.** If the tree you edited is not b2, include that in every `resolve --summary` — e.g. "Fixed on `<branch>`". The session records the b1→b2 comparison, so a later reader has no other way to find the fix.
 
 ## Instructions
 
-> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If `BRANCHDIFF_PASS_ID` is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call to avoid duplicates. You already know this session's local URL from Prerequisites (given directly in a branchdiff URL, or shown in the startup banner when you started the session) — reuse that same URL for `--open-url` below. Do not call `branchdiff list` just to fire a toast.
+> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If it is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call. Reuse the session URL you already have from Prerequisites (given in a branchdiff URL, or printed in the startup banner) for `--open-url`; never call `branchdiff list` just to fire a toast.
 
 **Start toast** (once, before Step 1, when notifications are active):
 ```bash
@@ -211,71 +139,55 @@ branchdiff agent notify "branchdiff: resolve started" "<PR # or ref pair>" --ope
 branchdiff agent list --status open --json $SEL
 ```
 
-If a `thread-id` argument was provided, filter to just that thread. The JSON output includes the full comment body, file path, line numbers, and side for each thread.
-
-If there are no open threads, tell the user there's nothing to resolve.
+The JSON carries each thread's full comment body, file path, line numbers, and side. Filter to the `thread-id` argument if one was given. No open threads → tell the user there is nothing to resolve.
 
 ### Step 2: Process each thread
 
-**Use subagents when your runtime supports them and there are enough independent threads to benefit** (e.g. Claude Code's Task tool, or an equivalent parallel-task mechanism) — one subagent per thread whose file doesn't overlap with another thread being worked in parallel. A subagent reads the file, makes the Edit, and reports back what it changed; it never calls `branchdiff agent resolve`/`dismiss`/`reply` itself — you make those calls after reviewing its report, so exactly one actor mutates thread state. Threads touching the same file, or fewer than a handful of threads total, are cheaper to just do sequentially yourself.
+**Use subagents when your runtime has them and enough threads are independent** (Claude Code's Task tool, or an equivalent parallel-task mechanism) — one per thread, never two on the same file. A subagent reads, edits, and reports back what it changed; it never calls `agent resolve`/`dismiss`/`reply` itself, so exactly one actor mutates thread state: you, after reading its report. A handful of threads, or threads sharing a file, are cheaper done sequentially.
 
 For each open thread, check the `comments` array and `author.type` field (`"user"` or `"agent"`):
 
-a. **Skip** general comments (filePath `__general__`) — these are summaries, not actionable code changes.
+a. **Skip** general comments (filePath `__general__`) — summaries, not actionable code changes.
 
-b. **Skip** threads where the last comment is an agent reply that asks the user a question (e.g. "Could you clarify...?") and the user hasn't responded yet — the agent is waiting for user input. Still process threads where the agent left the original comment (code suggestion, review feedback) — those are actionable.
+b. **Skip** threads whose last comment is an agent reply asking the user a question ("Could you clarify...?") with no user answer yet — the agent is waiting on input. Threads where the agent left the original finding are actionable; process those.
 
-b'. **Resolve directly, no code change, if the last comment is a human sign-off.** If the thread's most recent comment has `author.type: "user"` and signals agreement or closure ("fixed", "done", "ok", "lgtm", "not needed", "wontfix", "nvm", "please close", "thanks") — the commenter already made the call, whether or not you can find a matching code change:
+b'. **Resolve directly, no code change, if the last comment is a human sign-off.** Most recent comment has `author.type: "user"` and signals agreement or closure ("fixed", "done", "ok", "lgtm", "not needed", "wontfix", "nvm", "please close", "thanks")? The commenter already made the call, whether or not you can find a matching code change:
    ```bash
    branchdiff agent resolve <thread-id> --summary "Resolved per <name>'s reply: \"<their words>\"" $SEL
    ```
-   Then move on to the next thread — skip c–e for this one.
+   Move on — skip c–e for this thread.
 
-c. **Read the comment body** and understand what change is requested. Interpret the intent:
-   - If it suggests a code change, make the change.
-   - If it suggests adding documentation, add or update the relevant docs.
-   - If it asks a question that implies action (e.g. "should we add X?"), treat it as a request to do that.
-   - If genuinely unclear, reply asking for clarification:
-     ```bash
-     branchdiff agent reply <thread-id> --body "Could you clarify what change you'd like here?" $SEL
-     ```
+c. **Read the comment body** and act on its intent: a suggested code change → make it; a docs suggestion → write the docs; a question implying action ("should we add X?") → treat it as a request to do that. Genuinely unclear → ask:
+   ```bash
+   branchdiff agent reply <thread-id> --body "Could you clarify what change you'd like here?" $SEL
+   ```
 
-d. **Read the relevant source file** and find the construct the comment is about — search for the code it quotes or names rather than jumping to `line`, which is only accurate on b2 at review time. Read enough surrounding context to be sure it is the same construct, then make the change with the Edit tool.
+d. **Read the source file** and find the construct the comment is about — search for the code it quotes or names rather than jumping to `line`, which is only accurate on b2 at review time. Read enough surrounding context to be sure it is the same construct, then edit.
 
 e. **Resolve the thread** with a summary:
    ```bash
    branchdiff agent resolve <thread-id> --summary "Fixed: <brief description>" $SEL
    ```
 
-   If the comment raises a valid concern but the fix shouldn't be applied now, dismiss instead:
+   Valid concern but the fix should not be applied now? Dismiss instead:
    ```bash
    branchdiff agent dismiss <thread-id> --reason "<why it won't be addressed>" $SEL
    ```
 
-### Important: branch context and repo rules
+### Project rules
 
-**A comment describes code, not a line number on a branch.** If you have not already done the "Where your edits land" checks above, do them now — an edit made in a detached review worktree is silently thrown away, and an edit made at the comment's line number on a branch that has diverged lands in the wrong place.
+**Before editing**, read every relevant CLAUDE.md (or GEMINI.md, AGENTS.md) — the root one and any in directories holding files you will change. They define import conventions, naming and type rules, framework patterns, build/test commands, and architecture constraints. **Fixes MUST comply.** If a comment suggests a change that violates a project rule, apply its intent using the project's convention instead.
 
-**Before making changes**, read all relevant CLAUDE.md (or GEMINI.md, AGENTS.md) files — the root one and any in directories containing modified files. These define project-specific rules:
-- Import conventions (absolute vs relative paths)
-- Naming patterns, type rules, framework patterns
-- Build/test commands
-- Architecture constraints
-
-**Fixes MUST comply with these rules.** If a review comment suggests a change that violates project rules, apply the intent but use the project's conventions instead.
+If you have not yet run the "Where your edits land" checks, do them now — an edit in a detached review worktree is silently thrown away, and an edit at the comment's line number on a diverged branch lands in the wrong place.
 
 ### Step 3: Verify the fixes before resolving
 
 A resolved thread is a claim that the code now works. Check it:
 
-- Run the project's own checks — the build, typecheck, lint, and test commands named
-  in CLAUDE.md (or the `scripts` block of `package.json` / equivalent). Run the
-  narrowest relevant one, not the full suite, unless the change is broad.
-- If a check fails **because of your edit**, fix it before resolving the thread.
-- If it fails for a reason that predates your edit, leave it alone and say so in the
-  resolve summary — do not expand the change to chase unrelated breakage.
-- If the project has no runnable checks, say that in your final message rather than
-  implying the fixes were verified.
+- Run the project's own checks — build, typecheck, lint, test as named in CLAUDE.md (or the `scripts` block of `package.json` / equivalent). Take the narrowest relevant one, not the full suite, unless the change is broad.
+- A failure **caused by your edit** → fix it before resolving the thread.
+- A failure that predates your edit → leave it alone and say so in the resolve summary. Do not expand the change to chase unrelated breakage.
+- No runnable checks in the project → say that in your final message rather than implying the fixes were verified.
 
 Only resolve threads whose fix you have actually exercised.
 
@@ -283,17 +195,12 @@ Only resolve threads whose fix you have actually exercised.
 
 ```bash
 branchdiff agent list $SEL
-```
-
-Verify all applicable threads are resolved. Then run `branchdiff list` to pull the active session URL and **always print it back to the user** so they can jump straight to the browser view:
-
-```bash
 branchdiff list
 ```
 
-Extract the URL line (e.g. `http://localhost:5391`) for the current repo and include it in your final message. Tell the user the resolve pass is complete and link the session:
+Verify every applicable thread is resolved, then take the current repo's URL line (e.g. `http://localhost:5391`) from `branchdiff list` and **always print it back to the user** so they can jump straight to the browser view.
 
-**Completion toast** (when notifications are active — fire it once you have the counts): reuse the same session URL as the start toast (you already know it — no need to call `branchdiff list` again just for this).
+**Completion toast** (when notifications are active, once you have the counts — reuse the start toast's URL):
 ```bash
 branchdiff agent notify "branchdiff: resolve done" "Resolve complete — N resolved, M remaining" --open-url <session-url>   # e.g. http://localhost:5391
 ```

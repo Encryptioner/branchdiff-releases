@@ -64,9 +64,10 @@ branchdiff agent file <path> [--ref <ref> | --staged] $SEL  # Print <path> as it
 branchdiff agent list [--status open|resolved|dismissed] [--json] $SEL
 branchdiff agent comment --file <path> --line <n> [--end-line <n>] [--side new|old] --body "<text>" $SEL
 branchdiff agent general-comment --body "<text>" $SEL
-branchdiff agent resolve <id> [--summary "<text>"] $SEL
-branchdiff agent dismiss <id> [--reason "<text>"] $SEL
+branchdiff agent resolve <id> [--summary "<text>"] [--sync] $SEL
+branchdiff agent dismiss <id> [--reason "<text>"] [--sync] $SEL
 branchdiff agent reply <id> --body "<text>" $SEL
+branchdiff agent refresh [--allow-stale] $SEL   # pull remote PR comments; refuse if the branch is behind the PR head
 branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast (--notify only); no $SEL — needs no session
 ```
 
@@ -75,42 +76,17 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 - `--side` defaults to `new`
 - `general-comment` creates a diff-level comment not tied to any file or line
 - `<id>` accepts full UUID or 8-char prefix
+- `resolve`/`dismiss` are local-only; `--sync` also resolves the thread on the remote PR — pass it only when the user asked for it
 - `agent diff --include-staged`/`--include-unstaged` and `agent file --staged` only apply when your checked-out branch is b1 or b2 of the current session — otherwise they no-op with a warning, since staged/unstaged content doesn't belong to either side of an unrelated branch pair
 
 ## Prerequisites
 
-1. Check that `branchdiff` is available: run `which branchdiff`. If not found and `PATH` was passed a hint (an automated run appends one below), `export PATH` with it and retry `which branchdiff` before installing anything. Still not found? Install it with `npm install -g @encryptioner/branchdiff`. If install also fails (no network/permission in this sandbox), STOP — report the exact error and do not review the diff manually outside branchdiff. Same rule if a `branchdiff agent` command that worked a moment ago suddenly fails mid-review: STOP the whole pass rather than switching to a manual/mixed reading of the checkout. A manual review posts nothing branchdiff can track or dedupe, and reposts as a duplicate on the next automated pass.
+1. **`branchdiff` must be runnable.** Run `which branchdiff`. Not found, but a `PATH` hint was appended below (automated runs add one)? `export PATH` with it and retry before installing anything. Still not found: `npm install -g @encryptioner/branchdiff`. If that also fails (no network or permission in this sandbox), STOP and report the exact error. Same rule if a `branchdiff agent` command that worked a moment ago starts failing mid-pass: STOP. Never fall back to reading, reviewing or fixing the checkout by hand — manual work posts nothing branchdiff can track or dedupe, and reposts as a duplicate on the next automated pass.
 
-2. **Resolve session from argument:**
-
-   **If a branchdiff URL was provided** (`http://localhost:5391/diff?b1=...&b2=...`):
-   - URL-decode the `b1` and `b2` query params to get the base and source branches.
-   - Note the host+port (e.g. `http://localhost:5391`) — the server is already running.
-   - Note `includeStaged`/`includeUnstaged` if present (see Arguments above).
-   - Run `branchdiff agent list $SEL` to confirm an active session exists. If it does, proceed.
-   - If there is no active session (or the session refs don't match b1/b2), start one:
-     ```bash
-     branchdiff <b1> <b2> --no-open   # e.g. branchdiff origin/development origin/feature --no-open
-     ```
-     Use Bash tool with `run_in_background: true`. Wait 2 seconds, then verify with `branchdiff agent list $SEL`.
-
-   **If a GitHub/Bitbucket PR URL was provided** (e.g. `https://github.com/owner/repo/pull/123` or `https://bitbucket.org/ws/repo/pull-requests/123`):
-   - Pass the PR URL directly to branchdiff — it checks out the PR, derives base/compare refs, and starts the session:
-     ```bash
-     branchdiff <pr-url> --no-open
-     ```
-     If the `worktree` argument was provided, append `--worktree` (`branchdiff <pr-url> --worktree --no-open`) so the PR is checked out into `.worktrees/pr-<n>` and your working tree is not switched. Off by default — do not add it unless the user asked.
-     Use Bash tool with `run_in_background: true`. PR URLs can take 5–15 seconds (network calls). Wait, then verify with `branchdiff agent list $SEL`.
-   - Prerequisites:
-     - **GitHub**: `gh` CLI installed and authenticated (`gh auth status`).
-     - **Bitbucket**: `BITBUCKET_USERNAME` and `BITBUCKET_API_TOKEN` env vars set.
-
-   **If only a `ref` was provided (no URL):**
-   - Start a session matching the ref if one isn't already active:
-     - Working tree: `branchdiff --no-open`
-     - Specific ref or HEAD: `branchdiff HEAD~3 --no-open`
-     - Branch comparison: `branchdiff <base> <compare> --no-open`
-     Use Bash tool with `run_in_background: true`. Wait 2 seconds, then verify with `branchdiff agent list $SEL`.
+2. **Get a session.** Start commands run via the Bash tool with `run_in_background: true`; then wait and verify with `branchdiff agent list $SEL`.
+   - **branchdiff URL** — the server is already running, so just verify. Only if no session is live (or its refs don't match b1/b2), start one: `branchdiff <b1> <b2> --no-open` (e.g. `branchdiff origin/development origin/feature --no-open`; wait 2 seconds).
+   - **PR URL** — `branchdiff <pr-url> --no-open` checks the PR out, derives the base/compare refs, and starts the session; wait 5–15 seconds (network calls). Needs `gh` installed and authenticated (`gh auth status`) for GitHub, or `BITBUCKET_USERNAME` + `BITBUCKET_API_TOKEN` for Bitbucket. Append `--worktree` **only if the `worktree` argument was given**, to check the PR out into `.worktrees/pr-<n>` instead of switching your working tree.
+   - **`ref` only** — `branchdiff --no-open` (working tree), `branchdiff HEAD~3 --no-open` (a ref), or `branchdiff <base> <compare> --no-open` (branch comparison); wait 2 seconds.
 
    **Alternative — no session needed** (generates diff context only, no inline comments):
    ```bash
@@ -120,44 +96,35 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 
 ## Need more context?
 
-If you are unsure about any command, flag, or workflow detail, run:
-
-```bash
-branchdiff review guide
-```
-
-This prints the full agent reference — CLI commands, review/resolve workflows, multi-instance safety rules, and the JSON schema for import. Read it before proceeding if anything below is unclear.
+Unsure about a command, flag, or workflow detail? `branchdiff review guide` prints the full agent reference — CLI commands, review/resolve workflows, multi-instance safety rules, and the import JSON schema. Read it before proceeding.
 
 ## Session isolation (MANDATORY — do this before any `branchdiff agent` call)
 
-Multiple `branchdiff` sessions run at once on the same repo (two PRs in two terminals, or several automated reviews in parallel). You MUST review exactly one and never drift onto another PR's session.
+Several `branchdiff` sessions run at once on one repo (two PRs in two terminals, or several automated passes in parallel). Work on exactly one and never drift onto another PR's session.
 
-**Step 0 — resolve your session selector, once, before anything else.** Every `branchdiff agent …` and `branchdiff review …` command below is written with a `$SEL` placeholder. Compute it first and pass it on **every** call. Do not rely on the environment being inherited — a command you run in a sub-shell, a background Bash call, or a nested agent may not see it.
+**Resolve your session selector once, before anything else.** Every command below is written with a `$SEL` placeholder — compute it first and pass it on **every** call. Do not rely on inherited environment: a sub-shell, a background Bash call, or a nested agent may not see it.
 
 ```bash
 # In order of preference — stop at the first that applies:
-#   1. pinned by the runner (branchdiff review run / auto set this)
-SEL="--session $BRANCHDIFF_SESSION_ID"     # if BRANCHDIFF_SESSION_ID is set
-#   2. a known port
-SEL="--port $BRANCHDIFF_PORT"              # else, if BRANCHDIFF_PORT is set
-#   3. exactly one session live for this repo — take its port from:
-branchdiff list
+SEL="--session $BRANCHDIFF_SESSION_ID"     # 1. pinned by the runner (branchdiff review run / auto set this)
+SEL="--port $BRANCHDIFF_PORT"              # 2. else, a known port
+branchdiff list                            # 3. else: exactly one session live for this repo → take its port
 SEL="--port <that one port>"
-#   4. more than one live and nothing pins you → STOP and ask the human. Never guess.
+# 4. More than one live and nothing pins you → STOP and ask the human. Never guess.
 ```
 
-- **Verify before doing anything else:** run `branchdiff agent list $SEL` and confirm the reported ref/PR is the one you were asked to review. If it is not, STOP.
-- **Refresh remote state** so you review fresh code — pulls the latest PR comments and refuses if your local branch is behind the PR head (the same pull + stale guard `review run` and `auto` apply). No-ops when the session isn't PR-linked:
+- **Verify first:** run `branchdiff agent list $SEL` and confirm the reported ref/PR is the one you were asked to work on. If it is not, STOP.
+- **Refresh remote state** so you work on fresh code — pulls the latest PR comments and refuses if your local branch is behind the PR head (the same pull + stale guard `review run` and `auto` apply). No-ops when the session isn't PR-linked:
   ```bash
   branchdiff agent refresh $SEL
   ```
-  Add `--allow-stale` **only** if the user explicitly asked to review the local revision despite being behind. If refresh refuses, STOP and tell the user to update their branch — do not review stale code.
+  Add `--allow-stale` **only** if the user explicitly asked to work on the local revision despite being behind. If refresh refuses, STOP and tell the user to update their branch — do not review or fix stale code.
 - Commands without a selector **refuse** when several sessions are live — that error is the safety net working, not a bug to route around. Do **not** add `--yes` to silence it; `--yes` picks the last-active session, which is exactly the drift this prevents.
-- Work only on the verified session for the entire review. Do not run bare `branchdiff` (which could start or repoint a session) mid-review.
+- Work only on the verified session for the whole pass. Do not run bare `branchdiff` (which could start or repoint a session) mid-pass.
 
 ## Instructions
 
-> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If `BRANCHDIFF_PASS_ID` is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call to avoid duplicates. You already know this session's local URL from Prerequisites (given directly in a branchdiff URL, or shown in the startup banner when you started the session) — reuse that same URL for `--open-url` below. Do not call `branchdiff list` just to fire a toast.
+> **Notifications (`--notify`).** Fire `branchdiff agent notify` toasts only when the user passed `--notify` **and** the `BRANCHDIFF_PASS_ID` environment variable is unset (you are standalone). If it is set, `branchdiff auto` is driving you and already fires its own toasts — skip every `agent notify` call. Reuse the session URL you already have from Prerequisites (given in a branchdiff URL, or printed in the startup banner) for `--open-url`; never call `branchdiff list` just to fire a toast.
 
 **Start toast** (once, before Step 1, when notifications are active):
 ```bash
@@ -210,14 +177,18 @@ Then read all relevant CLAUDE.md (or GEMINI.md, AGENTS.md) files — the root on
 
 #### How this change works (change map)
 
-Larger diffs append a machine-computed `BRANCHDIFF CHANGE MAP` block after the diff (Step 2) or after the summary table (`review context`). It lists the changed areas with churn, the import wiring between them, separate sections when the PR touches unrelated parts, and — for any section with real wiring — a ready-made diagram. When the session's remote is known (a linked GitHub or Bitbucket PR), the map includes only the one format that actually renders there; without a linked PR (a bare `--refs` comparison) it includes both, since it has no way to know which platform will read it. Use it as your orientation; do not re-derive any of this yourself.
+Larger diffs append a machine-computed `BRANCHDIFF CHANGE MAP` block after the diff (Step 2) or after the summary table (`review context`): the changed areas with churn, the import wiring between them, one section per unrelated part of the PR, and a pre-rendered diagram for every section that has real wiring. It includes only the diagram format that renders on this session's remote (a linked GitHub or Bitbucket PR) — both formats for a bare `--refs` comparison, where it cannot know which platform will read it. Its job is to hand a reviewer opening a large PR the orientation up front — what is wired to what, and wherever the diff says so, what the new code is *for* — so review time goes to substance instead of archaeology. Use it as your orientation, do not re-derive any of it, and never put a node, edge, area or file in your diagram that has no basis in it.
 
 When a map is present, the review's general comment (Step 5) opens with a "How this change works" diagram taken FROM the map:
 
-- **Copy the pre-rendered "Section N (mermaid)"/"Section N (ascii)" block verbatim** — whichever format the map included (or, when it shipped both, mermaid on GitHub and in branchdiff, the ascii block on Bitbucket). Do not compose, restyle, or relabel it; every node and edge already comes straight from the diff.
-- **A section with no pre-rendered diagram has no import wiring** — it's an isolated area (docs, a lone config file, an unwired addition). Don't draw one. When 2+ such sections exist, cover them together in one combined prose line (files + churn each) rather than one heading per section.
-- **Repeat passes**: when Prior passes > 0 and New areas is empty, skip the diagram — the structure is unchanged and the existing one is still accurate. When new areas appear on a later pass (the change grew since the last review), post the updated diagram(s) as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
-- **Hybrid assist**: if exactly one wiring detail is unclear (e.g. what an edge actually carries), read that ONE file via `branchdiff agent file <path> --ref <b2> $SEL` and add a short prose note after the copied diagram — do not read more files, and never edit the diagram itself.
+- **Open with 1-3 sentences of intent** — what the PR does and why, in plain prose, before the diagram. Draw it from the diff and PR description already in your context (Steps 2-3); never re-read files for this. It is the one part the map cannot compute: it knows *where* code moved and *what* imports what, never *why*. Skip it only when the diff is too mechanical to have an intent beyond its mechanics (a pure rename, a dependency bump).
+- **Copying the map's "Section N (mermaid)"/"Section N (ascii)" block verbatim is always safe, and stopping there is fine** (whichever format it included; mermaid on GitHub/branchdiff and ascii on Bitbucket when it shipped both). Past that floor you have real latitude to improve it, like any draft you hand a reader — as long as every node and edge you keep still traces back to a real one in the map:
+  - **Labels** — edge labels already carry the new export names the wiring found (e.g. `×9: computeChangeMapBlock, sectionEdges`), usually clearer than anything you would add; sharpen one only when something case-specific is worth surfacing. A node's second line is that symbol's own doc comment, added by the diff — leave author text as written rather than paraphrasing it.
+  - **Undocumented nodes** — the map's "No doc comment on: ..." line names nodes whose symbol it matched but found no comment for. Add a short (<10 words) note from a file you already read this pass (Step 4); never read a file solely to fill one in. An undecorated node is an honest result too.
+  - **Pruning and reordering** for readability is fine — still the map's own data, better presented. Adding a node or edge the map does not contain, or relabelling one to claim a relationship the wiring did not find, never is.
+- **A section with no pre-rendered diagram has no import wiring** — it is an isolated area (docs, a lone config file, an unwired addition). Don't draw one. When 2+ such sections exist, cover them together in one combined prose line (files + churn each) rather than a heading each.
+- **Repeat passes** — Prior passes > 0 and New areas empty → skip the diagram; the structure is unchanged and the existing one is still accurate. New areas → post the updated diagram(s) as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
+- **Hybrid assist** — if exactly one wiring detail is unclear (e.g. what an edge actually carries) and the "No doc comment on" gap does not already cover it, read that ONE file via `branchdiff agent file <path> --ref <b2> $SEL` and add a short prose note after the copied diagram. One file only, and it can inform a label edit — never a new node or edge.
 
 No map block means the diff is below the size floor — nothing owed, move on.
 
