@@ -190,7 +190,7 @@ branchdiff agent diff $SEL
 
 If the URL had `includeStaged=1`/`includeUnstaged=1` (see Arguments), append the matching flag(s) instead: `branchdiff agent diff --include-staged --include-unstaged $SEL`. Without those params, never pass the flags — they only belong when the URL's own tab had the checkbox checked.
 
-This outputs the full unified diff for the current session. Line numbers are in the `@@` hunk headers.
+This outputs the full unified diff for the current session. Line numbers are in the `@@` hunk headers. Larger diffs also append a `BRANCHDIFF CHANGE MAP` block — see "How this change works" in Step 3.
 
 **Important: read from git, never the ambient working tree — except the layers the URL explicitly requested.** The diff covers the branches from the URL (b1 → b2), NOT the currently checked-out git branch. Do NOT use `git branch --show-current`, and do NOT read files from the working tree (plain `cat`/editor open / `Read` of the on-disk path) to guess what is being reviewed — the checked-out branch may be something else entirely, so ad-hoc on-disk reads can be the wrong code. Always use the b1/b2 from the provided URL or ref argument, and read full-file content via `branchdiff agent file <path> --ref <b2>` (see Step 4). This rule is about not guessing, not about excluding staged/unstaged content categorically: when the URL's `includeStaged`/`includeUnstaged` params are set, `agent diff`'s staged/unstaged content (Step 2) and `agent file --staged`/no-`--ref` (Step 4) are the CORRECT, sanctioned sources for that layer — not a violation of this rule.
 
@@ -203,6 +203,20 @@ Before looking for problems, build a mental model of the diff:
 3. **Which files are structural changes vs. core logic?**
 
 Then read all relevant CLAUDE.md (or GEMINI.md, AGENTS.md) files — the root one and any in directories containing modified files. **These define project-specific rules that MUST be followed.** Violations of project rules are review findings — flag them and quote the exact rule.
+
+#### How this change works (change map)
+
+Larger diffs append a machine-computed `BRANCHDIFF CHANGE MAP` block after the diff (Step 2) or after the summary table (`review context`). It lists the changed areas with churn, the import wiring between them, and — when the PR touches unrelated parts — separate sections. Use it as your orientation; do not re-derive this yourself.
+
+When a map is present, the review's general comment (Step 5) opens with a "How this change works" diagram authored FROM the map:
+
+- **Use only names that appear in the map** — file and area names verbatim. Never invent or guess one.
+- **Format per the map's own header**: a mermaid graph fence (renders on GitHub and in branchdiff); on Bitbucket, an ASCII tree in a plain code fence instead.
+- **Sections lists 2+** → one diagram per section rather than one giant one. For very-large diffs keep each diagram to areas plus at most a handful of key files (~15 nodes).
+- **Repeat passes**: when Prior passes > 0 and New areas is empty, skip the diagram — the structure is unchanged and the existing one is still accurate. When new areas appear on a later pass (the change grew since the last review), post the updated diagram as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
+- **Hybrid assist**: if exactly one wiring detail is unclear (e.g. what an edge actually carries), read that ONE file via `branchdiff agent file <path> --ref <b2> $SEL` — do not read more files or rebuild the map for the diagram.
+
+No map block means the diff is below the size floor — nothing owed, move on.
 
 #### Assess the diff size and adapt your strategy
 
@@ -318,6 +332,7 @@ branchdiff agent comment --file <path> --line <n> [--end-line <n>] --body "[seve
 - 1-2 findings → skip general comment unless there's a cross-cutting concern.
 - 3+ findings → leave a general comment summarizing themes.
 - Large diffs → always leave a general comment noting scope and grouping findings by area.
+- Change map present → that general comment opens with the "How this change works" diagram (see Step 3).
 
 ```bash
 branchdiff agent general-comment --body "<overall summary>" $SEL
