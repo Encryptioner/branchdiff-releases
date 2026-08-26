@@ -194,6 +194,10 @@ This outputs the full unified diff for the current session. Line numbers are in 
 
 **Important: read from git, never the ambient working tree — except the layers the URL explicitly requested.** The diff covers the branches from the URL (b1 → b2), NOT the currently checked-out git branch. Do NOT use `git branch --show-current`, and do NOT read files from the working tree (plain `cat`/editor open / `Read` of the on-disk path) to guess what is being reviewed — the checked-out branch may be something else entirely, so ad-hoc on-disk reads can be the wrong code. Always use the b1/b2 from the provided URL or ref argument, and read full-file content via `branchdiff agent file <path> --ref <b2>` (see Step 4). This rule is about not guessing, not about excluding staged/unstaged content categorically: when the URL's `includeStaged`/`includeUnstaged` params are set, `agent diff`'s staged/unstaged content (Step 2) and `agent file --staged`/no-`--ref` (Step 4) are the CORRECT, sanctioned sources for that layer — not a violation of this rule.
 
+#### Stacked-PR ancestor context
+
+If a section titled "Ancestor Stack Context (PR #N — ...)" appears above in this prompt, this PR builds on that one — `branchdiff auto --stack` already resolved and attached it. Use it only as read-only background to understand the code around the diff; never comment on its lines. When no such section is present but you suspect this PR is stacked (its base branch is itself another open PR) and want to check, run `branchdiff review context --stack $SEL` yourself. Most PRs are not stacked — skip this entirely otherwise.
+
 ### Step 3: Understand the change
 
 Before looking for problems, build a mental model of the diff:
@@ -206,15 +210,14 @@ Then read all relevant CLAUDE.md (or GEMINI.md, AGENTS.md) files — the root on
 
 #### How this change works (change map)
 
-Larger diffs append a machine-computed `BRANCHDIFF CHANGE MAP` block after the diff (Step 2) or after the summary table (`review context`). It lists the changed areas with churn, the import wiring between them, and — when the PR touches unrelated parts — separate sections. Use it as your orientation; do not re-derive this yourself.
+Larger diffs append a machine-computed `BRANCHDIFF CHANGE MAP` block after the diff (Step 2) or after the summary table (`review context`). It lists the changed areas with churn, the import wiring between them, separate sections when the PR touches unrelated parts, and — for any section with real wiring — a ready-made diagram. When the session's remote is known (a linked GitHub or Bitbucket PR), the map includes only the one format that actually renders there; without a linked PR (a bare `--refs` comparison) it includes both, since it has no way to know which platform will read it. Use it as your orientation; do not re-derive any of this yourself.
 
-When a map is present, the review's general comment (Step 5) opens with a "How this change works" diagram authored FROM the map:
+When a map is present, the review's general comment (Step 5) opens with a "How this change works" diagram taken FROM the map:
 
-- **Use only names that appear in the map** — file and area names verbatim. Never invent or guess one.
-- **Format per the map's own header**: a mermaid graph fence (renders on GitHub and in branchdiff); on Bitbucket, an ASCII tree in a plain code fence instead.
-- **Sections lists 2+** → one diagram per section rather than one giant one. For very-large diffs keep each diagram to areas plus at most a handful of key files (~15 nodes).
-- **Repeat passes**: when Prior passes > 0 and New areas is empty, skip the diagram — the structure is unchanged and the existing one is still accurate. When new areas appear on a later pass (the change grew since the last review), post the updated diagram as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
-- **Hybrid assist**: if exactly one wiring detail is unclear (e.g. what an edge actually carries), read that ONE file via `branchdiff agent file <path> --ref <b2> $SEL` — do not read more files or rebuild the map for the diagram.
+- **Copy the pre-rendered "Section N (mermaid)"/"Section N (ascii)" block verbatim** — whichever format the map included (or, when it shipped both, mermaid on GitHub and in branchdiff, the ascii block on Bitbucket). Do not compose, restyle, or relabel it; every node and edge already comes straight from the diff.
+- **A section with no pre-rendered diagram has no import wiring** — it's an isolated area (docs, a lone config file, an unwired addition). Don't draw one. When 2+ such sections exist, cover them together in one combined prose line (files + churn each) rather than one heading per section.
+- **Repeat passes**: when Prior passes > 0 and New areas is empty, skip the diagram — the structure is unchanged and the existing one is still accurate. When new areas appear on a later pass (the change grew since the last review), post the updated diagram(s) as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
+- **Hybrid assist**: if exactly one wiring detail is unclear (e.g. what an edge actually carries), read that ONE file via `branchdiff agent file <path> --ref <b2> $SEL` and add a short prose note after the copied diagram — do not read more files, and never edit the diagram itself.
 
 No map block means the diff is below the size floor — nothing owed, move on.
 
