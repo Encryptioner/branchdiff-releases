@@ -40,7 +40,7 @@ Several `branchdiff` sessions run at once on one repo (two PRs in two terminals,
 # In order of preference — stop at the first that applies:
 SEL="--session $BRANCHDIFF_SESSION_ID"     # 1. pinned by the runner (branchdiff review run / auto set this)
 SEL="--port $BRANCHDIFF_PORT"              # 2. else, a known port
-branchdiff list                            # 3. else: exactly one session live for this repo → take its port
+branchdiff list --repo                     # 3. else: exactly one session live for THIS repo → take its port
 SEL="--port <that one port>"
 # 4. More than one live and nothing pins you → STOP and ask the human. Never guess.
 ```
@@ -195,10 +195,10 @@ Only resolve threads whose fix you have actually exercised.
 
 ```bash
 branchdiff agent list $SEL
-branchdiff list
+branchdiff list --repo
 ```
 
-Verify every applicable thread is resolved, then take the current repo's URL line (e.g. `http://localhost:5391`) from `branchdiff list` and **always print it back to the user** so they can jump straight to the browser view.
+Verify every applicable thread is resolved, then take the URL fresh from `branchdiff list --repo` (scoped to this repo, not every session on the machine — never a port you recall from earlier) and **always print it back to the user** so they can jump straight to the browser view.
 
 **Completion toast** (when notifications are active, once you have the counts — reuse the start toast's URL):
 ```bash

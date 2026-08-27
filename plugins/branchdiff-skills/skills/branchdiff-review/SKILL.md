@@ -108,7 +108,7 @@ Several `branchdiff` sessions run at once on one repo (two PRs in two terminals,
 # In order of preference — stop at the first that applies:
 SEL="--session $BRANCHDIFF_SESSION_ID"     # 1. pinned by the runner (branchdiff review run / auto set this)
 SEL="--port $BRANCHDIFF_PORT"              # 2. else, a known port
-branchdiff list                            # 3. else: exactly one session live for this repo → take its port
+branchdiff list --repo                     # 3. else: exactly one session live for THIS repo → take its port
 SEL="--port <that one port>"
 # 4. More than one live and nothing pins you → STOP and ask the human. Never guess.
 ```
@@ -185,7 +185,7 @@ When a map is present, the review's general comment (Step 5) is layered exactly 
 - **Then the Level 1 overview diagram** — a reader who stops here still understands the change. Copying the map's Level 1 block verbatim is always safe, and stopping there is fine (whichever format it included; mermaid on GitHub/branchdiff and ascii on Bitbucket when it shipped both).
 - **Then each section's Level 2 file drill-down**, as a collapsible `<details>` block per section on platforms that render them (plain text otherwise). Same floor and same latitude as Level 1 — prune and reorder for readability, never add or relabel beyond what the map's own edges say:
   - **Labels** — edge labels already carry the new export names the wiring found (e.g. `×1: parseToolStream, extractEchoLine`), usually clearer than anything you would add; sharpen one only when something case-specific is worth surfacing.
-  - **Undocumented symbols** — the map's gap note names symbols it matched but found no doc comment for. Add a short (<10 words) note from a file you already read this pass (Step 4); never read a file solely to fill one in. An undecorated symbol is an honest result too.
+  - **Undocumented symbols** — the map's gap note names symbols it matched but found no doc comment for. Add a short, concrete detail (what it does, a route it defines, a shape it returns) from a file you already read this pass (Step 4); never read a file solely to fill one in. An undecorated symbol is an honest result too.
 - **Level 3 symbol tables** ride along when the map ships them — copy as given; they are already the hottest files capped to the symbols that matter.
 - **A section with no pre-rendered diagram has no import wiring** — it is an isolated area (docs, a lone config file, an unwired addition). Don't draw one. When 2+ such sections exist, cover them together in one combined prose line (files + churn each) rather than a heading each.
 - **Repeat passes** — Prior passes > 0 and New areas empty → skip the diagram; the structure is unchanged and the existing one is still accurate. New areas → post the updated diagram(s) as this pass's general comment; the earlier diagram stays in its own pass thread, accurate for the pass it described.
@@ -370,13 +370,13 @@ Never call `branchdiff pr approve`, `pr request-changes`, or `sync push` directl
 branchdiff agent list $SEL
 ```
 
-Verify all comments were posted. Then run `branchdiff list` to pull the active session URL and **always print it back to the user** so they can jump straight to the browser view:
+Verify all comments were posted. Then run `branchdiff list --repo` (scopes it to this repo, not every session on the machine) to pull the active session URL and **always print it back to the user** so they can jump straight to the browser view:
 
 ```bash
-branchdiff list
+branchdiff list --repo
 ```
 
-Extract the URL line (e.g. `http://localhost:5391`) for the current repo and include it in your final message. Tell the user the review is complete, summarize findings, and link the session:
+Take the URL fresh from THIS output — never a port you recall from earlier in this pass or a prior run (other repos, or another session of this one, can be running at the same time; a stale or wrong-repo URL sends the user to the wrong place). Tell the user the review is complete and summarize findings, then close with two short lines and nothing after them: the session link, then one line pointing to the resolve skill as the next step.
 
 **Completion toast** (when notifications are active — fire it once you have the counts): reuse the same session URL as the start toast (you already know it — no need to call `branchdiff list` again just for this).
 ```bash
