@@ -151,8 +151,13 @@ This makes nth-time reviews additive, not repetitive.
 
 ### Step 2: Get the diff
 
+**Before running this: does the request clearly call for skipping or narrowing the change map?** Only if whoever asked for this review said something that unambiguously means "skip the change map" or "don't map area X" (your own judgment call from their wording, never a fixed keyword list) — otherwise generate it for all files, the default. Never add these flags speculatively, and never invent an exclusion the requester didn't ask for. This is a one-time decision made before the single call below, never a reason to fetch the diff twice.
+
 ```bash
 branchdiff agent diff $SEL
+# ...or, only when the judgment call above says so:
+branchdiff agent diff --no-change-map $SEL                          # suppress the map entirely
+branchdiff agent diff --change-map-exclude "packages/ui/**" $SEL    # narrow it to exclude matching files
 ```
 
 If the URL had `includeStaged=1`/`includeUnstaged=1` (see Arguments), append the matching flag(s) instead: `branchdiff agent diff --include-staged --include-unstaged $SEL`. Without those params, never pass the flags — they only belong when the URL's own tab had the checkbox checked.
