@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-28T11:32:25.326Z",
+  "generatedAt": "2026-08-28T12:04:31.523Z",
   "startUrl": "https://encryptioner.github.io/branchdiff-releases/",
   "pages": [
     "https://encryptioner.github.io/branchdiff-releases/",
     "https://encryptioner.github.io/branchdiff-releases/guideline.html",
     "https://encryptioner.github.io/branchdiff-releases/changelog.html"
   ],
-  "chunkCount": 419,
+  "chunkCount": 420,
   "chunks": [
     {
       "anchor": "visual-git-diff-in-your-browser",
@@ -72,7 +72,13 @@
       "anchor": "install",
       "title": "Visual git diff in your browser. — Install",
       "url": "https://encryptioner.github.io/branchdiff-releases/#install",
-      "text": "Install Pick your platform. All channels are kept in lockstep — same version everywhere."
+      "text": "Install Pick your platform. Install commands always pull the latest published version."
+    },
+    {
+      "anchor": "channel-status",
+      "title": "Visual git diff in your browser. — Install",
+      "url": "https://encryptioner.github.io/branchdiff-releases/#channel-status",
+      "text": "npm 2.2.0 | Binaries (GitHub) 2.1.1 | PyPI 2.1.1 | Homebrew 2.1.1 | Scoop 2.1.1 | APT 2.1.1"
     },
     {
       "anchor": "nodejs-node-18",

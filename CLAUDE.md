@@ -38,7 +38,7 @@ README.md                       Public-facing landing doc
 
 | Task | How |
 |------|-----|
-| Test the landing page locally | `python3 -m http.server 8080` (see [DEVELOPMENT.md](DEVELOPMENT.md)) |
+| Test the landing page locally | From the repo root: `python3 -m http.server 8080`, open `http://localhost:8080/`. Must be HTTP, not `file://` (see Gotchas). Verify the hero **release badge** and install-section **channel chips** go live within ~1s (badge swaps from its static fallback to the highest version across channels) and the console stays clean. Force-refresh to bust cached JS. (see [DEVELOPMENT.md](DEVELOPMENT.md)) |
 | Ship a new CLI release | Cut release in `../branchdiff`; CI bumps `Formula/branchdiff.rb`, `bucket/branchdiff.json`, APT pool, and runs the content-sync commit here. **Then regenerate `site-index.json`** (see below) — the sync workflow does not do this, so the RAG index goes stale on every release otherwise. |
 | Edit / release a Claude Code skill | See below + [docs/skills.md](docs/skills.md) for the full walkthrough. |
 | Update site copy | Edit `index.html` / `styles/main.css` / `scripts/main.js` directly — no build. |
@@ -130,6 +130,7 @@ sh -n install-skill.sh                                            # installer sh
 - **Homebrew tap URL casing matters.** The formula uses lowercase `encryptioner/` in URLs; GitHub redirects but tooling that follows redirects strictly may fail.
 - **APT repo is rebuilt by aptly state** in `apt/.aptly-state.tar.gz`. Don't hand-edit files under `apt/dists/` — round-trip through aptly or you'll corrupt the index.
 - **`.code-review-graph/graph.db` was built on `master`.** Querying from another branch can be stale — rebuild with `code-review-graph build` if you rely on it.
+- **`file://` breaks the release badge.** `scripts/shared.js` (`loadVersionBadge`) probes npm / GitHub / PyPI plus same-origin `Formula/`, `bucket/`, `apt/` files and shows the **highest** shipped version in the header badge (`#version-badge`, all pages), hero badge (`#release-badge`, index), and channel chips (`#channel-status`, index) — results cached in `sessionStorage` per tab. Opening `index.html` directly leaves badges on static fallback. If every probe fails at runtime the page keeps the fallback silently, so a dead badge on the deployed site means checking the browser console, not the build.
 - **`site-index.json` silently goes stale.** A missed regen after a content sync doesn't error or 404 — the chat widget just keeps answering from the old guideline/changelog text. No alert fires; check the diff manually after releases (see [RAG chat widget](#rag-chat-widget)).
 
 ## Where to look next

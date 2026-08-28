@@ -126,28 +126,129 @@ function renderFooter(container) {
   container.classList.add('border-t', 'border-slate-200', 'bg-white');
 }
 
-async function loadVersionBadge() {
-  const badge = document.getElementById('version-badge');
-  if (!badge) return;
+// Live release detection: probe every install channel's public version
+// endpoint, show the HIGHEST shipped version (a channel can run ahead —
+// e.g. npm publishes from main while a binary release action failed).
+// Header badge (#version-badge) shows on every page; hero badge
+// (#release-badge) and channel chips (#channel-status) only on index.
+// ponytail: snap excluded — snapcraft API needs auth headers, no plain CORS GET.
+const RELEASE_CHANNELS = [
+  {
+    id: 'npm', label: 'npm',
+    url: 'https://registry.npmjs.org/@encryptioner/branchdiff/latest',
+    json: true, pick: (d) => d.version,
+  },
+  {
+    id: 'github', label: 'Binaries (GitHub)',
+    url: `https://api.github.com/repos/${PUBLIC_REPO}/releases/latest`,
+    json: true, pick: (d) => (d.tag_name || '').replace(/^v/, ''),
+  },
+  {
+    id: 'pip', label: 'PyPI',
+    url: 'https://pypi.org/pypi/branchdiff/json',
+    json: true, pick: (d) => d.info && d.info.version,
+  },
+  {
+    id: 'brew', label: 'Homebrew',
+    url: './Formula/branchdiff.rb',
+    json: false, pick: (t) => (t.match(/version\s+"([^"]+)"/) || [])[1],
+  },
+  {
+    id: 'scoop', label: 'Scoop',
+    url: './bucket/branchdiff.json',
+    json: true, pick: (d) => d.version,
+  },
+  {
+    id: 'apt', label: 'APT',
+    url: './apt/dists/stable/main/binary-amd64/Packages',
+    json: false, pick: (t) => ((t.match(/^Version:\s*(.+)$/m) || [])[1] || '').trim(),
+  },
+];
 
+// Numeric X.Y.Z compare — channels tag plain semver, no prerelease suffixes.
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+function fetchChannelVersion(channel) {
+  return fetch(channel.url)
+    .then((r) => (r.ok ? r.text() : Promise.reject(new Error(channel.id + ' HTTP ' + r.status))))
+    .then((body) => {
+      const version = channel.pick(channel.json ? JSON.parse(body) : body);
+      if (!version) throw new Error(channel.id + ': no version in response');
+      return version;
+    })
+    .catch(() => null); // network/CORS/rate-limit → unknown, not "broken"
+}
+
+function renderReleaseStatus(versions) {
+  const answered = versions.filter(Boolean);
+  if (!answered.length) return; // every probe failed: keep static fallback text
+
+  // Canonical for badges: the HIGHEST version any channel actually shipped.
+  const canonical = answered.reduce((max, v) => (compareVersions(v, max) > 0 ? v : max));
+  const allCurrent = versions.every((v) => v === canonical);
+
+  const headerBadge = document.getElementById('version-badge');
+  if (headerBadge) headerBadge.textContent = 'v' + canonical;
+
+  const heroBadge = document.getElementById('release-badge');
+  if (heroBadge) {
+    const text = heroBadge.querySelector('[data-version]');
+    if (text) text.textContent = 'v' + canonical;
+    const dot = heroBadge.querySelector('[data-dot]');
+    if (dot) dot.className = 'w-2 h-2 rounded-full ' + (allCurrent ? 'bg-emerald-500' : 'bg-amber-500');
+  }
+
+  const status = document.getElementById('channel-status');
+  if (!status) return;
+  status.textContent = '';
+  status.setAttribute('aria-label', 'Latest release per install channel');
+  RELEASE_CHANNELS.forEach((channel, i) => {
+    const v = versions[i];
+    const chip = document.createElement('span');
+    chip.className = v === canonical
+      ? 'text-emerald-700'
+      : v ? 'text-amber-700' : 'text-slate-400';
+    chip.textContent = channel.label + ' ' + (v || '?');
+    status.appendChild(chip);
+    if (i < RELEASE_CHANNELS.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'text-slate-300 mx-1';
+      sep.textContent = '|';
+      status.appendChild(sep);
+    }
+  });
+}
+
+async function loadVersionBadge() {
+  const hasHeader = document.getElementById('version-badge');
+  const hasHero = document.getElementById('release-badge');
+  if (!hasHeader && !hasHero) return;
+
+  // Cache shape: JSON array of per-channel versions. Older sessions may hold
+  // a plain "vX.Y.Z" string from the previous GitHub-only badge — treat any
+  // non-JSON value as a miss and re-probe once.
   const cached = sessionStorage.getItem(VERSION_CACHE_KEY);
   if (cached) {
-    badge.textContent = cached;
-    return;
+    try {
+      renderReleaseStatus(JSON.parse(cached));
+      return;
+    } catch { /* stale shape — fall through to live probe */ }
   }
 
-  try {
-    const res = await fetch(`https://api.github.com/repos/${PUBLIC_REPO}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github+json' },
-    });
-    if (!res.ok) throw new Error(`status ${res.status}`);
-    const data = await res.json();
-    const version = data.tag_name || 'latest';
-    badge.textContent = version;
-    sessionStorage.setItem(VERSION_CACHE_KEY, version);
-  } catch {
-    badge.textContent = 'latest';
+  if (typeof fetch !== 'function') return; // ancient browser: static fallback stays
+  const versions = await Promise.all(RELEASE_CHANNELS.map(fetchChannelVersion));
+  if (versions.some(Boolean)) {
+    try { sessionStorage.setItem(VERSION_CACHE_KEY, JSON.stringify(versions)); } catch { /* private mode */ }
   }
+  renderReleaseStatus(versions);
 }
 
 function initShared() {
