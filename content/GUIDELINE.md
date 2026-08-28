@@ -450,6 +450,7 @@ The top toolbar adapts to your current session and shows relevant controls:
 - **Expand all / Collapse all** buttons — expand or collapse all file diffs at once (toggle based on current state)
 - **Unified / Split / Full** view mode toggle — choose your diff layout
 - **Include staged / Include unstaged** — layer your staged or unstaged changes onto a branch comparison (appear when your checked-out branch is one side of it)
+- **Change map icon** — opens the same orientation diagrams the AI reviewer's general comment uses, in a modal — see [The change map](#the-change-map-how-this-change-works) below
 - **Comment actions** — navigate threads (previous/next), comment count, copy for AI review, archive session, view history
 - **3-dot menu** — theme toggle, whitespace display, keyboard shortcuts, this guideline, changelog, and links
 
@@ -842,7 +843,7 @@ The staged layer is the index against `HEAD` (`git diff --cached`) everywhere �
 
 ### Remote comments are pulled first
 
-A **PR-linked** session pulls the latest comments from the PR as soon as it's created — whether you opened it yourself (`branchdiff <pr-url>`), it was created for you by `branchdiff auto`, or an AI agent started it while following the review skill — so the discussion is already there the first time anyone (you or the AI) looks at the session. `review context`, `review run` and `review import` pull again before doing anything, so a session left open for a while still sees anything posted since. The review skill does the same before reading the diff — `branchdiff agent refresh` pulls the latest comments and refuses to review if your local branch has fallen behind the PR head, so a standalone skill review runs against fresh code just like a `review run`. It's best-effort — no network, no auth, or no PR just means the review proceeds on local state. Branch-pair sessions (not tied to a PR) stay local by design.
+A **PR-linked** session pulls the latest comments from the PR as soon as it's created — whether you opened it yourself (`branchdiff <pr-url>`), it was created for you by `branchdiff auto`, or an AI agent started it while following the review skill — so the discussion is already there the first time anyone (you or the AI) looks at the session. `review context`, `review run` and `review import` pull again before doing anything, so a session left open for a while still sees anything posted since. The review and resolve skills do the same before they start — `branchdiff agent refresh` pulls the latest comments and refuses to go on if your local branch has fallen behind the PR head, so a standalone skill run reviews (or fixes) fresh code just like a `review run`. It's best-effort — no network, no auth, or no PR just means the review proceeds on local state. Branch-pair sessions (not tied to a PR) stay local by design.
 
 ### One AI, one session
 
@@ -878,12 +879,13 @@ The generated review and resolve skills follow the same rule automatically: they
 ### Resolve skill workflow
 
 `/branchdiff-resolve` reads all open review threads and resolves them:
-1. Reads each thread's comment body to understand the requested change
-2. Confirms the reviewed code is actually present in the tree it's about to edit
-3. Finds the construct the comment describes and makes the edit
-4. Runs the project's own checks before claiming a thread is fixed
-5. Marks the thread resolved with a summary, or dismisses it with a reason if the fix shouldn't apply
-6. Skips general comments and threads waiting for user clarification
+1. Pulls the PR's latest comments first, and stops if the local branch is behind the PR head — a fix belongs on current code
+2. Reads each thread's comment body to understand the requested change
+3. Confirms the reviewed code is actually present in the tree it's about to edit
+4. Finds the construct the comment describes and makes the edit
+5. Runs the project's own checks before claiming a thread is fixed
+6. Marks the thread resolved with a summary, or dismisses it with a reason if the fix shouldn't apply
+7. Skips general comments and threads waiting for user clarification
 
 The review and resolve skills form a complete loop — review, inspect in browser, resolve — without leaving your editor.
 
@@ -934,7 +936,7 @@ Run `branchdiff review guide` first to load the full reference, then:
 
 2. Refresh remote state, then read the full diff:
    branchdiff agent refresh          # pull latest PR comments; refuses if the local branch is behind the PR head (--allow-stale to override)
-   branchdiff agent diff
+   branchdiff agent diff             # large diffs append a BRANCHDIFF CHANGE MAP block — see "The change map"
 
 3. Read root CLAUDE.md/AGENTS.md/GEMINI.md (+ any in touched directories) — violations are findings, quote the exact rule. Then for each changed file, read the ENTIRE file at the reviewed ref, not the working tree (which may be on a different branch):
    branchdiff agent file <path> --ref <ref>
@@ -952,7 +954,7 @@ Run `branchdiff review guide` first to load the full reference, then:
    Tone: lead with the problem, not a judgment. "This returns undefined when X is empty" not "this is wrong".
    Use collaborative language ("Consider using X" not "You should"). Acknowledge good code.
 
-6. General comment (optional): 3+ findings → summarize themes.
+6. General comment (optional): 3+ findings → summarize themes; when a change map was present, open with the "How this change works" diagram authored from it (see "The change map").
    branchdiff agent general-comment --body "<overall summary>"
 
 7. Confirm: branchdiff agent list --status open
@@ -980,6 +982,58 @@ Run `branchdiff review guide` first to load the full reference, then:
 Start: branchdiff review guide
 ```
 
+### The change map — how this change works
+
+Diffs big enough to need orientation — **3+ files or 80+ changed lines** — come with a **change map**: a machine-computed block appended to `branchdiff agent diff` output and inserted after the summary table in `review context` and `review run`. Before anyone reads a hunk, it answers which areas moved and by how much, which are wired together by imports, whether the PR is one coherent change or several unrelated ones (**sections**), which areas are entirely new, and how many review passes the session has already had. For every section with real import wiring, the map already includes a ready-made diagram — a section with no wiring (an isolated doc, a lone config file) gets none, since a diagram with no edges would say nothing a one-line description doesn't already say. When an edge crosses into code the diff itself added (a new function, class, or export the other side actually imports), the edge is labeled with those names instead of a bare import count — the diagram reads as "this PR added X, which Y now calls", not just "these two areas happen to be connected". When that new symbol carries its own doc comment, its node goes further still: the box itself folds in a short line of what the symbol actually does, drawn from the comment's first sentence — the diagram shows behavior, not just structure, wherever the diff already wrote it down. A symbol with no comment (common — not everything gets documented) just keeps its plain name; nothing is invented to fill the gap — instead the map names that gap explicitly, so the AI reviewer can fill it cheaply from a file it's already reading for the review, rather than never at all or at the cost of an extra read.
+
+The AI reviewer opens its **"How this change works" general comment** with a short intent summary — what the change does and why, in a sentence or two — followed by those diagrams, copied as-is by default: mermaid on GitHub and in branchdiff's comment view, the pre-rendered ASCII tree instead on Bitbucket, since Bitbucket doesn't render mermaid. When the session already knows its remote (a linked PR), the map includes only the one format that platform actually renders; without a linked PR it includes both, and the AI picks the one matching where the comment is headed. Copying verbatim is always safe, but the AI has real latitude beyond that floor — sharpening a label, pruning a genuinely redundant edge, or filling in a short description for a node the map flagged as undocumented (see below) but which the AI already read this pass. The one line it won't cross: every node and edge that appears must trace back to a real one from the map — nothing invented. Small diffs get no map and owe no diagram, and a repeat pass with no new areas skips re-posting one.
+
+The map respects the review's scoping: `--files` filters it exactly like the diff, and an instruction like `don't check ai/plans/**` drops those paths from the map — and therefore from the diagram — too. When a request clearly calls for skipping or narrowing the map itself — not just the diff — `branchdiff agent diff --no-change-map` suppresses it entirely, and `--change-map-exclude <glob>` narrows it to exclude matching files; the AI decides from the requester's wording, never speculatively.
+
+**In the browser**, click the change-map icon in the [toolbar](#the-toolbar) to see the same diagrams without starting a review — nothing is computed until you open the modal, and closing it (or a "view full diagram" popup opened from inside it) never leaves the diff page. A Mermaid/Ascii toggle switches format from that one fetch, and Copy markdown copies whichever format is showing.
+
+<details><summary>Technical breakdown</summary>
+
+- The block is an HTML comment (`<!-- BRANCHDIFF CHANGE MAP … END BRANCHDIFF CHANGE MAP -->`), so it stays invisible when the context is pasted into a markdown surface while the agent still reads it as text.
+- Computation is deterministic and local — zero AI tokens, diagrams included. An area is the first two path segments of a file; a section is a connected component of changed areas joined by cross-area import edges; wiring comes from import statements in changed files plus unchanged files that import changed ones. The mermaid and ASCII diagrams are rendered straight from that same wiring data — a solid edge for changed-to-changed, a dashed one for changed-to-existing — deliberately leaving out integration edges (unchanged consumers of the changed code): that `from` area is often the same one already drawn for a changed edge, so a second arrow between two nodes already connected would only confuse the picture rather than add information. Each mermaid block carries its section's area list as a `title:` frontmatter, so the "view full diagram" popup (below) already has a real header instead of the generic fallback. The AI's job is to pick the block matching its target platform when the map ships both, not to author one. File content is read at the compared ref (`b2`), or the working tree for uncommitted-work reviews — the same source split the diff itself uses.
+- Edge labels carry symbol names, not just counts, when the map can tell what actually flows: the diff's added lines are scanned for top-level `export function`/`class`/`const`/`type`/etc declarations in code files (a markdown/plan file's fenced example is never counted, only real source), and a changed-to-changed edge is labeled with whichever of those names the importing side's named-import clause actually names — capped at 3 names plus a "+N more" tail, count kept alongside (`×9: computeChangeMapBlock, sectionEdges`). An edge with no matched new export falls back to the bare count. This is regex-level, not a type checker — a name match is a real named-import naming a real new export, nothing inferred beyond that.
+- A matched symbol's own leading comment becomes the node's second line, when one exists: the diff's added lines immediately above the export declaration — a contiguous run of `/** */` or `//` lines, no gap — are read back and the first sentence kept (capped tighter than the edge label, ~70 characters, since it lives inside a node box). Quotes and newlines in that text are sanitized so they can't break the mermaid label they're embedded in. This is real author-written prose already in the diff, not model-generated — the one deterministic source that can say *what* new code does instead of only *where* it lives. Coverage varies by codebase and author habit — not every new export gets a doc comment — so this is a bonus when present, never a requirement: a symbol with none simply keeps its plain node label, exactly as if this didn't exist.
+- Every section's diagram block is followed by one explicit line — `No doc comment on: <node> (<symbol>), …` — naming every node the wiring matched a symbol for but found no leading comment to describe (omitted entirely when there's nothing to name). This turns "the map has a gap here" from something the AI would have to notice by comparing mermaid syntax into a fact stated outright: the review skill fills an undocumented-symbol gap only from a file it's *already reading* for Step 4, never an extra read spent solely on the diagram. A separate hybrid-assist step covers the other kind of gap — one unclear wiring detail, such as what an edge actually carries — and is allowed exactly one extra read via `branchdiff agent file` to resolve it, informing a label edit but never adding a node or edge of its own.
+- The AI's intent-summary sentence is genuinely the model's own — the one thing in this section that isn't deterministic. It comes from context already in hand (diff content, PR description), never an extra read, and it's why the review skill still adds value on top of the map: the map computes *where* and *what's wired*, never *why*.
+- The browser modal's diagrams are the identical data the AI reviewer's general comment uses — same areas, edges, labels, doc snippets — with the agent-addressed prose stripped out: the HTML-comment wrapper, the "author ONE general comment" header, and the "No doc comment on: …" gap note all exist to steer an AI writing a comment, not a person looking at a picture.
+- When the session already has a linked PR, the map is computed with that platform in hand and includes only the matching diagram format — mermaid alone for a GitHub session, ASCII alone for a Bitbucket one — rather than shipping the format that will never render there. A session with no linked PR yet (a bare `--refs` comparison, or before the first push) gets both, since the map can't know ahead of time where the comment is headed.
+- Everything is bounded so a huge PR still gets a readable map: the area table tops out at 20 rows, wiring edges and file reads at fixed caps. Any wiring failure degrades to the churn table alone — map computation can never block or fail a review.
+- The two thresholds are constants exported from the module (`MAP_MIN_FILES = 3`, `MAP_MIN_LINES = 80`) — single knobs, changeable without touching logic.
+- Mermaid diagrams in comment threads follow the branchdiff theme live — toggle light/dark and an existing diagram re-renders in place.
+- In branchdiff's own comment view, a mermaid fence can open with a `title:` YAML frontmatter block; the "view full diagram" popup uses it as its sticky header (falling back to a generic "Diagram" label when absent), staying pinned as you scroll a diagram taller than the popup. Mermaid always renders from the frontmatter-**stripped** source — the popup's own header already shows the title, so mermaid never also renders its own internal one — which means title extraction never depends on the frontmatter being valid YAML either: a malformed title (e.g. unbalanced quotes) degrades to "diagram with no title", never to no diagram at all. If the diagram body itself is genuinely invalid, the raw chart source is shown with a visible "Failed to render diagram" note instead of failing silently. GitHub and Bitbucket render mermaid (or the ASCII fallback) through their own pipelines, so this local title/fallback handling is specific to branchdiff's own comment view.
+- The popup opens sized to fit — scaled up if the diagram is naturally small, down if it's larger than the popup allows, fitting both width and height so nothing is cut off or left in a sea of blank space. Zoom in/out/reset controls sit next to a download button (then close) that saves the rendered diagram as a standalone `.svg` file, named from its title when one is set.
+
+</details>
+
+### Stacked PRs — ancestor context (`--stack`)
+
+When a PR's base branch is itself another open PR's head branch — a stacked review — reviewing it alone hides the reasoning and diff of the PR it builds on. `--stack` on `review context`, `review run`, and `auto` detects that immediate ancestor and injects its description and file-level diff summary as a clearly labeled, read-only `## Ancestor Stack Context` section ahead of the diff under review, on both GitHub and Bitbucket.
+
+It's opt-in and additive: without `--stack`, output is unchanged. With it, ancestor detection reuses the same PR-list data branchdiff already fetches for other PR-linked features — no new API surface. If no ancestor is found, or the session isn't PR-linked, `--stack` prints an informational line to stderr and the review proceeds normally. On `review run`, `--stack` only applies to the diff/context modes (`--mode review`/`full`, the default) — `--mode resolve` builds its context from open threads, not the diff, so `--stack` has no effect there and prints a note to stderr rather than injecting anything. `auto --stack` carries the same review-pass-only scope — it never applies to `auto`'s separate `--resolve` pass.
+
+```bash
+branchdiff review context --stack
+branchdiff review run --exec "claude -p" --stack
+branchdiff auto --tool claude --stack
+branchdiff auto --tool claude --skill --stack
+```
+
+<details><summary>Technical breakdown</summary>
+
+- Detection is a base-branch chain walk: another currently-open PR whose head/source branch equals this PR's base/dest branch is the immediate ancestor — one API call, since the session's own PR (to read its dest) and the ancestor candidate both come from the same open-PR list response. Only the immediate parent is covered in v1, not the full chain.
+- The ancestor's description rides that same list call (no separate per-PR fetch); its diff summary is computed by explicitly fetching its branches under the correctly-resolved remote (`upstream` > `origin` > first — never hardcoded `origin`, so forked-repo stacks work) before diffing, since neither branch is guaranteed to be checked out or already fetched locally.
+- The diff summary is file-level only (path, status, +/-) — no hunk content — matching `review context`'s token-efficient design.
+- Any failure in the fetch or description lookup degrades to a stderr warning; the review continues without the ancestor section rather than failing.
+- All `--stack` diagnostics go to stderr, never stdout — `review context`'s stdout is piped verbatim into `claude -p`/`review import`, so a diagnostic on stdout would corrupt that stream.
+- `auto --stack` matches ancestors against the open-PR list its own scan phase already fetched for the repo, rather than making a fresh lookup for every PR it reviews that cycle — a 20-PR cycle still costs one list call total, the same as a 1-PR cycle. Classic mode passes the resolved ancestor to the spawned `review run` child via an environment variable so the child skips its own lookup too; `--skill` mode (no child process) resolves and renders it directly into the prompt, and the skill body itself uses that section when present.
+
+</details>
+
 ### One-shot pipe
 
 ```bash
@@ -1001,6 +1055,50 @@ Before doing anything, `review run` prints a **run summary** — every flag you 
 **`--notify`** — desktop notification on each review state: started, finished, comments pushed, verdict set, or failed (default off; same behavior as `auto`).
 
 After every `review run` or `review import`, branchdiff prints the active session URL/port/pid so you can jump back to the browser. Sessions stay alive — stop them with `branchdiff killall` or `branchdiff kill --port N`.
+
+### Inline — start the session and review it in one command
+
+`--review` on the root command runs one review pass as soon as the session is ready — same as `review run`, one command earlier. It works whether the session is freshly started or you're reusing one already running for that ref, and needs `--tool <name>` or `--exec "<cmd>"` to say what to review with:
+
+```bash
+branchdiff main feature --review --tool claude
+branchdiff https://github.com/owner/repo/pull/123 --review --exec "claude -p" --push
+```
+
+**Picking what to review with — exactly one of:**
+- `--tool <name>` — shorthand for a known AI CLI: `claude`, `codex`, `opencode`, `gemini`, `cursor`, `llm`, `antigravity`. Same presets `auto` uses.
+- `--exec "<cmd>"` — spell out any other AI CLI directly.
+
+The AI is instructed to run `branchdiff agent ...` commands itself here in **both** classic and skill mode (see [Classic vs skill mode](#classic-vs-skill-mode-why-both-need-auto-approve) below), so whichever tool gets detected — via `--tool <name>` or sniffed from `--exec`'s own first word (env-prefixes skipped, same rule [usage-tracking detection](#tokencost-tracking-when-it-turns-on-and-with-exec-specifically) uses) — has its unattended/auto-approve flag appended automatically, with a line logging what was added and a reminder to set up a deny-list for that tool. An unrecognized `--exec` (a wrapper script, an unsupported CLI) is left exactly as written — branchdiff warns instead of guessing.
+
+**`--skill`** drives the built-in branchdiff-review skill instead of the classic diff+JSON pipe — the AI runs `branchdiff agent ...` itself and posts as it goes, same mechanism `auto --skill` uses. Only the default skill is supported here today — no `--skill-name`/`--additional-skill` for a custom one — and `--stack` has no effect yet in this mode (both `auto --skill`-only for now).
+
+```bash
+branchdiff main feature --review --skill --tool claude
+branchdiff main feature --review --skill --tool claude --approve --push
+```
+
+**Every other `review run` flag works here too**, combined freely with `--tool`/`--exec`:
+
+```bash
+branchdiff main feature --review --tool claude --prompt "focus on the auth changes"
+branchdiff main feature --review --tool claude --push --notify --approve
+```
+
+An `--exec` whose first word isn't a known tool needs its own auto-approve flag added by hand (see [Choosing the AI](#choosing-the-ai)), and the same [env-prefix](#using-your-own-account-a-wrapper-or-any-custom-tool) trick that isolates `auto` to one account/config dir works here — set it inline inside the `--exec` string:
+
+```bash
+branchdiff main feature --review \
+  --exec "CLAUDE_CONFIG_DIR=~/.claude-account1 claude -p" \
+  --prompt "don't check ai/**/plans"
+# claude is detected from --exec's first word — --dangerously-skip-permissions is appended for you
+```
+
+`--prompt`, `--usage-tool`, `--push`, `--notify`, `--approve`/`--request-changes`, `--no-verdict`, `--stack`, `--allow-stale`, `--fresh`, `--files`, `--full-files`, `--timeout` all mean exactly what they mean on `review run` — see that section above for what each one does.
+
+**Not available here** — root already uses these flags for something else, or they don't apply to a command that's starting its own session: `--mode`/`--worktree` keep their existing root meanings (diff mode / PR-checkout location, not `review run`'s worktree-isolation or session-targeting); `--url`/`--session`/`--port`/`-y` don't apply since the session is whatever this invocation just started or attached to.
+
+Combined with `--detach`, the review runs in the backgrounded child — its output lands in that child's log file like the rest of a detached run's output, not the terminal you typed in.
 
 ### Reviewing without touching your working tree
 
@@ -1112,7 +1210,7 @@ Every command below also takes `--session <id>` / `--port <n>`. With one session
 
 ```bash
 branchdiff agent refresh [--allow-stale]                      # pull latest PR comments; refuses if local branch is behind PR head
-branchdiff agent diff                                         # read the full diff
+branchdiff agent diff                                         # read the full diff (large diffs append a change map — see "The change map")
 branchdiff agent file <path> --ref <ref>                      # read a file's full content AT a ref, not the working tree
 branchdiff agent list --json                                  # all threads
 branchdiff agent list --status open --json                    # only open threads
@@ -1253,21 +1351,35 @@ Rows are grouped under the repo they belong to. The directory every repo sits un
 
 #### Choosing the AI
 
-`--tool` covers the common CLIs; `--exec` takes any command that reads a prompt on stdin and prints review JSON on stdout:
+`--tool` covers the common CLIs; `--exec` takes any command that reads a prompt on stdin and prints review JSON on stdout. This table is for `auto`'s **classic** mode (no `--skill`/`--resolve`) — it parses review JSON only, so it doesn't need the AI to run `branchdiff agent` commands itself, and doesn't auto-add an approval flag. `--skill`/`--resolve` mode does need that (see below), and auto-adds the flag for any tool it can detect — from `--tool <name>` or sniffed from `--exec`'s own first word, same detection [usage-tracking](#tokencost-tracking-when-it-turns-on-and-with-exec-specifically) uses — logging what it added and a deny-list reminder:
 
-| Flag | Runs | Classic mode | Skill mode (`--skill`) |
+| Flag | Runs | Classic mode | Skill/resolve mode |
 |------|------|:---:|---|
-| `--tool claude` | `claude -p` | ✅ | ✅ auto-adds `--dangerously-skip-permissions` |
-| `--tool gemini` | `gemini -p` | ✅ | ✅ auto-adds `--yolo` |
-| `--tool opencode` | `opencode run` | ✅ | ✅ auto-adds `--auto` |
-| `--tool codex` | `codex exec -` | ✅ | ✅ auto-adds `--dangerously-bypass-approvals-and-sandbox` |
-| `--tool cursor` | `cursor-agent -p` | ✅ | ⚠️ needs Auto-review run mode enabled in cursor settings (no headless flag) |
-| `--tool llm` | `llm` | ✅ | ❌ `llm` runs no tools — use classic mode |
-| `--exec "<cmd>"` | anything else, e.g. `--exec "llm -m gpt-4o"` | ✅ | ⚠️ you must add your tool's auto-approve flag yourself |
+| `--tool claude` | `claude -p` | ⚠️ add `--dangerously-skip-permissions` yourself | ✅ auto-adds `--dangerously-skip-permissions` |
+| `--tool gemini` | `gemini -p` | ⚠️ add `--yolo` yourself | ✅ auto-adds `--yolo` |
+| `--tool opencode` | `opencode run` | ⚠️ add `--auto` yourself | ✅ auto-adds `--auto` |
+| `--tool codex` | `codex exec -` | ⚠️ add `--dangerously-bypass-approvals-and-sandbox` yourself | ✅ auto-adds `--dangerously-bypass-approvals-and-sandbox` |
+| `--tool cursor` | `cursor-agent -p` | ⚠️ needs Auto-review run mode enabled in cursor settings (no headless flag) | ⚠️ same |
+| `--tool llm` | `llm` | ✅ `llm` runs no tools at all, so it can't block — it just prints the JSON | ❌ `llm` runs no tools — use classic mode |
+| `--tool antigravity` | `agy --print-timeout 30m` | ⚠️ add `--dangerously-skip-permissions` yourself | ✅ auto-adds `--dangerously-skip-permissions` |
+| `--exec "<cmd>"` (no `--tool`) | anything else, e.g. `--exec "llm -m gpt-4o"` | ⚠️ add your tool's auto-approve flag yourself | ✅ auto-adds it if the command's first word names a known tool, else ⚠️ add it yourself |
 
-#### Classic vs skill mode — why the difference
+The root command's inline `--review` (see [Inline](#inline-start-the-session-and-review-it-in-one-command) above) auto-adds the flag in **both** classic and skill mode — its classic mode also drives the AI through `branchdiff agent` commands, unlike `auto`'s.
 
-In **classic mode** the AI only reads the diff on stdin and prints review JSON — it runs no tools, so **every** tool works with zero permission setup. In **skill mode** the AI runs `branchdiff agent` commands *itself* to post comments; run headless, a CLI with approval prompts on will block and post nothing. So skill mode needs a tool that auto-approves tool calls unattended. `--tool` handles this for the known agentic CLIs (appending the right flag, logged); for a spelled-out `--exec`, add the flag yourself — branchdiff warns if it looks missing. Each auto-approve flag runs the AI unattended, which is why reviews go in an isolated `.worktrees/` checkout.
+#### Token/cost tracking — when it turns on, and with `--exec` specifically
+
+Four tools report usage today: `claude`, `codex`, `antigravity`, `opencode`. There are three ways a pass ends up tracked:
+
+- **`--tool <one of the four>`** — always tracked. The tool's machine-readable output flag (e.g. claude's `--output-format stream-json --verbose`) is appended automatically, same as its autonomy flag in skill mode.
+- **A bare `--exec "<cmd>"`, no `--tool`** — tracked automatically **when the command's own first word names one of the four tools** (`claude`, `codex`, `agy` for antigravity, or `opencode`) — env-prefix assignments in front of it (`CLAUDE_CONFIG_DIR=~/.claude-account1 claude -p ...`) are skipped when checking, and a path is reduced to its basename (`/usr/local/bin/claude` still matches). Only the exact first command word counts — never a substring anywhere in the string — so a wrapper script that merely mentions a tool's name (`my-claude-wrapper.sh`) is **not** detected, and nothing about a genuinely custom command changes. A line prints when this fires (`Detected claude → tracking token/cost usage`), so it's never silent. Any other first word (a wrapper, `gemini`, `cursor-agent`, `llm`) stays untracked, same as always — there's no usage flag to add for those.
+- **`--tool <name> --exec "<custom command>"` together** (the "tool family + custom launcher" pattern below) — also tracked, off `--tool`'s name, even though `--exec` overrides the actual command. Same reasoning `--skill`'s autonomy-flag lookup already uses for this combination.
+- **`--usage-tool <name>`** (explicit) always wins over anything the above would have picked, and works with any `--exec` regardless of what its first word is — this is the one way to track a custom wrapper around a supported tool.
+
+None of this changes what actually runs — only whether branchdiff also asks for and parses machine-readable output alongside it. If detection ever guesses wrong for your setup, `--usage-tool` is the escape hatch.
+
+#### Classic vs skill mode — why both need auto-approve
+
+Root's inline `--review` instructs the AI to run `branchdiff agent comment`/`general-comment` commands itself in **both** classic and skill mode, with a JSON block on stdout as classic mode's fallback branchdiff actually parses; `auto`'s classic mode is JSON-only and never needs this. Run headless, a CLI with approval prompts on blocks on those tool calls and posts nothing usable — a silent or garbled result, not a clean JSON-only review. So every tool that needs it also needs unattended tool access: `auto --skill`/`--resolve` and root's `--review` (either mode) all auto-add the known tool's flag — from `--tool <name>` or sniffed from `--exec`'s first word — logging what was added, plus a reminder to set up a deny-list for that tool (project-level and global permission settings) before relying on this for real reviews; `auto`'s classic mode never appends it, so add it to `--exec` yourself there. branchdiff warns if it looks missing wherever it can't auto-add it. Each auto-approve flag runs the AI unattended, which is why skill/resolve-mode `auto` reviews go in an isolated `.worktrees/` checkout — root's inline `--review` isn't gated on `--worktree` the same way, but the same unattended-tool-access risk to your working tree applies without it.
 
 #### Using your own account, a wrapper, or any custom tool
 
@@ -1303,7 +1415,7 @@ In **classic mode** the AI only reads the diff on stdin and prints review JSON �
 
 A bare shell alias resolves to nothing under `sh -c`, so turn it into a wrapper script instead (`#!/bin/sh` + `exec env <YOUR_ENV_VAR>=<value> <your-cli> "$@"`) and pass that script to `--exec`.
 
-For a renamed or wrapper binary (`--tool` only accepts its six preset names, so `--tool claude-account1` errors out naming the known list):
+For a renamed or wrapper binary (`--tool` only accepts its seven preset names, so `--tool claude-account1` errors out naming the known list):
 ```bash
 branchdiff auto --tool claude --exec "claude-account1 -p" --skill --review   # runs claude-account1, still auto-adds --dangerously-skip-permissions
 branchdiff auto --exec "claude-account1 -p" --review                          # standalone — add the auto-approve flag yourself in skill mode
@@ -1343,6 +1455,7 @@ Full env story at [Cron doesn't inherit your shell's `PATH` or env vars](#cron-d
 | `--skill-name <name>` | — | Drive a custom skill instead (must already be installed via `skill add`; implies `--skill`). |
 | `--additional-skill <name>` | — | Merge another installed skill's guidance into the same pass (repeatable; implies `--skill`). |
 | `--prompt <text>` | — | Extra instructions passed to the AI for this run — merged into the skill prompt, or forwarded as `review run --prompt` in classic mode. It's **advisory, not a filter**: `--prompt "skip ai/**/plans"` *asks* the reviewer to ignore those paths; branchdiff still sends the full diff. Quote it so your shell keeps it intact — use double quotes if the text has an apostrophe (`--prompt "don't touch ai/"`). |
+| `--stack` | off | Injects the immediate ancestor PR's diff summary + description as read-only context, for any PR whose base branch is itself another open PR — see [Stacked PRs](#stacked-prs-ancestor-context-stack) above. Applies to the review pass only (classic and `--skill` alike); no effect on `--resolve`. |
 | `--resolve` | off | After the review pass, drive the built-in "branchdiff" resolve skill: the AI fixes open threads locally and resolves them. Local only — nothing is committed or pushed. Works even without `--skill` (resolves whatever's already open on top of the classic review pass). |
 | `--resolve-skill-name <name>` | — | Drive a custom resolve skill instead (must already be installed via `skill add --type resolve`; implies `--resolve`). |
 | `--additional-resolve-skill <name>` | — | Merge another installed resolve skill's guidance into the same pass (repeatable; implies `--resolve`). |
@@ -1498,7 +1611,7 @@ Run `branchdiff-auto-cd` from any repo checkout to start the same watched, paral
 
 Alias a variant on top of the base alias instead of duplicating flags (`alias branchdiff-auto-c1='branchdiff-auto-cd --exec "..."'`), and tack extra flags onto any alias at the terminal for a one-off run (`branchdiff-auto-cd --no-skip --push`) — both expand and merge correctly.
 
-> **Skill mode needs unattended tool access.** In skill mode the AI runs `branchdiff agent` commands *itself*. Headless (`claude -p`), a CLI with permission prompts on will block on approvals nothing can grant and post nothing — a silent "0 comments". `--tool claude` handles this for you: in skill mode it appends `--dangerously-skip-permissions` (safe — each review runs in an isolated, detached `.worktrees/` checkout) and logs that it did. If you spell out your own `--exec`, add the flag yourself: `--exec "claude -p --dangerously-skip-permissions"` (or scope it with `--allowedTools`). branchdiff warns if it looks missing.
+> **Skill mode needs unattended tool access.** In skill mode the AI runs `branchdiff agent` commands *itself*. Headless (`claude -p`), a CLI with permission prompts on will block on approvals nothing can grant and post nothing — a silent "0 comments". `--tool claude` handles this for you: in skill mode it appends `--dangerously-skip-permissions` (safe — each review runs in an isolated, detached `.worktrees/` checkout) and logs that it did — same if a bare `--exec "claude ..."` sniffs to a known tool. Set up a deny-list for the tool (project-level and global permission settings) before relying on this for real reviews. If your `--exec` doesn't name a recognized tool, add the flag yourself: `--exec "claude -p --dangerously-skip-permissions"` (or scope it with `--allowedTools`). branchdiff warns if it looks missing.
 
 ### Unattended & cron scheduling
 
@@ -1929,10 +2042,10 @@ branchdiff completion bash > ~/.local/share/bash-completion/completions/branchdi
 | `--mode` | `file`, `git`, `delta` |
 | `--base` / `--compare` | All git branches |
 | `branchdiff review <tab>` | `context`, `threads`, `import`, `run`, `skill`, `guide` |
-| `branchdiff review context <tab>` | `--format`, `--files`, `--full-files`, `--no-instructions`, `--with-threads` |
-| `branchdiff review run <tab>` | `--exec`, `--mode`, `--prompt`, `--url`, `--dry-run`, `--files`, `--fresh`, `--worktree`, `--worktree-remove`, `--timeout`, `--notify` |
+| `branchdiff review context <tab>` | `--format`, `--files`, `--full-files`, `--no-instructions`, `--with-threads`, `--stack` |
+| `branchdiff review run <tab>` | `--exec`, `--mode`, `--prompt`, `--url`, `--dry-run`, `--files`, `--fresh`, `--worktree`, `--worktree-remove`, `--timeout`, `--notify`, `--stack` |
 | `branchdiff auto <tab>` | `--watch`, `--source`, `--dest`, `--tool`, `--exec`, `--review`, `--notify`, `--push`, `--approve`, `--request-changes`, `--worktree`, `--worktree-remove`, `--fresh`, `--timeout`, `--parallel`, `--skill`, `--skill-name`, `--additional-skill`, `--prompt` |
-| `--tool` | `claude`, `opencode`, `codex`, `gemini`, `cursor`, `llm` |
+| `--tool` | `claude`, `opencode`, `codex`, `gemini`, `cursor`, `llm`, `antigravity` |
 | `branchdiff history` / `show <tab>` | All git branches and refs |
 | `branchdiff skill add <tab>` | `--target`, `--dir`, `--out`, `--type`, `--name`, `--force` |
 | `branchdiff agent <tab>` | every agent subcommand, then `--session`, `--port`, `--yes` |
@@ -2087,11 +2200,21 @@ branchdiff stats --today --no-open        # time-window: today only
 
 The dashboard shows:
 - **KPI tiles** — reviews, comments, threads, replies, lines reviewed, files reviewed. Hover any tile for exactly what it counts — the Reviews tile breaks down branch-pair vs snapshot (a local ref/branch comparison with no PR attached counts too), and the rest note whether the My activity / Whole PR toggle affects them.
-- **Highlights** — resolution rate, approval rate, average comments/lines per review, busiest day, longest daily streak. Each only appears when the underlying counts make it meaningful (no "0%" noise on a near-empty history).
+- **Highlights** — resolution rate, approval rate, average comments/lines per review, tokens used, busiest day, longest daily streak. Each only appears when the underlying counts make it meaningful (no "0%" noise on a near-empty history). Dollar figures never print as static text anywhere in the dashboard — the Tokens used pill's hover shows estimated cost, same as the token chart and per-tool/per-repo breakdowns below. Token figures print compact everywhere in the dashboard (`2.06M`, not `2,056,792`) — pills, chart axes, per-tool and per-repo text — and every one of them carries the exact locale-formatted number on hover, so precision is one hover away.
 - **Charts** — verdict breakdown (approved / changes requested / commented) taken from branchdiff's own review verdict (`auto` / `review run`), so it populates for Bitbucket PRs as well as GitHub; plus thread status (open / resolved / dismissed), a resolved-by-whom split (you / resolve skill / platform), a reviews-and-comments time series (auto-downsampled to weekly/monthly over long windows), and a per-repo bar chart.
 - **By platform** — GitHub vs Bitbucket split, when your sessions span both.
-- **Recent PRs** — a table per pull request: review pass count (every re-review of the same PR counts, not just its first), verdict, severity-tagged comment counts (must-fix / suggestion / nit / question), and resolved-thread fraction. Each PR number links to the PR on its forge (GitHub or Bitbucket) in a new tab. Comment bodies and PR descriptions are never included — counts only.
-- **Per-repo breakdown** — a table of reviews, comments, threads, and last-reviewed date for every repo (hidden when scoped to one repo), plus a compact summary per repo: passes (times reviewed), distinct PRs, approved, changes-requested, and suggestions (`Passes`/`PRs`/`A`/`CR`/`S`; the summary tooltip expands every code).
+- **Token usage** — total tokens and estimated cost, a token time series, and a per-tool breakdown, for every pass run with a usage-reporting tool (`claude`, `codex`, `antigravity`, `opencode` — see [Choosing the AI](#choosing-the-ai)). Hovering the time series shows both tokens and cost for that day, not tokens alone. Chart axes label in the same compact form as the rest of the dashboard. On the all-repos view, a Total/By repo toggle switches the same chart to a per-repo bar breakdown — both draw from the one stats fetch, no extra request. A pass run with any other `--tool`/`--exec`, or one whose usage line the tool didn't emit, counts as **untracked**, so the totals never claim more certainty than they have. The panel, its highlight pills, and the `--share`/copy-summary line all stay hidden until at least one pass has real usage data — an all-untracked history shows nothing. `branchdiff stats --json` and the CLI text output always carry the full numbers (including the untracked count), regardless of what the dashboard abbreviates.
+  <details><summary>Technical breakdown</summary>
+
+  **Limitation — the interactive review skill isn't trackable.** Token capture only works when branchdiff itself spawns the AI process and can read its stdout: `auto --tool claude/codex/antigravity/opencode` or `review run --exec ... --tool ...`. Running the branchdiff-review skill inside your own interactive `claude`/`codex`/etc. session is the reverse — your session calls `branchdiff review context`/`review import` as plain CLI commands, and branchdiff never launches or observes an AI process in that flow. There's no subprocess stdout to parse, so those passes always count as untracked, no matter how the review actually went. This is a structural limit, not a bug: fixing it would need the AI session to self-report its own usage back to branchdiff, which no interactive tool does today.
+
+  **Live terminal echo shows more than the final reply, for claude and opencode.** The same machine-readable stream that captures tokens/cost also carries the model's thinking blocks and tool calls — printed live as `[thinking] ...` and `[tool] <name>: <headline arg>` lines alongside the reply text, in the order the model produced them, so a tracked pass in the terminal reads closer to what an interactive session shows rather than only the final answer. `codex` and `antigravity` currently echo final text only.
+
+  </details>
+
+- **Recent PRs** — a table per pull request: review pass count (every re-review of the same PR counts, not just its first), verdict, severity-tagged comment counts (must-fix / suggestion / nit / question), and resolved-thread fraction. Each PR number links to the PR on its forge (GitHub or Bitbucket) in a new tab. Comment bodies and PR descriptions are never included — counts only. A **↗** next to the pass count jumps straight to that PR's row in **Sessions** below, when it has a matching one.
+- **Sessions** — session-by-session breakdown: one row per review session with a real comparison (PR-linked, a plain branch-pair, or a local snapshot — the tree view's file-browser session, which has nothing to compare, never appears here), sorted by created date — branches, files/lines reviewed, and created/last-reviewed dates, since what was actually reviewed is the primary data here. Click a row to expand its full detail: repo, reviewed commit, active/archived status (with the archive date once archived), the PR link, tool, pass count, tokens, and cost. Click **Files** / **Lines** / **Created** / **Last reviewed** to sort by that column. A pass that ran on an untracked tool (or whose usage line didn't parse) shows **untracked** in the expanded Tokens line — same distinction the aggregate Token usage panel above makes. Browser-only — `branchdiff stats --json` carries the same per-session rows (`sessionsUsage`) for scripting, but `--share`/text output stay at the repo/PR level to avoid duplicating the Recent PRs table.
+- **Per-repo breakdown** — a table of reviews, comments, threads, and last-reviewed date for every repo (hidden when scoped to one repo), plus a compact summary per repo: passes (times reviewed), distinct PRs, approved, changes-requested, and suggestions (`Passes`/`PRs`/`A`/`CR`/`S`; the summary tooltip expands every code). A Tokens column joins the table once any repo has real usage data — same gate as the global Token usage panel — so token/cost spend is visible per repo, not just as one combined total; it prints compact with the exact figure on hover like every dashboard token spot, while the CLI text and `--share` "Top repos" line carry the full number.
 - **Quick commands** — four collapsible sections mirroring CLI commands you'd otherwise run in a terminal: **Instances** (`branchdiff list`), **Auto sessions** (`branchdiff auto list`), **Cron schedules** (`branchdiff auto cron list` **and** `branchdiff prune-worktrees cron list` — both namespaces in one list, each row tagged by kind), and **Configs** (`branchdiff config` — see [Config File](#config-file) below for the precedence model). Each fetches live data on expand, grouped by repo, with a **Refresh** button, and lets you act on any entry directly — **Kill** an instance, **Attach**/**Stop** an auto session, **Remove** a cron schedule (works on either kind) — every action button's tooltip naming the exact CLI command it performs.
 - **Bulk actions** — once a section has at least one entry, a page-level **Kill all** / **Stop all** / **Remove all** button appears, matching the per-row commands (`branchdiff killall`, `auto stopall`); the Cron schedules section's **Remove all** clears both namespaces (`auto cron removeall` and `prune-worktrees cron removeall` together, since the one section already shows both). Same click-to-arm, click-again-to-confirm pattern as every per-row action.
 
