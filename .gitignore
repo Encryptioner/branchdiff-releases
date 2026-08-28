@@ -1,5 +1,19 @@
 .DS_Store
-.claude/
 
 # playwright
 .playwright-mcp/*
+
+
+# Claude IDE
+.claude/settings.local.json
+.claude/settings.json
+.claude/instructions/*
+
+# Cursor IDE
+.cursor/*
+.cursorignore
+!.cursor/*.example*
+
+# VS Code IDE
+.vscode/*
+!.vscode/*.example.json
