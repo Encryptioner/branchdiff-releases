@@ -102,8 +102,8 @@ sh -n install-skill.sh                                            # installer sh
 
 | Channel | What lands | Notes |
 |---------|-----------|-------|
-| `npm i -g @encryptioner/branchdiff` | The CLI itself | Primary path; published from `../branchdiff` |
-| `pip install branchdiff` | Same CLI, Python wrapper | Published from `../branchdiff` |
+| `npm i -g @encryptioner/branchdiff@latest` | The CLI itself | Primary path; published from `../branchdiff` |
+| `pip install --upgrade branchdiff` | Same CLI, Python wrapper | Published from `../branchdiff` |
 | `brew install` / `scoop install` / `apt install` | Standalone binaries | This repo hosts the tap / bucket / APT files |
 | `/plugin install branchdiff-skills@branchdiff` | Claude Code skills | Plugin marketplace defined here — see [docs/skills.md](docs/skills.md) |
 | `curl ... install-skill.sh \| sh -s -- <name>` | Same skills, any `SKILL.md` agent via `--agent` | Shell installer for no-Node users |

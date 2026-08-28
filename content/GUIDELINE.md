@@ -31,7 +31,7 @@ Choose your preferred installation method:
 #### Option 1: npm (Node.js required)
 
 ```bash
-npm install -g @encryptioner/branchdiff
+npm install -g @encryptioner/branchdiff@latest
 ```
 
 Requires **Node.js 18+** and `git` on your PATH. Tab-completion installs automatically — restart your terminal after install.
@@ -39,13 +39,13 @@ Requires **Node.js 18+** and `git` on your PATH. Tab-completion installs automat
 #### Option 2: pnpm
 
 ```bash
-pnpm add -g @encryptioner/branchdiff
+pnpm add -g @encryptioner/branchdiff@latest
 ```
 
 #### Option 3: yarn
 
 ```bash
-yarn global add @encryptioner/branchdiff
+yarn global add @encryptioner/branchdiff@latest
 ```
 
 #### Option 4: Homebrew (macOS / Linux)
@@ -79,10 +79,10 @@ Requires **Node.js 18+** and `git` on your PATH.
 #### Option 7: pip / uv / pipx (universal)
 
 ```bash
-pip install branchdiff
+pip install --upgrade branchdiff
 ```
 
-Also works with `uv tool install branchdiff` or `pipx install branchdiff`. Auto-selects the correct binary for your OS and architecture. No Node.js required.
+Also works with `uv tool install --upgrade branchdiff` or `pipx install --upgrade branchdiff`. Auto-selects the correct binary for your OS and architecture. No Node.js required.
 
 #### Option 8: Scoop (Windows)
 
@@ -1698,6 +1698,15 @@ This registers as a plain `manual` session (no `cronId`) sharing each repo's loc
 
 **Stopping and reconciliation.** `auto stop --cron-id <cronId>` resolves to the same stop logic as stopping by session id, and finds a schedule's live session even when its registry entry is missing, as long as its per-repo lock is still held. A session stopped this way, or by `cron remove`/`removeall`, logs which command asked for the stop in its own terminal, so it's never mistaken for a local Ctrl-C.
 
+**Upgrading branchdiff under a live session.** A running `--detach`/cron session keeps executing the code it loaded at boot — upgrading the package on disk never reaches a live process, so every `--watch` cycle keeps using the old build until the session ends. `branchdiff --version` shows the on-disk version and can't tell you which build a long-running session actually booted; the session log's own startup line can — the `--tool <name> → --exec "<command>"` resolution is printed once at boot and frozen for the session's lifetime, so a flag missing from that line means the session predates it, whatever the installed version says. To pick an upgrade up mid-window, stop the session and re-fire the generated script by hand:
+
+```bash
+branchdiff auto stop <sessionId>          # from `auto list`
+sh ~/.branchdiff/cron-scripts/<cronId>.sh # fresh process from the on-disk build
+```
+
+Stop **before** re-firing — the old session holds each repo's lock, and a second `auto` over the same repos exits with "every repo is already being reviewed" instead of starting. The manual fire gets a new session id (re-`attach` to the new one), but registers under the same `cronId` because the script exports it, so the cron `--end` line still closes it on schedule — identity is claimed at boot from the live registry, never pinned at `cron add` time. And if the next `--start` fire is soon anyway, do nothing: every fire execs the on-disk binary, so the next window picks the upgrade up by itself.
+
 </details>
 
 #### `--stop-at` — give a run a deadline
@@ -2001,7 +2010,7 @@ Tab-completion for branches, subcommands, and flags is available for **zsh** and
 When you install branchdiff globally, the post-install script runs `branchdiff completion install` automatically:
 
 ```bash
-npm install -g @encryptioner/branchdiff
+npm install -g @encryptioner/branchdiff@latest
 # → Restart your terminal — completion is active
 ```
 

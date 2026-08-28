@@ -48,7 +48,7 @@ See [`install-skill.sh`](../../install-skill.sh) for the full list of known agen
 The skills shell out to the `branchdiff` CLI. Install it once:
 
 ```bash
-npm install -g @encryptioner/branchdiff
+npm install -g @encryptioner/branchdiff@latest
 ```
 
 For PR URLs you also need either `gh` (GitHub) or `BITBUCKET_USERNAME` + `BITBUCKET_API_TOKEN` (Bitbucket).
