@@ -6,7 +6,28 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.2.0] -2026-08-28
+## [2.2.1] - 2026-08-29
+
+### Added
+
+- **`branchdiff stats --json --sections <list>` computes only the requested parts of the stats aggregate** — `totals,charts,prs,sessions` (comma-separated), matching the dashboard's own panels: the KPI counts and per-repo table, the time series, the Recent PRs table, and the per-session rows. A script that only wants one piece no longer pays for the whole aggregation; anything not named comes back zeroed/empty rather than absent, so the JSON's shape is identical either way, and an unknown name is rejected with the valid list instead of silently zeroing output.
+- **Insert the change map or commit history straight into a PR description** — both the create-PR and edit-PR dialogs give the description field a **Write/Preview** toggle (preview renders the markdown exactly as branchdiff's comment view does) and an **Insert** row with a **Commit history** button and a **Change map** button, each splicing its block in as ordinary editable markdown at the caret, opened by its own `### Change map`/`### Commit history` heading and closed with a `---` rule so a description carrying both (or either alongside your own prose) reads as clearly bounded sections — a re-click updates the block in place instead of duplicating it, and a small **×** button next to it removes the block outright. Change map: the block is the same mermaid+prose markdown on both platforms — every diagram shown flat, none behind a collapsed toggle — so editing and Preview render every diagram identically either way. Bitbucket can't render mermaid on its own page, so only on Bitbucket, and only at the moment you actually create or save the PR (never on insert, never while just previewing), every diagram in the map — the overview, then each section's file drill-down — is rendered to its own image and uploaded to the repo's Downloads area, and the description then carries the real image references; if rendering or uploading any one of them fails, the whole map falls back to its plain-text form together (never a mix of images and raw ASCII) and the save still goes through. Whatever a prior save left behind that this save no longer needs — the whole set, if the block was removed or fell back to text, or just the leftover images if this save produced fewer diagrams than last time — is deleted instead of left orphaned on Bitbucket. Commit history: the branch's own commits, always walked first-parent (skips whatever the branch pulled in by merging another branch in) and with merge commits themselves dropped, as a newest-first list capped at 100 rows — a capped list gets `(N of total commits)` appended right onto the heading, and any single subject line past 120 characters is truncated so one runaway line can't blow up the list. A **Clear** button next to the Write/Preview toggle empties the whole description field in one click, for starting over rather than deleting each inserted block by hand.
+- **A review pass's piped prompt is also saved to a private temp file, so it survives the AI's own context compaction** — the path is exported as `BRANCHDIFF_CONTEXT_FILE` and named in lines at the very top and bottom of the prompt itself; a reviewer whose context was compacted mid-pass re-reads that one file to recover the full diff, change map, and instructions verbatim, instead of reconstructing them from its transcript or re-deriving them by re-running commands — either of which is slow enough to time the pass out outright. The temp dir is named after the run (PR number under `auto`, reviewed ref for a local session) plus the process id, so parallel reviews are easy to tell apart.
+- **A First parent/Merges toggle pair on branchdiff's other two commit lists** — the standalone commit history browser (`branchdiff history`) and the branch-comparison sidebar's Commits panel let you switch **First parent** on to walk just the ref's own line (skipping whatever a merge pulled in from another branch) and **Merges** off to hide merge commits from the list; the **Merges** label shows a live count. The standalone browser starts with every reachable commit and merges shown; the sidebar's Commits panel starts with First parent and Merges both on, since reviewing a single branch's own work is the common case there. Useful on any branch that periodically syncs from a shared integration branch, where the full list otherwise gets flooded with commits that aren't really that branch's own work.
+
+### Fixed
+
+- **A pass's verdict comment and its PR approval now land in the same cycle, even when publishing takes a while** — pushing a large batch of comments and replies to GitHub/Bitbucket (or pulling a busy PR's comment history back) is network work that can legitimately take over a minute; that no longer gets cut off mid-flight and reported as a failed push while the comments actually arrive, which used to leave `auto --approve`'s approval waiting for the next watch cycle as a redundant publish-only retry.
+- **Editing a PR now opens with its existing description loaded** — the edit dialog used to show an empty description box, so saving rewrote the PR's description from scratch; the description (images and HTML included) now loads verbatim, edits are saved back verbatim, and an emptied box clears the PR's description only when one was actually there to remove.
+- **Windows release builds no longer stall out their full job on a hung packaging step** — a stuck compile fails fast within its step budget, so the Windows binary and Scoop channels publish on time instead of sitting in a hung job for the maximum duration.
+
+### Documentation
+
+- **The in-app Guide covers upgrading branchdiff while a cron or detached `auto` session is running** — why a live session keeps the build it booted with (and how the session log's startup line tells you which one that is), and how to restart a session onto the new version without breaking its schedule — including when the right move is to do nothing and let the next scheduled fire pick the upgrade up.
+
+---
+
+## [2.2.0] - 2026-08-28
 
 ### Added
 
@@ -32,7 +53,7 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.1.2] -2026-08-25
+## [2.1.2] - 2026-08-25
 
 ### Added
 
@@ -57,7 +78,7 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.1.1] -2026-08-13
+## [2.1.1] - 2026-08-13
 
 ### Added
 
@@ -74,7 +95,7 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.1.0] -2026-08-12
+## [2.1.0] - 2026-08-12
 
 ### Added
 
@@ -148,7 +169,7 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
-## [2.0.0] -2026-08-05
+## [2.0.0] - 2026-08-05
 
 ### Added
 

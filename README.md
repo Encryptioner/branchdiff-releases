@@ -36,13 +36,13 @@ Open any git diff in a browser UI with inline comments, split/unified views, and
 
 **Quick start (Node.js required):**
 ```bash
-npm install -g @encryptioner/branchdiff
+npm install -g @encryptioner/branchdiff@latest
 ```
 
 **Other options:**
-- `pnpm add -g @encryptioner/branchdiff` (pnpm)
-- `yarn global add @encryptioner/branchdiff` (yarn)
-- `pip install branchdiff` (Python — no Node.js needed)
+- `pnpm add -g @encryptioner/branchdiff@latest` (pnpm)
+- `yarn global add @encryptioner/branchdiff@latest` (yarn)
+- `pip install --upgrade branchdiff` (Python — no Node.js needed)
 - `brew tap encryptioner/branchdiff https://github.com/encryptioner/branchdiff-releases && brew install branchdiff` (Homebrew)
 - Standalone binaries from [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases) (no Node.js needed)
 - `npx @encryptioner/branchdiff main..feature` (one-time, no install)
