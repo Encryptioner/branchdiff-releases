@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>branchdiff — visual git diff in your browser</title>
   <meta name="description" content="Visual git & file diff in your browser, with AI-supported code review, GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud." />
+  <meta name="author" content="Mir Mursalin Ankur" />
   <meta property="og:title" content="branchdiff — visual git diff in your browser" />
   <meta property="og:description" content="Compare branches, files, and commits with a fast, browser-based viewer. AI-supported code review, persistent threads, GitHub & Bitbucket sync." />
   <meta property="og:image" content="./assets/hero.svg" />
@@ -51,7 +52,7 @@
             </h1>
             <p class="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-slate-600 max-w-xl leading-relaxed">
               Compare branches, files, and commits with a fast, browser-based viewer.
-              AI-supported code review, persistent threads, GitHub &amp; Bitbucket sync.
+              AI review &amp; resolve, GitHub &amp; Bitbucket sync, multi-repo automation on a schedule — all local.
             </p>
             <div class="mt-6 sm:mt-8 flex flex-wrap gap-3">
               <a href="#install" class="inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-lg font-medium hover:bg-slate-800 transition">
@@ -93,8 +94,8 @@
             <p class="text-xs sm:text-sm text-slate-500 mt-1">Easy to use</p>
           </div>
           <div>
-            <p class="text-2xl sm:text-3xl font-bold text-slate-900">6</p>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Install channels</p>
+            <p class="text-2xl sm:text-3xl font-bold text-slate-900">9</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Feature decks</p>
           </div>
           <div>
             <p class="text-2xl sm:text-3xl font-bold text-slate-900">3</p>
@@ -151,8 +152,22 @@
             <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <h3 class="font-semibold text-slate-900">AI-supported review</h3>
-            <p class="mt-2 text-sm text-slate-600">Pipe diff context to any model, import its review. Resolve threads with autonomy.</p>
+            <h3 class="font-semibold text-slate-900">AI-supported review & resolve</h3>
+            <p class="mt-2 text-sm text-slate-600">Pipe diff context to any model, import its review, and let it resolve threads with autonomy.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
+            <div class="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-2a4 4 0 10-4-4"/></svg>
+            </div>
+            <h3 class="font-semibold text-slate-900">Auto multi-repo review</h3>
+            <p class="mt-2 text-sm text-slate-600">Point it at a folder of repos — it scans every one, reviews the open PRs, and posts findings unattended.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="font-semibold text-slate-900">Scheduled, unattended runs</h3>
+            <p class="mt-2 text-sm text-slate-600">Wire it into cron or launchd once — reviews keep running on their own while you sleep.</p>
           </div>
           <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
@@ -162,18 +177,25 @@
             <p class="mt-2 text-sm text-slate-600">Threads, comments, and tours survive across machines via repo fingerprint.</p>
           </div>
           <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
-            <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <h3 class="font-semibold text-slate-900">Fast even on huge PRs</h3>
-            <p class="mt-2 text-sm text-slate-600">File-level virtualization, lazy diffs on viewport intersection, dynamic syntax highlighting.</p>
-          </div>
-          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </div>
             <h3 class="font-semibold text-slate-900">GitHub & Bitbucket sync</h3>
             <p class="mt-2 text-sm text-slate-600">Push review threads upstream as PR comments. Reply locally, sync remotely.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
+            <div class="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+            </div>
+            <h3 class="font-semibold text-slate-900">Usage stats & AI cost tracking</h3>
+            <p class="mt-2 text-sm text-slate-600">See review activity, token usage, and spend per repo — one dashboard, no external service.</p>
+          </div>
+          <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
+            <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <h3 class="font-semibold text-slate-900">Fast even on huge PRs</h3>
+            <p class="mt-2 text-sm text-slate-600">File-level virtualization, lazy diffs on viewport intersection, dynamic syntax highlighting.</p>
           </div>
           <div class="rounded-xl ring-1 ring-slate-200 p-5 sm:p-6 hover:shadow-md transition">
             <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
