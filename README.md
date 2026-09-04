@@ -10,6 +10,8 @@
 - [![pypi](https://img.shields.io/pypi/v/branchdiff.svg)](https://pypi.org/project/branchdiff/)
 - [![SupportKori](https://img.shields.io/badge/SupportKori-☕-FFDD00?style=flat-square)](https://www.supportkori.com/mirmursalinankur)
 
+> ⭐ **Enjoying branchdiff?** Star the repo — [github.com/Encryptioner/branchdiff-releases](https://github.com/Encryptioner/branchdiff-releases) — it helps others find it.
+
 Open any git diff in a browser UI with inline comments, split/unified views, and syntax highlighting. Use Claude Code slash commands (`/branchdiff-review`, `/branchdiff-resolve`) or any AI via prompts to review and fix code. Push and pull review comments to GitHub and Bitbucket PRs. Everything runs on your machine.
 
 **Features:** inline diff comments · AI review & resolve (Claude Code or any AI) · GitHub & Bitbucket PR sync (browser + CLI) · persistent sessions across commits · three diff modes (git, file, delta) · code tours · keyboard navigation · multiple repos simultaneously
