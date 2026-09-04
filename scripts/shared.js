@@ -331,14 +331,26 @@ function partLabel(text) {
 
 const TOC_HEADING_RE = /^(#{2,5})\s+(.+)$/;
 const TOC_PART_RE = /^Part\s+\d+/i;
-const TOC_FENCE_RE = /^\s*(`{3,}|~{3,})/;
+// CommonMark fences: 3+ backticks/tildes, indented ≤3 spaces. Captured group 2
+// is the info string — a CLOSING fence must be bare (no info).
+const TOC_FENCE_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
 
 function scanHeadings(lines) {
   const headings = [];
-  let inFence = false;
+  // Track the OPENING fence's char + length: a ``` block closes only on a bare
+  // ``` line, so a ~~~ line inside it is plain content. GUIDELINE.md ships tilde
+  // art inside bash output — the old toggle-on-any-marker scan desynced on that,
+  // undercounted headings vs the rendered DOM, and the buildTOC count guard hid
+  // the whole TOC (guideline only — changelog has no such content).
+  let fenceChar = null;
+  let fenceLen = 0;
   lines.forEach((line, i) => {
-    if (TOC_FENCE_RE.test(line)) { inFence = !inFence; return; }
-    if (inFence) return;
+    const f = TOC_FENCE_RE.exec(line);
+    if (fenceChar) {
+      if (f && f[1][0] === fenceChar && f[1].length >= fenceLen && !f[2].trim()) fenceChar = null;
+      return; // inside a fence: no headings here
+    }
+    if (f) { fenceChar = f[1][0]; fenceLen = f[1].length; return; }
     const m = TOC_HEADING_RE.exec(line);
     if (m) headings.push({ level: m[1].length, text: m[2].trim(), line: i });
   });
