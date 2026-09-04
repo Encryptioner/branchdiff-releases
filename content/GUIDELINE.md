@@ -148,6 +148,19 @@ Binary path     : /Users/you/.nvm/versions/node/v24/bin/branchdiff
 Update command   : pnpm add -g @encryptioner/branchdiff@latest
 ```
 
+A successful update ends by listing what changed since the version it replaced — every version in between, newest first, the bold title of each changelog entry on its own line:
+
+```
+Updated to 2.2.3.
+
+What's new since 2.2.2:
+  2.2.3 — 2026-09-02
+   + (Added) An update ends with a what's-new list, not just a version number
+Docs: https://encryptioner.github.io/branchdiff-releases/changelog.html
+```
+
+The browser's update dialog shows the same list after its run completes — see [Stay up to date](#stay-up-to-date).
+
 If the update fails, all alternative update commands are listed along with the `--pm` override flag.
 
 To override detection:
@@ -160,6 +173,14 @@ branchdiff update --pm scoop    # Force Scoop
 branchdiff update --pm apt      # Force apt
 branchdiff update --pm binary   # Force standalone binary download
 ```
+
+<details>
+<summary>Technical breakdown</summary>
+
+- **Where the what's-new list comes from:** the just-installed package's own `CHANGELOG.md`, read from disk after the update command finishes — no network fetch, no separate changelog service. That file is cumulative (every version's section back to the start), so the "before" side of the comparison is just the version string the update was run from: the list is every section above that version's heading, newest first, and an install whose version predates the changelog itself simply gets every section. Only each entry's bold title is taken; the detail prose after the em-dash stays in the full changelog.
+- **No list on the standalone binary:** the standalone download ships a single executable with no changelog file beside it, so there the update ends with the version line and the hosted-changelog link, same as the rest of the output.
+
+</details>
 
 To see what was detected without updating, check the **Installation** section in `branchdiff info`:
 
@@ -257,6 +278,16 @@ Recognized image types (PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, TIFF, HEIC) render
 
 A text file that git calls binary only because it contains a stray NUL byte is diffed as text instead, with each stray NUL shown as a visible `\0` — real binaries and NUL-structured encodings (like UTF-16) keep the binary treatment.
 
+### Very long lines
+
+A single line running to hundreds of thousands of characters — an inlined SVG path, a minified bundle, a one-line JSON blob — stays on its own row and scrolls sideways instead of wrapping. Ordinary long lines wrap as usual.
+
+<details><summary>Technical breakdown</summary>
+
+Past 1,000 characters a line's cell switches from wrapping (`white-space: pre-wrap` with `break-all`) to a single non-wrapping row that scrolls horizontally. Without the bound, one 555,182-character SVG path wrapped into roughly 24,000 visual rows and made its file block 579,496px tall — hundreds of screens of one file, and far more than the height the file list had budgeted for it, which left blank stretches elsewhere in the diff. Keeping such a line to one row also means both halves of a split-view row stay the same height. This is separate from the 10,000-character bound on syntax highlighting, which exists to stop the tokenizer stalling the tab rather than to control layout.
+
+</details>
+
 ### Full file view
 
 When comparing branches, a **Full** option appears in the view mode toggle. This renders the complete file content side-by-side — useful when you need to see the full picture, not just changed lines.
@@ -337,6 +368,15 @@ So before opening a comparison, branchdiff fetches and fast-forwards the branche
 - **Checked out in a linked worktree** (not your current checkout) → skipped with a plain-dim reason, the local ref used as-is — never git's own raw "already checked out at …" error.
 - **No remote, a tag, a SHA, `HEAD~3`, or a working-tree ref** → nothing to sync, skipped silently.
 
+**"Diverged" usually means the remote was rewritten, not that you committed locally.** A `git push --force-with-lease` after a `reset --hard`, an amend, or a rebase leaves your copy holding commits the remote no longer has — which is a divergence by git's definition, so the sync step steps back and keeps warning about the same branch every run. Realigning it is one command, and it needs no checkout:
+
+```bash
+git fetch origin --prune
+git branch -f <branch> origin/<branch>      # local ref now matches the remote
+```
+
+On a machine that only ever *reviews* — an automated `branchdiff auto` host — nothing needs a local branch at all: comparisons name `origin/…` refs and review checkouts are made from the pull request's own head commit. Deleting the local copy (`git branch -D <branch>`) there is the cleaner answer than realigning it after every force-push.
+
 Pass `--no-sync` to skip the step — useful offline, or when you deliberately want to compare the local revision:
 
 ```bash
@@ -345,7 +385,7 @@ branchdiff development feature --no-sync
 
 ### Individual commit detail view
 
-When viewing a branch comparison, the **commit history** panel lists all commits on the source branch. Merge commits are marked with a purple **merge** badge so you can spot them at a glance without opening each one. Below the search row, a compact **First parent**/**Merges** toggle pair — same underlying behavior as the [standalone history browser's](#history-repo-at-a-commit) — switches the list between every reachable commit and just the branch's own line, and between showing and hiding merge commits; the **Merges** label shows a live count (e.g. `Merges (3)`). Unlike the standalone browser, both start **on** here (branch's own line, merges shown) since that's the common case for reviewing a single branch. The right end of that same toggle row carries a copy button that copies the currently visible (filtered/searched) commit list — `shortHash` + message, one per line — to the clipboard, with a checkmark confirming the copy, same as the [standalone browser's](#history-repo-at-a-commit) copy button. The filter row has an **expand** button (next to the search input) that grows the commit list to fill the rest of the sidebar — and auto-collapses the Files section while expanded — so long commit lists are easy to scan. Click it again to restore both sections. Click any commit to open its detail page:
+When viewing a branch comparison, the **commit history** panel lists all commits on the source branch. Its section header collapses and re-opens the panel (keyboard: `Shift+C`, same for the Files section's header with `Shift+F`). Merge commits are marked with a purple **merge** badge so you can spot them at a glance without opening each one. Below the search row, a compact **First parent**/**Merges** toggle pair — same underlying behavior as the [standalone history browser's](#history-repo-at-a-commit) — switches the list between every reachable commit and just the branch's own line, and between showing and hiding merge commits; the **Merges** label shows a live count (e.g. `Merges (3)`). Unlike the standalone browser, both start **on** here (branch's own line, merges shown) since that's the common case for reviewing a single branch. The right end of that same toggle row carries a copy button that copies the currently visible (filtered/searched) commit list — `shortHash` + message, one per line — to the clipboard, with a checkmark confirming the copy, same as the [standalone browser's](#history-repo-at-a-commit) copy button. The filter row has an **expand** button (next to the search input) that grows the commit list to fill the rest of the sidebar — and auto-collapses the Files section while expanded — so long commit lists are easy to scan. Click it again to restore both sections. Click any commit to open its detail page:
 
 - **Metadata header** — full commit SHA (click to copy), author, date, and commit message. Merge commits show both parent SHAs as clickable links so you can navigate up the ancestry chain.
 - **File list sidebar** — all changed files with a git status indicator (**A** = added, **D** = deleted, **M** = modified, **R** = renamed) and per-file `+N / -N` counts. Click any file to jump directly to its diff.
@@ -450,9 +490,9 @@ The top toolbar adapts to your current session and shows relevant controls:
 - **Expand all / Collapse all** buttons — expand or collapse all file diffs at once (toggle based on current state)
 - **Unified / Split / Full** view mode toggle — choose your diff layout
 - **Include staged / Include unstaged** — layer your staged or unstaged changes onto a branch comparison (appear when your checked-out branch is one side of it)
-- **Change map icon** — opens the same orientation diagrams the AI reviewer's general comment uses, in a modal — see [The change map](#the-change-map-how-this-change-works) below
+- **Change map icon** — opens the same orientation diagrams the AI reviewer's general comment uses, in a modal — see [The change map](#the-change-map-how-this-change-works) below; keyboard: `m`
 - **Comment actions** — navigate threads (previous/next), comment count, copy for AI review, archive session, view history
-- **3-dot menu** — theme toggle, whitespace display, keyboard shortcuts, this guideline, changelog, and links
+- **3-dot menu** — theme toggle, whitespace display (keyboard: `w`), keyboard shortcuts, this guideline, changelog, and links
 
 ### Sidebar filtering
 
@@ -843,7 +883,7 @@ The staged layer is the index against `HEAD` (`git diff --cached`) everywhere �
 
 ### Remote comments are pulled first
 
-A **PR-linked** session pulls the latest comments from the PR as soon as it's created — whether you opened it yourself (`branchdiff <pr-url>`), it was created for you by `branchdiff auto`, or an AI agent started it while following the review skill — so the discussion is already there the first time anyone (you or the AI) looks at the session. `review context`, `review run` and `review import` pull again before doing anything, so a session left open for a while still sees anything posted since. The review and resolve skills do the same before they start — `branchdiff agent refresh` pulls the latest comments and refuses to go on if your local branch has fallen behind the PR head, so a standalone skill run reviews (or fixes) fresh code just like a `review run`. It's best-effort — no network, no auth, or no PR just means the review proceeds on local state. Branch-pair sessions (not tied to a PR) stay local by design.
+A **PR-linked** session pulls the latest comments from the PR as soon as it's created — whether you opened it yourself (`branchdiff <pr-url>`), it was created for you by `branchdiff auto`, or an AI agent started it while following the review skill — so the discussion is already there the first time anyone (you or the AI) looks at the session. `review context`, `review run` and `review import` pull again before doing anything, so a session left open for a while still sees anything posted since. The review and resolve skills do the same before they start — `branchdiff agent refresh` pulls the latest comments and refuses to go on if your local branch has fallen behind the PR head, so a standalone skill run reviews (or fixes) fresh code just like a `review run`. Comments are matched to what you already have by the platform's own comment id, so a general (non-inline) comment posted on the PR always arrives even when general comments are already there, and an inline comment the platform re-anchored after a force-push updates the thread you have — including its resolved state — instead of arriving as a duplicate. It's best-effort — no network, no auth, or no PR just means the review proceeds on local state. Branch-pair sessions (not tied to a PR) stay local by design.
 
 ### One AI, one session
 
@@ -1123,6 +1163,15 @@ Combined with `--detach`, the review runs in the backgrounded child — its outp
 ### Reviewing without touching your working tree
 
 `branchdiff <pr-url> --worktree` checks a GitHub or Bitbucket PR out into `.worktrees/pr-<n>` instead of switching your branch, so whatever you had open stays open. `branchdiff review run --worktree` does the same for the AI reviewer, and `--worktree-remove` cleans up afterwards (a worktree holding untracked or modified files is kept and reported, never force-deleted). Since a `<pr-url> --worktree` session stays running until you stop it, its worktree instead cleans up via `branchdiff kill --port N --worktree-remove` (or `killall --worktree-remove`) — same dirty-worktree guard. `branchdiff auto --worktree` also accepts `--worktree-remove` and forwards it to the `review run` it spawns for each PR.
+
+**A force-pushed branch is reviewed at its new head** — a review checkout is always parked on the exact commit the pull request points at, so a branch rewritten with `git reset --hard` and a force-push is read as it stands now. A same-named local branch left behind on the old commit by an earlier checkout never stands in for it.
+
+**A dirty review checkout is left exactly as it is** — a `.worktrees/pr-<n>` holding untracked or modified files is never re-pointed at a newer commit, for the same reason `--worktree-remove` never deletes one: the files in it are worth more than an automatic refresh. A resolve pass writes its fixes there, so a checkout that has been through `--resolve` stays dirty and stays on the commit it was reviewed at. Clear it when you want the next review to start from the PR's current head:
+
+```bash
+branchdiff prune-worktrees     # drops stale worktrees, plus any lingering pr-<n>
+git worktree remove --force .worktrees/pr-<n>   # or remove one by hand
+```
 
 **A worktree whose directory vanished gets recreated automatically** — if the `.worktrees/pr-<n>` checkout disappears between review cycles (an ephemeral disk reset, a container restart, manual cleanup) while git still has it registered, the next `--worktree` review prunes that stale registration and recreates the checkout rather than failing on a missing directory.
 
@@ -1650,12 +1699,78 @@ Started detached auto session a1b2c3d4-e5f6-7890-abcd-ef1234567890 (pid 4821).
   branchdiff auto attach a1b2c3d4-e5f6-7890-abcd-ef1234567890   # follow it live (once available)
 ```
 
+Add [`--log`](#run-logs-log) and that log becomes a date-filed run log you can list, read and delete by run — worth it for a run you'll come back to hours later. (Either way the file is timestamped and capped at 10 MB; the plain session log just isn't date-filed or listable by run.)
+
+#### Run logs — `--log`
+
+A foreground `auto` writes to the terminal and nothing else; scroll it away or close the window and it's gone. `--log` records the run to a file as well:
+
+```bash
+branchdiff auto --tool claude --review --log              # foreground: terminal AND file
+branchdiff auto --tool claude --review --detach --log     # background: one timestamped file
+branchdiff auto cron add --start "0 10 * * 1-5" --end "0 20 * * 1-5" \
+  --repo-paths "~/work" --tool claude --review --log      # every fire, recorded
+```
+
+Every line is a UTC timestamp, a level, then the text — colour codes stripped, columns fixed, so `grep`/`awk`/`cut` work on it as well as your eyes do:
+
+```
+2026-09-03T12:53:01.724Z INFO  branchdiff auto — 6:53:01 PM
+2026-09-03T12:53:01.812Z INFO    github #12 feat/api → main  review
+2026-09-03T12:53:01.846Z WARN    skip — no remote
+2026-09-03T12:53:04.031Z ERROR Error: gh not authenticated
+```
+
+Logs are filed by the day they ran, so one day's runs sit together:
+
+```
+~/.branchdiff/auto-logs/2026-09-03/fg-4821/18-53-01.724.log
+                        ~~~~~~~~~~ ~~~~~~~ ~~~~~~~~~~~~
+                        date       run id  time it started
+```
+
+The run id is the session id for a `--detach`/cron run, or `fg-<pid>` for a foreground one — the same id [`auto list`](#managing-sessions) shows, which is how that listing points straight at the run's log.
+
+| Command | Does |
+|---|---|
+| `branchdiff auto log list` | Every recorded run, grouped under the day it ran, with size and the time of each file. `--date 2026-09-03` narrows to one day; `--json` for scripts (each run carries its `date` and whether it's still `live`). |
+| `branchdiff auto log view --id <runId>` | Prints that run's log, oldest file first. `--lines <n>` prints just the tail of a long `--watch` run's log. |
+| `branchdiff auto log delete --id <runId>` | Removes that one run's logs, on every day it recorded any. |
+| `branchdiff auto log delete --date 2026-09-03` | Removes a whole day. |
+| `branchdiff auto log delete` | Removes all of them. |
+
+Deleting asks first, and `--force` skips the prompt — see [Destructive commands ask first](#destructive-commands-ask-first). A run that's still going is never deleted out from under itself; stop it first. `branchdiff info` reports how much space these logs take.
+
+**A log stops growing at 10 MB.** Past the cap, only the middle is dropped: the run's start — the invocation, flags and earliest output — and its most recent lines both stay, with a line in between naming how much was removed, so a `--watch` run left recording for days can't quietly fill the disk, and the command that started it is never the part that goes missing.
+
+**An existing cron schedule keeps no log until you re-add it.** A schedule's flags are baked into its generated script when you run `cron add`, so adding `--log` to your shell history changes nothing about a schedule already registered: `auto cron remove --id <cronId>`, then `cron add` again with `--log`. Existing schedules keep working exactly as before in the meantime.
+
+<details>
+<summary>Technical breakdown</summary>
+
+**What gets captured.** `auto` does its work by running `review run`, `sync push` and `pr comment` as child processes and echoing their output; the log captures those too, not just `auto`'s own lines. Output is written a whole line at a time — a child's output arrives in chunks that don't align to line boundaries, and timestamping a fragment would split one message across two records. Blank spacer lines are dropped rather than written as empty timestamped rows.
+
+**Levels.** `INFO` is anything on stdout. `WARN` and `ERROR` come from which console call produced the line, not from guessing at its text — so `skip — no remote` is recorded as a warning even though it never says "Warning:". Output relayed from a child process, where that distinction isn't available, falls back to reading the `Error:`/`Warning:` headline and letting the indented detail lines under it inherit that level.
+
+**Size cap.** One file stops growing past 10 MB: the tee keeps an in-memory byte count (no `stat` per write — a chatty child emits hundreds of appends a second) and, once it passes the cap, the file is rewritten keeping a bounded head — up to a fifth of the cap, enough to comfortably outlast the invocation/flags header and the run's earliest output — plus as much of the tail as fits once room for the marker line itself is set aside, with that line naming how much of the middle was dropped and how much of the tail survived. The rewrite trims to 90% of the cap rather than to the cap itself, so there's real headroom for new output before the file needs capping again — without that, a chatty run would sit right up against the cap and re-trigger this same whole-file rewrite on nearly every subsequent write. Both cuts land on a line boundary — the head at the last one at or before its budget, the tail at the first one at or after its own — falling back to a byte-wise cut only when the relevant side has no line boundary to land on at all (one enormous unbroken line). Because the head is always read from the start of the file, it survives every later cap unchanged; only the middle between it and the growing tail keeps shrinking. The byte count re-syncs from the file each time the cap fires.
+
+**Clocks.** The date directory and the file name are both local wall-clock, read from one clock, so the path is a single coherent moment — the day you'd call it, at the time you'd call it. Every timestamp *inside* the file is a full UTC ISO-8601 instant, so parsing is never ambiguous. A `--watch` run crossing midnight keeps the directory it started in rather than splitting in two.
+
+**One file per detached run.** `--detach` already has to send the background process's output somewhere; with `--log` that somewhere *is* the run's log file, so a detached run produces exactly one file rather than a raw copy beside a timestamped one. `auto attach <sessionId>` tails that same file, which means a detached run started with `--log` gets a timestamped `attach` as well. Anything that bypasses normal output — a crash trace — still lands in it, untimestamped, which is exactly where you'd want to find it.
+
+**Without `--log`, the session log still goes through the same tee.** A `--detach`/cron run's `~/.branchdiff/auto-sessions/<sessionId>.log` gets the same timestamped lines and the same 10 MB cap as a run log — what `--log` adds is the date-filed layout and the list/read/delete tooling over it. A foreground run without `--log` writes only to its terminal.
+
+**Re-used ids.** A foreground id is only unique while its pid is alive, so the OS handing out pid 4821 again next week produces a second `fg-4821` — under a different date directory, so the two never collide. `--id` addresses every log for an id; `--date` addresses one day's worth.
+
+</details>
+
 #### Managing sessions
 
 | Command | Does |
 |---|---|
 | `branchdiff auto list` | Every running `auto`: foreground runs in other terminals too, alongside every `--detach`/cron session (id, repo(s), pid, mode, watch interval, log path). `--json` for scripts. |
 | `branchdiff auto attach <id>` | Read-only tail of that session's log — Ctrl-C stops watching only, never the session itself. An already-ended session prints its existing tail once and exits. |
+| `branchdiff auto log list` | The runs recorded with [`--log`](#run-logs-log), grouped by day. `auto list` also points at a running session's own log directly when it has one. |
 | `branchdiff auto stop <id>` | Sends the same `SIGINT` a foreground Ctrl-C would — releases repo locks, retires servers, logs `Stopped.`. Stopping an id already gone is a clean no-op, not an error. |
 | `branchdiff auto stop <pid>` | Same `SIGINT`, aimed at a **foreground** run by pid instead of a session id (a plain number is never a session id — those are UUIDs). Stopping your own pid, or a pid that's already gone, refuses/no-ops cleanly instead of erroring. The stopped run logs `Stopped — requested from another terminal (\`branchdiff auto stop\`).` instead of a bare `Stopped.`, so its own terminal shows it wasn't a local Ctrl-C. |
 | `branchdiff auto stopall` | Stops every live `auto` session in one call — registered, cron, or unregistered, across every repo (unscoped, like `killall`). Prints one line per session (stopped / already gone / failed) plus a summary count; a failure on one session never skips the rest. Nothing running is a clean, non-error message. |
@@ -2009,9 +2124,13 @@ Run and maintain branchdiff: keyboard map, shell completion, manage instances, m
 |---|---|
 | `j` / `k` | Next / previous file |
 | `n` / `p` | Next / previous hunk |
+| `Shift+C` | Toggle the sidebar's Commits panel |
+| `Shift+F` | Toggle the sidebar's Files panel |
 | `u` | Unified view |
 | `s` | Split view |
 | `f` | Full file view |
+| `m` | Open change map |
+| `w` | Hide / show whitespace |
 | `x` | Collapse / expand current file |
 | `Shift+X` | Collapse / expand all files |
 | `r` | Toggle file as viewed |
@@ -2464,7 +2583,16 @@ Run `branchdiff --new`.
 
 #### "Local &lt;branch&gt; not updated: local branch has diverged"
 
-Your local copy has commits the remote doesn't, so branchdiff won't touch it and compares the local revision instead. Reconcile it yourself (`git rebase`, `git merge`, or `git reset --hard origin/<branch>` if the local commits are disposable), or pass `--no-sync` to silence the step.
+Your local copy has commits the remote doesn't, so branchdiff won't touch it and compares the local revision instead. The most common cause is a rewritten remote — a `push --force-with-lease` after a `reset --hard`, an amend, or a rebase — rather than anything you committed locally.
+
+If the branch isn't checked out anywhere, realign the ref without a checkout:
+
+```bash
+git fetch origin --prune
+git branch -f <branch> origin/<branch>
+```
+
+If it *is* checked out, `git rebase` or `git merge` to keep the local commits, or `git reset --hard origin/<branch>` if they're disposable. A worktree holding the branch has to be removed first (`branchdiff prune-worktrees`) — git refuses to move a ref another checkout owns. On a review-only host, `git branch -D <branch>` is simpler still: nothing there needs a local branch. `--no-sync` silences the step without changing anything.
 
 #### "Refusing to review stale code"
 
@@ -2496,6 +2624,28 @@ You ran it somewhere without a terminal to prompt in (a script, CI, a pipe). Add
 #### `branchdiff auto` skips a PR you expected it to review
 
 It only reviews PRs with *non-merge* commits since their last review, so merging main into your branch doesn't retrigger one. `--fresh` forces a clean review of the current state.
+
+#### The AI reviewed an older revision than the pull request is on
+
+The review checkout is parked on the commit it was last reviewed at. A `.worktrees/pr-<n>` holding untracked or modified files — anything a `--resolve` pass wrote, or your own scratch edits — is deliberately never moved onto a newer commit, so the reviewer keeps reading that revision and reports that nothing has changed. Clear the checkout, then make the pull request eligible again:
+
+```bash
+branchdiff prune-worktrees                                  # drop the stale pr-<n> checkout
+branchdiff auto --tool claude --worktree --no-skip --review  # re-review at the current head
+```
+
+`--no-skip` is the second half of this: a review is recorded against the commit it ran at, so a pull request whose head has not moved since is skipped on the next cycle even with a fresh checkout.
+
+<details><summary>Technical breakdown</summary>
+
+Two independent pieces of state decide which revision a review actually reads, and neither one is the diff:
+
+- **The checkout.** `ensureWorktree` re-detaches a reused `.worktrees/pr-<n>` onto the pull request's head SHA on every cycle — except when the checkout is dirty, where it returns the path untouched rather than clobbering work. The head SHA comes from the forge, so a force-pushed branch moves the checkout with it; a same-named local branch left behind on an old commit is never used as the source of truth.
+- **The reviewed-at record.** `~/.branchdiff/<repo>/pr-review-*` stores the commit each pull request was last reviewed at, and eligibility is the symmetric difference between that commit and the current head with merges filtered out — so a force-push that *removes* commits still counts as new work, while merging the base branch in still does not.
+
+The diff, the size gate and the verdict footer all read the forge's head SHA directly, so they stay correct even when the checkout is held back — which is why a pass in this state completes cleanly and reports no findings rather than failing. `branchdiff list` prints each session's `worktree:` path, and `git -C <path> rev-parse HEAD` inside it tells you which commit the reviewer is actually reading.
+
+</details>
 
 #### `auto` can't start a PR's session
 
@@ -2601,6 +2751,28 @@ Run `branchdiff doctor`.
 
 ---
 
+## Destructive commands ask first
+
+Anything that permanently deletes data or removes a schedule confirms before acting, and `--force` skips that prompt:
+
+| Command | Deletes |
+|---|---|
+| `branchdiff clear` | All review data (comments, threads, sessions) for the current repo |
+| `branchdiff prune` | Everything, for every repo — and stops running servers / `auto` runs / schedules first |
+| `branchdiff state reset` | Persisted UI state (collapse state, viewed-file markers) for a repo |
+| `branchdiff auto log delete` | Recorded [run logs](#run-logs-log) |
+| `branchdiff auto cron removeall` | Every `auto` schedule |
+| `branchdiff prune-worktrees cron removeall` | Every `prune-worktrees` schedule |
+
+```bash
+branchdiff clear                  # asks: Permanently delete all review data for <repo>? (y/N)
+branchdiff clear --force          # deletes immediately
+```
+
+**In a script, cron job, or CI, `--force` is required** — without a terminal there is no way to answer the prompt, so these commands refuse and exit 1 rather than deleting on an assumption (or hanging forever waiting for an answer that can't arrive). The refusal names what it would have deleted and which flag to pass.
+
+Commands that only *stop* things — `branchdiff kill`, `killall`, `auto stop`, `auto stopall` — don't ask. Nothing is lost: review data lives in SQLite and outlives the process, so a stopped session reopens with everything intact.
+
 ## Data & privacy
 
 Everything is local. No outbound calls except:
@@ -2635,7 +2807,7 @@ Both pages carry a **User Guide** / **Changelog** link pair in the header — ea
 
 ## Stay up to date
 
-When a newer version is published, an amber dot appears on the **⋮** button in the browser view. Click **⋮ → Check for updates** to see your version, the latest version, and the exact command that will run — plus a **See what's new** link to the hosted changelog. Confirm twice, watch the output, then restart branchdiff to apply the update — close the session (⋮ → Close session) and run `branchdiff` again.
+When a newer version is published, an amber dot appears on the **⋮** button in the browser view. Click **⋮ → Check for updates** to see your version, the latest version, and the exact command that will run — plus a **See what's new** link to the hosted changelog. Confirm twice and watch the output; when the run succeeds, the dialog lists what changed since your version — the bold title of every changelog entry of every version in between, newest version first, exactly the list `branchdiff update` prints (see [Update branchdiff](#update-branchdiff)). Then restart branchdiff to apply the update — close the session (⋮ → Close session) and run `branchdiff` again.
 
 From the terminal, the same update is one command: `branchdiff update`. It asks for confirmation before changing anything; pass `--yes` to skip the prompt (scripts, automation). `--pm <npm|pnpm|yarn|brew|pip|scoop|apt|binary>` overrides install-channel detection if it ever picks the wrong one.
 
@@ -2650,6 +2822,7 @@ From the terminal, the same update is one command: `branchdiff update`. It asks 
 - **Dev installs:** when branchdiff runs from a source checkout rather than an install, the badge, the menu item, and the dialog are hidden entirely — updating would touch the installed package, not the checkout.
 - **Custom registry for testing:** `BRANCHDIFF_UPDATE_REGISTRY` env var overrides the registry URL the check fetches (defaults to `https://registry.npmjs.org`).
 - **Skills nudge after a successful update:** once the spawned update exits successfully, the server asks the *newly installed* binary for its skills hash (`--skills-hash`) and compares it against the hash this (still-running, old) process shipped with. A difference means the release changed the [AI review skill](#ai-review) content, and the dialog adds a note pointing at `branchdiff skill add` (or, for a plugin-marketplace install, the `/plugin` menu), plus a **See more** link opening this guide's [Updating installed skills](#updating-installed-skills) section in a new tab. `branchdiff update` prints the same nudge in the terminal. No difference, or the check itself fails (e.g. a channel whose shim takes a moment to point at the new binary) — no note; nothing to do either way.
+- **Where the success screen's what's-new list comes from:** the server reads the just-installed package's `CHANGELOG.md` off disk after the spawned update finishes (see [Update branchdiff](#update-branchdiff)'s breakdown for the resolution rules) and slices it against the version this server was running when the run started. No changelog next to the binary — the standalone download — means no list; the restart note and the hosted-changelog link still stand.
 
 </details>
 
@@ -2728,7 +2901,7 @@ Or manually:
 rm -rf ~/.branchdiff
 ```
 
-This removes all review sessions, comment threads, code tours, credentials, and UI state for every repository. The operation is irreversible. Before wiping, `prune` also stops every detached `auto` run and removes every cron schedule (both `auto`'s and `prune-worktrees`'s) — nothing is left alive to rewrite state mid-wipe, or to keep firing against a directory that no longer exists.
+This removes all review sessions, comment threads, code tours, credentials, and UI state for every repository. The operation is irreversible, so it [asks first](#destructive-commands-ask-first) — `--force` skips the prompt, and is required when there's no terminal to answer it. Before wiping, `prune` also stops every detached `auto` run and removes every cron schedule (both `auto`'s and `prune-worktrees`'s) — nothing is left alive to rewrite state mid-wipe, or to keep firing against a directory that no longer exists.
 
 <details>
 <summary>Technical breakdown</summary>
@@ -2749,7 +2922,7 @@ branchdiff prune-worktrees cron remove --id <cronId>
 branchdiff prune-worktrees cron removeall
 ```
 
-A schedule can be given a self-removal deadline with `--stop-at` — same flag, same semantics as [`auto`'s](#--stop-at--give-a-run-a-deadline): a fire that lands past it removes the schedule and prunes nothing, so a temporary pruning window needs no manual `cron remove` afterwards.
+A schedule can be given a self-removal deadline with `--stop-at` — same flag, same semantics as [`auto`'s](#-stop-at-give-a-run-a-deadline): a fire that lands past it removes the schedule and prunes nothing, so a temporary pruning window needs no manual `cron remove` afterwards.
 
 A session server running on a worktree about to be removed is stopped first — never an unrelated repo's same-named worktree, since matching is scoped to the repo, not just the worktree name. A worktree kept for holding uncommitted/untracked changes keeps its session running. Review data (threads, comments) is never deleted this way — only the live server stops. If a live `auto --worktree` run is watching the same repo, it would just recreate a worktree this command removes on its next cycle, so that case prints a warning naming the session instead of being fought.
 
@@ -2772,6 +2945,7 @@ Each feature links to the section that covers it:
 - [**AI resolve skill**](#ai-review) — `/branchdiff-resolve` reads open threads, makes the code fixes, marks each resolved
 - [**Any AI supported**](#any-other-ai) — copy-paste prompts or pipe: `branchdiff review context | your-ai-tool`
 - [**Automatic PR review**](#automatic-pr-review-branchdiff-auto) — `branchdiff auto` watches your open PRs and reviews the ones with new commits; lets you pick which to review (or none/all), notifies on your desktop, publishes only when told to, and can review several at once with `--parallel`
+- [**Run logs**](#run-logs-log) — `auto --log` records a run to a timestamped, date-filed log (foreground, `--detach` or cron alike), so what a pass did survives the terminal it scrolled past; `auto log list/view/delete` reads and clears them by day or by run
 - [**One command across every repo**](#several-repos-at-once-repo-paths) — point `auto` at a parent directory (or list repos with `--repo-paths`) to scan them all, pick from one combined candidate list, and end each pass with a report of what was reviewed and where to find it
 - [**Isolated reviews**](#reviewing-without-touching-your-working-tree) — `--worktree` reviews a PR in `.worktrees/` so your working tree is never switched; each AI review is pinned to one session and can't drift onto another PR
 - [**Commit history browser**](#history-repo-at-a-commit) — `branchdiff history` for the log, `branchdiff show <ref>` for the whole repo at a commit, plus per-file history that follows renames. Toggle a **commit graph** to see branches and merges as continuous colored lanes with merge curves — click a node to open its commit, hover for details, and read the on-screen legend for what each symbol means. A **First parent** toggle switches between every reachable commit and just the ref's own line (skips whatever a merge pulled in from elsewhere) — handy on a range where the branch has synced from a shared branch. Select any commit's short hash to copy it, or the button next to the commit count to copy the whole visible list at once. The list scales with the repo, so **Load all** stays smooth on repos with thousands of commits, graph included
@@ -2788,6 +2962,7 @@ Each feature links to the section that covers it:
 - [**File browser**](#the-file-browser) — navigate repo tree with syntax highlighting (`branchdiff tree`)
 - [**Code tours**](#code-tours) — AI-generated guided walkthroughs of your codebase
 - [**Keyboard-driven**](#keyboard-shortcuts) — navigate files, hunks, and views without touching the mouse
+- [**Destructive commands ask first**](#destructive-commands-ask-first) — `clear`, `prune`, `state reset`, `auto log delete` and both `cron removeall`s confirm before deleting, `--force` skips the prompt, and a script or cron job without a terminal is refused rather than guessed at
 - [**Export & Import**](#export-import) — back up review & tour data to JSON and restore it on another machine; conflict strategies: merge, skip, overwrite
 - [**Multiple instances**](#instance-management) — run several sessions simultaneously: different repos each on their own port, or different branch comparisons within the same repo
 - [**Close session from browser**](#close-session-from-the-browser) — stop the server and close the tab from any 3-dot menu, no terminal needed

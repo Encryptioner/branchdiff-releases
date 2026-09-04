@@ -6,6 +6,40 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [2.2.3] - 2026-09-04
+
+### Added
+
+- **Four more keyboard shortcuts on the diff page** — `m` opens the change map, `w` hides or shows whitespace-only changes, and `Shift+C` / `Shift+F` collapse and re-open the sidebar's Commits and Files panels, mirroring their section headers. Shortcuts never fire while you're typing in any field or a dialog is open, so a keystroke meant for a comment or a modal can't toggle something behind it. The in-app shortcut list (`?`) covers all four.
+
+- **An update ends with a what's-new list, not just a version number** — after `branchdiff update` completes, or the browser's update dialog finishes its run, the changelog entries of every version between the one you were on and the one just installed are listed right there: the bold title of each entry, one per line, grouped by version, newest version first. A standalone-binary install ships no changelog file next to the binary, so there the update completes without the list; the hosted changelog link covers the same ground.
+
+- **The hosted guide and changelog are now one glance away at every exit point of a CLI session** — the startup banner, `branchdiff version`, `--help`, and the Ctrl+C shutdown line all print the project website address, so the docs link is discoverable where you already are instead of only inside the update flow.
+
+- **`branchdiff auto` can keep a log of what a run did** — pass `--log` and the run is recorded to a file as well as the terminal, in the foreground just as much as in the background or on a schedule, so a pass that scrolled past is still there to read. Every line carries a timestamp and a level, with colours stripped and columns aligned, so it reads by eye and greps cleanly; the output of the commands `auto` runs on your behalf is captured too, not just its own. Logs are filed under the day they ran, one folder per run, and `branchdiff auto log list` / `view` / `delete` read and clear them by day or by single run. `branchdiff auto list` points straight at a running session's log, and `branchdiff info` says how much room they take. A log file stops growing at 10 MB — past that, only the middle of the run is dropped: the start (the invocation, flags, and earliest output) and the most recent lines both stay, with a line in the file naming how much was removed in between — so a run left recording for days can't quietly fill the disk, and the command that started it is never the part that goes missing. The same cap and timestamps guard a detached run's session log (`~/.branchdiff/auto-sessions/<sessionId>.log`) even without `--log`, since a cron schedule keeps such a file open for as long as it lives. A schedule records its fires once you re-add it with `--log`; without it the session log still can't grow without bound.
+
+- **Commands that delete things now confirm first** — `clear`, `prune`, `state reset`, `auto log delete`, and both `cron removeall`s ask before deleting, naming exactly what disappears, and `--force` skips the prompt. In a script, cron job, or CI, where no prompt could ever be answered, they refuse and say which flag to pass instead of deleting on an assumption. Commands that only stop a session or server still act immediately — nothing is lost when they do.
+
+### Fixed
+
+- **The change map's "what this change does" summary no longer goes missing when a route, CLI flag, or schema change is written across two lines** — a route registration, CLI flag, or table/column declaration split across a wrapped line (a router call's path landing on the line after its verb, a long argument list broken by a formatter) is now read correctly instead of silently dropping the whole summary when nothing else in the diff was detected.
+
+- **The diff view no longer goes blank while you scroll** — scrolling a comparison could land you on an empty screen for a stretch, with the files reappearing only after scrolling back; on a diff carrying comments it could also drop you at the last file after a short drag. Files now stay painted wherever you scroll, and the scrollbar reflects the real length of the comparison.
+
+- **A file with one enormous line no longer swallows the page** — an inlined SVG path, a minified bundle, or any other single line running to hundreds of thousands of characters used to wrap into thousands of rows, leaving one file occupying a vast blank stretch of the page. Such a line now stays on its own row and scrolls sideways, so the file reads at its true size; ordinary long lines keep wrapping as before.
+
+- **Collapsed and viewed files stay the right size after a reload** — with files marked viewed (or a folder collapsed), reopening a comparison could show a gap where a file should be until you scrolled past it.
+
+- **A force-pushed branch is reviewed at its new head** — after a `git reset --hard` and a force-push, an automated review could read the branch as it stood *before* the rewrite: it reported that nothing had changed, left every earlier finding open, and published a verdict labelled with the new commit. Reviews read the commit the pull request actually points at, so findings the force-push fixed stop coming back.
+
+- **A rewritten branch is picked up again by `branchdiff auto`** — a force-push that removes commits used to look like "no new commits since last review", so the branch was passed over on every cycle until some later commit happened to land on it.
+
+- **Every general comment on a pull request now reaches your local copy** — once one general (non-inline) comment existed locally, later ones — a teammate's note, the automated verdict — were treated as already present and never pulled, so the browser view fell behind the pull request. Inline comments the platform re-anchored after a force-push were also pulled in a second time as duplicates while the original kept its old position and never picked up its resolved state, which is why a resolved issue could keep reappearing in the verdict.
+
+- **Moving a class that's exported only as a pre-built singleton instance is now read as a relocation, not silently as nothing** — a class with no `export`/`pub`/`public` keyword of its own, exported solely via a later `export default new X()` (or the equivalent instantiated-singleton idiom in Rust, Go, Java, and C#), previously vanished from export tracking entirely: moving its declaration to a new file registered zero removed exports and zero relocations, so the change went unmentioned. The change map and change brief now recognize this pattern in every supported language, reporting the move like any other relocation.
+
+---
+
 ## [2.2.2] - 2026-09-02
 
 ### Added
