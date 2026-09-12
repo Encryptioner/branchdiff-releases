@@ -1,16 +1,16 @@
 Package: branchdiff
 Priority: optional
 Section: devel
-Installed-Size: 94356
+Installed-Size: 94357
 Maintainer: Mir Mursalin Ankur <mir.ankur.ruet13@gmail.com>
 Architecture: arm64
-Version: 2.3.0
-Filename: pool/main/b/branchdiff/branchdiff_2.3.0_arm64.deb
-Size: 32373592
-MD5sum: 953e245e80000bf79e0d60283e66af1a
-SHA1: b775fc66ebc58198c3ad4e2ce9d8540bad30fee0
-SHA256: f7912f8d8a3c4aa9286fd657aa0118dc13c1d4bb9af99439e0ed32537fe8a362
-SHA512: dcef9daad5d95d74c43af9689a3dc65f47adaeffa0fe2d6202e99b27c0cc67e733b2bd8e51e21c45a557dcb24cda67c1afc255d6a6862af7bfe62999abcb1e10
+Version: 2.3.1
+Filename: pool/main/b/branchdiff/branchdiff_2.3.1_arm64.deb
+Size: 32373540
+MD5sum: 5be504f12aaf28d9e8192291aacd1c5a
+SHA1: 1400c1e772b5da6d81352c4b1f7054d83966ed2d
+SHA256: 165f25b2516469ba69ea1c92a030286f5794ba69602562c08abb01319c79acd6
+SHA512: 89fe835c5fac37df634e0530b5d08db3f0c468d043b33c2a67ec5d40865d4a27498000b3d63b99120d290bc57c16a4244651e02790f85f6c2724d818389a0126
 Description: Visual git & file diff in your browser, with AI-supported code review,
  GitHub & Bitbucket sync, and persistent sessions. 100% local, no cloud,
  no telemetry.
