@@ -2271,7 +2271,7 @@ Stats/Branches/History/Search code/Guideline/Changelog never pile up a server pe
 
 **Install:**
 
-- **Open VSX** — search "branchdiff" in the Extensions pane of any Open VSX-backed editor: Cursor, Windsurf, Antigravity, VSCodium, Theia, and Gitpod. This is the live install path today. `<!-- PLACEHOLDER: Open VSX listing link -->`
+- **Open VSX** — search "branchdiff" in the Extensions pane of any Open VSX-backed editor: Cursor, Windsurf, Antigravity, VSCodium, Theia, and Gitpod. This is the live install path today: [open-vsx.org/extension/Encryptioner/branchdiff](https://open-vsx.org/extension/Encryptioner/branchdiff).
 - **VS Code Marketplace** — coming soon. Mainline VS Code users, use the manual `.vsix` install below in the meantime.
 - **Manual `.vsix` (no marketplace, works in any editor above too)** — every release's `.vsix` is attached to [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases). Download it, then either Extensions pane → `⋯` → **Install from VSIX…**, or:
   ```bash

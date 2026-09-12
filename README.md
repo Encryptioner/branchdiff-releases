@@ -970,7 +970,7 @@ View the release history and what's changed:
 
 **branchdiff for VS Code** embeds the full UI in an editor tab, plus an activity-bar glance panel mirroring `branchdiff view`'s repo/all-repos split.
 
-- **Open VSX** — search "branchdiff" in the Extensions pane of Cursor, Windsurf, Antigravity, VSCodium, Theia, or Gitpod. Live today.
+- **Open VSX** — search "branchdiff" in the Extensions pane of Cursor, Windsurf, Antigravity, VSCodium, Theia, or Gitpod, or install directly: [open-vsx.org/extension/Encryptioner/branchdiff](https://open-vsx.org/extension/Encryptioner/branchdiff). Live today.
 - **VS Code Marketplace** — coming soon.
 - **Manual `.vsix`** (any editor above, including mainline VS Code today) — download from [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases), then Extensions pane → `⋯` → **Install from VSIX…**, or `code --install-extension branchdiff-<version>.vsix`.
 
