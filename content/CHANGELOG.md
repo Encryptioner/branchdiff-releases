@@ -6,6 +6,14 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [2.3.1] - 2026-09-12
+
+### Fixed
+
+- **Standalone binary installs** - Homebrew, apt, Scoop, PyPI wheels fixed. `view` command implementation update.
+
+---
+
 ## [2.3.0] - 2026-09-12
 
 ### Added
