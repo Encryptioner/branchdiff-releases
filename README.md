@@ -14,7 +14,9 @@
 
 Open any git diff in a browser UI with inline comments, split/unified views, and syntax highlighting. Use Claude Code slash commands (`/branchdiff-review`, `/branchdiff-resolve`) or any AI via prompts to review and fix code. Push and pull review comments to GitHub and Bitbucket PRs. Everything runs on your machine.
 
-**Features:** inline diff comments · AI review & resolve (Claude Code or any AI) · GitHub & Bitbucket PR sync (browser + CLI) · persistent sessions across commits · three diff modes (git, file, delta) · code tours · keyboard navigation · multiple repos simultaneously
+> 🖥️ **New: `branchdiff view`** — a full-screen terminal picker for everything above. One command surfaces every running session, lets you start or change a comparison, and jumps to Stats/Branches/History/Search/Config without leaving the terminal or remembering a single flag. Arrow keys or digits to navigate, `q` to quit. See [Common tasks](#common-tasks) and the [full guide](https://encryptioner.github.io/branchdiff-releases/guideline.html#interactive-terminal-picker-branchdiff-view).
+
+**Features:** inline diff comments · AI review & resolve (Claude Code or any AI) · GitHub & Bitbucket PR sync (browser + CLI) · persistent sessions across commits · three diff modes (git, file, delta) · interactive terminal picker (`view`) · code tours · keyboard navigation · multiple repos simultaneously
 
 ---
 
@@ -62,6 +64,7 @@ Requires `git` on your PATH (any version, including older distro-default builds 
 | I want to… | Command |
 |---|---|
 | View all commands and flags | `branchdiff -h` |
+| Browse everything from one interactive menu | `branchdiff view` |
 | See my uncommitted changes | `branchdiff` |
 | Compare with main | `branchdiff main` |
 | Compare two branches | `branchdiff main feat` |
@@ -230,6 +233,7 @@ branchdiff auto --repo-paths ~/work/api,../web --tool claude
 | `--repo-paths <paths>` | this repo, else its child repos | repos to review — comma-separated, repeatable, absolute/relative/`~`; a non-repo directory expands to its direct child repos |
 | `--repo-concurrency <n>` | 4 | how many repos are scanned at once (reviews still run one repo at a time) |
 | `--keep-servers <n\|all>` | all in one repo; 4 across repos | how many session servers each cycle leaves alive afterwards |
+| `--log [maxSize]` | off | record the run to a timestamped, size-capped file (10 MB default, or `--log 5MB`/`500KB`/`1GB`, 100 KB floor) alongside the terminal output; `auto list` prints a pointer to it |
 
 **Reviewing two things at once?** Every review is tied to exactly one session, and branchdiff never guesses which. AI reviews are pinned automatically. For commands you type, add `--port <n>` or `--session <id>` when more than one session is live — branchdiff lists the candidates rather than picking for you:
 
@@ -917,6 +921,8 @@ Switch between modes in the browser toolbar, or use `--mode file` / `--mode git`
 <summary><b>Full feature list</b></summary>
 
 - Syntax highlighting (150+ languages), split and unified views
+- **Interactive terminal picker** (`branchdiff view`) — a full-screen TUI that surfaces every running session, starts or changes comparisons, and jumps to Stats/Branches/History/Search/Config, all from one menu — no flags to remember
+- **VS Code extension** — full UI embedded in an editor tab plus an activity-bar glance panel; live on Open VSX (Cursor, Windsurf, Antigravity, VSCodium, Theia, Gitpod), VS Code Marketplace coming soon, manual `.vsix` works everywhere now
 - **Binary file handling** — type badges (Image, PDF, Font, Archive, ...); recognized images render inline, old vs new side by side at the compared refs
 - Inline comments with severity tags (`[must-fix]`, `[suggestion]`, `[nit]`, `[question]`)
 - **Markdown preview** in comment editor — toggle between Write and Preview before posting
@@ -959,6 +965,16 @@ View the release history and what's changed:
 
 - **Online:** [encryptioner.github.io/branchdiff-releases/changelog.html](https://encryptioner.github.io/branchdiff-releases/changelog.html)
 - **After installation:** Run `branchdiff changelog` (opens at `http://localhost:<port>/changelog`)
+
+## VS Code extension
+
+**branchdiff for VS Code** embeds the full UI in an editor tab, plus an activity-bar glance panel mirroring `branchdiff view`'s repo/all-repos split.
+
+- **Open VSX** — search "branchdiff" in the Extensions pane of Cursor, Windsurf, Antigravity, VSCodium, Theia, or Gitpod, or install directly: [open-vsx.org/extension/Encryptioner/branchdiff](https://open-vsx.org/extension/Encryptioner/branchdiff). Live today.
+- **VS Code Marketplace** — coming soon.
+- **Manual `.vsix`** (any editor above, including mainline VS Code today) — download from [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases), then Extensions pane → `⋯` → **Install from VSIX…**, or `code --install-extension branchdiff-<version>.vsix`.
+
+Full details in the [guide](https://encryptioner.github.io/branchdiff-releases/guideline.html#vs-code-extension).
 
 ## License
 

@@ -262,6 +262,8 @@ branchdiff --dark           # force dark theme
 
 The theme applies to the entire UI: toolbar, diff view, comments, file browser, and this guideline page.
 
+Both themes keep all text at readable contrast, and use one color per meaning on every screen: red for errors and destructive actions, amber for warnings and things needing attention, green for success, and purple for merged. Press **Tab** to move through the page; the focused button, link, or toggle shows a ring. If your system is set to reduce motion, branchdiff turns off its animations.
+
 ### Split vs. unified view
 
 **Split view** (default) shows old and new content side-by-side — ideal for comparing changes at a glance.
@@ -512,6 +514,23 @@ Badges auto-hide when inapplicable (e.g., "Commented"/"Resolved" disappear if no
 With the **Commented** or **Resolved** badge active, clicking a file in the tree does more than open it — it scrolls straight to that file's first matching thread and expands it (even a resolved thread whose line falls outside the diff's visible hunks, which otherwise sits collapsed inside a closed "outdated comments" panel). With neither badge active, clicking a file just opens it at the top, same as before.
 
 Filters stack with the search box — narrow by text and state simultaneously.
+
+### Sidebar file sorting
+
+The **sort button** beside the Files search box picks the ordering — and both the sidebar tree and the main view's file list follow it, so the two always agree. The menu has two groups: **Sort by** (what to order on) and **Direction** (ascending / descending) — pick one of each, so every criterion can be flipped.
+
+- **Path** — alphabetical. Ascending is the default and keeps folders first; descending reverses the whole tree (folders last, Z → A)
+- **Change type (M → A → D → R → C)** — files grouped by git status: modified, added, deleted, renamed, copied. Descending flips the group order (C → R → D → A → M); path stays ascending inside each group either way
+- **Lines changed** — total added + deleted lines per file. Descending puts the biggest changes first, ascending the smallest
+
+The active criterion and direction are check-marked in the menu. Your choice is saved to the global config's `ui.fileSort` key — see [Config File](#config-file) — so every repo and branch pair on the machine opens the same way. It still applies to the current view if the save can't reach the server; it just won't persist to the next session.
+
+<details>
+<summary>Technical breakdown</summary>
+
+One persisted mode — `<criterion>-<direction>`, e.g. `changes-desc` — drives two comparators that must never disagree: `sortTree` orders the sidebar's tree, `compareFiles` orders the main view's flat list. `path-asc` is byte-identical to branchdiff's original ordering, so nothing shifts for anyone who never touches the button; `path-desc` is its exact reversal. Direction reverses only the criterion's own key — ties, and the within-group order under change type, always fall back to `path-asc`, keeping the order stable and deterministic in both directions. Directories carry no diff metadata, so under change type and lines changed they keep ascending name order and stay at the top, whatever the direction.
+
+</details>
 
 ### Right-click context menu
 
@@ -1699,7 +1718,7 @@ Started detached auto session a1b2c3d4-e5f6-7890-abcd-ef1234567890 (pid 4821).
   branchdiff auto attach a1b2c3d4-e5f6-7890-abcd-ef1234567890   # follow it live (once available)
 ```
 
-Add [`--log`](#run-logs-log) and that log becomes a date-filed run log you can list, read and delete by run — worth it for a run you'll come back to hours later. (Either way the file is timestamped and capped at 10 MB; the plain session log just isn't date-filed or listable by run.)
+Add [`--log`](#run-logs-log) and that log becomes a date-filed run log you can list, read and delete by run — worth it for a run you'll come back to hours later. (Either way the file is timestamped and capped — 10 MB by default, or whatever size you hand `--log`; the plain session log just isn't date-filed or listable by run.)
 
 #### Run logs — `--log`
 
@@ -1708,6 +1727,7 @@ A foreground `auto` writes to the terminal and nothing else; scroll it away or c
 ```bash
 branchdiff auto --tool claude --review --log              # foreground: terminal AND file
 branchdiff auto --tool claude --review --detach --log     # background: one timestamped file
+branchdiff auto --tool claude --review --log 5MB          # foreground, capped at 5 MB instead of 10
 branchdiff auto cron add --start "0 10 * * 1-5" --end "0 20 * * 1-5" \
   --repo-paths "~/work" --tool claude --review --log      # every fire, recorded
 ```
@@ -1741,7 +1761,7 @@ The run id is the session id for a `--detach`/cron run, or `fg-<pid>` for a fore
 
 Deleting asks first, and `--force` skips the prompt — see [Destructive commands ask first](#destructive-commands-ask-first). A run that's still going is never deleted out from under itself; stop it first. `branchdiff info` reports how much space these logs take.
 
-**A log stops growing at 10 MB.** Past the cap, only the middle is dropped: the run's start — the invocation, flags and earliest output — and its most recent lines both stay, with a line in between naming how much was removed, so a `--watch` run left recording for days can't quietly fill the disk, and the command that started it is never the part that goes missing.
+**A log stops growing at its cap.** The cap is 10 MB by default, or any size you hand `--log` as its optional value — `--log 5MB`, `--log 500KB`, `--log 1GB`, or a bare number of bytes (`--log 2000000`), with 100 KB the smallest cap accepted; a size below it, or one that doesn't parse, is refused before the run starts. The cap travels with the flag into `--detach` and cron schedules. Past the cap, only the middle is dropped: the run's start — the invocation, flags and earliest output — and its most recent lines both stay, with a line in between naming how much was removed, so a `--watch` run left recording for days can't quietly fill the disk, and the command that started it is never the part that goes missing.
 
 **An existing cron schedule keeps no log until you re-add it.** A schedule's flags are baked into its generated script when you run `cron add`, so adding `--log` to your shell history changes nothing about a schedule already registered: `auto cron remove --id <cronId>`, then `cron add` again with `--log`. Existing schedules keep working exactly as before in the meantime.
 
@@ -1752,13 +1772,13 @@ Deleting asks first, and `--force` skips the prompt — see [Destructive command
 
 **Levels.** `INFO` is anything on stdout. `WARN` and `ERROR` come from which console call produced the line, not from guessing at its text — so `skip — no remote` is recorded as a warning even though it never says "Warning:". Output relayed from a child process, where that distinction isn't available, falls back to reading the `Error:`/`Warning:` headline and letting the indented detail lines under it inherit that level.
 
-**Size cap.** One file stops growing past 10 MB: the tee keeps an in-memory byte count (no `stat` per write — a chatty child emits hundreds of appends a second) and, once it passes the cap, the file is rewritten keeping a bounded head — up to a fifth of the cap, enough to comfortably outlast the invocation/flags header and the run's earliest output — plus as much of the tail as fits once room for the marker line itself is set aside, with that line naming how much of the middle was dropped and how much of the tail survived. The rewrite trims to 90% of the cap rather than to the cap itself, so there's real headroom for new output before the file needs capping again — without that, a chatty run would sit right up against the cap and re-trigger this same whole-file rewrite on nearly every subsequent write. Both cuts land on a line boundary — the head at the last one at or before its budget, the tail at the first one at or after its own — falling back to a byte-wise cut only when the relevant side has no line boundary to land on at all (one enormous unbroken line). Because the head is always read from the start of the file, it survives every later cap unchanged; only the middle between it and the growing tail keeps shrinking. The byte count re-syncs from the file each time the cap fires.
+**Size cap.** One file stops growing past its cap — the size `--log` was given (KB/MB/GB or a bare byte count, parsed once at startup so a bad value never starts a run; 100 KB is the floor, since below it the head share and marker line the cap machinery reserves can't both fit), or 10 MB when it was given none. The tee keeps an in-memory byte count (no `stat` per write — a chatty child emits hundreds of appends a second) and, once it passes the cap, the file is rewritten keeping a bounded head — up to a fifth of the cap, enough to comfortably outlast the invocation/flags header and the run's earliest output — plus as much of the tail as fits once room for the marker line itself is set aside, with that line naming how much of the middle was dropped and how much of the tail survived. The rewrite trims to 90% of the cap rather than to the cap itself, so there's real headroom for new output before the file needs capping again — without that, a chatty run would sit right up against the cap and re-trigger this same whole-file rewrite on nearly every subsequent write. Both cuts land on a line boundary — the head at the last one at or before its budget, the tail at the first one at or after its own — falling back to a byte-wise cut only when the relevant side has no line boundary to land on at all (one enormous unbroken line). Because the head is always read from the start of the file, it survives every later cap unchanged; only the middle between it and the growing tail keeps shrinking. The byte count re-syncs from the file each time the cap fires.
 
 **Clocks.** The date directory and the file name are both local wall-clock, read from one clock, so the path is a single coherent moment — the day you'd call it, at the time you'd call it. Every timestamp *inside* the file is a full UTC ISO-8601 instant, so parsing is never ambiguous. A `--watch` run crossing midnight keeps the directory it started in rather than splitting in two.
 
 **One file per detached run.** `--detach` already has to send the background process's output somewhere; with `--log` that somewhere *is* the run's log file, so a detached run produces exactly one file rather than a raw copy beside a timestamped one. `auto attach <sessionId>` tails that same file, which means a detached run started with `--log` gets a timestamped `attach` as well. Anything that bypasses normal output — a crash trace — still lands in it, untimestamped, which is exactly where you'd want to find it.
 
-**Without `--log`, the session log still goes through the same tee.** A `--detach`/cron run's `~/.branchdiff/auto-sessions/<sessionId>.log` gets the same timestamped lines and the same 10 MB cap as a run log — what `--log` adds is the date-filed layout and the list/read/delete tooling over it. A foreground run without `--log` writes only to its terminal.
+**Without `--log`, the session log still goes through the same tee.** A `--detach`/cron run's `~/.branchdiff/auto-sessions/<sessionId>.log` gets the same timestamped lines and the same capping as a run log, at the 10 MB default — a size handed to `--log` shapes that run's log, and a session log belongs to a run that never asked for one. What `--log` adds is the date-filed layout and the list/read/delete tooling over it. A foreground run without `--log` writes only to its terminal.
 
 **Re-used ids.** A foreground id is only unique while its pid is alive, so the OS handing out pid 4821 again next week produces a second `fg-4821` — under a different date directory, so the two never collide. `--id` addresses every log for an id; `--date` addresses one day's worth.
 
@@ -2212,6 +2232,85 @@ Branch names come from `git branch -a` at completion time, so remote branches ap
 
 Multiple repos open at once — each gets its own port starting at 5391. You can also run multiple sessions **within the same repo** when comparing different ref pairs.
 
+### Interactive terminal picker — `branchdiff view`
+
+A full-screen alternative to the raw commands below — arrow keys (or `j`/`k`) to move, digits (shown next to each row) to jump straight to it, `Enter` to select, `Esc` to go back, `q` to quit from anywhere, `r` to refresh the current screen's counts on demand. Up to 9 rows, a single digit `1`-`9` jumps instantly; past 9 rows every row switches to a 2-digit code (`01` through the last row's number, shown next to each row). There too, a digit no code can start with jumps instantly — pressing `6` on a 16-row menu (nothing runs `60`-`69`) goes straight to row `06` — while any digit that *could* start a code waits briefly for its second keystroke before resetting. A shortcut legend stays pinned at the bottom of every screen, and the highlighted row shows a one-line hint naming what it does and its CLI equivalent. Lists longer than the terminal is tall — the browse list's multi-line instance rows, a repo-wide branch list in New comparison — scroll in place around the highlighted row rather than running past the bottom of the screen, with a dim `↑ N more above` / `↓ N more below` line naming what's hidden on either side:
+
+```bash
+branchdiff view
+```
+
+From inside a repo, a `git repo: <path>` line under the title shows which repo you're scoped to, and the main menu offers **both** a repo-scoped and an all-repos variant of Stats, Browse, and Kill-all side by side — either scope can be what you want even while standing inside a repo, so `view` doesn't pick one for you:
+
+- **Stats (this repo)** / **Stats (all repos)** — opens the usage dashboard scoped to this repo, or every repo, same as `branchdiff stats --repo` / `branchdiff stats`
+- **Browse running instances (this repo) (N)** / **Browse all running instances (all repos) (N)** — sessions for this repo, or every session on the machine, shown with the same detail and most-recently-reviewed-first order as `branchdiff list`: port, pid, started-ago (with the absolute timestamp), last-reviewed, PR label, the destination/source/mode description, its worktree path if it has one, and the session's URL. Pick one to open it in the browser, change its comparison, or kill it (with a confirmation and a tip on what's affected)
+- **Kill all instances (this repo)** / **Kill all instances (all repos)** — stops every instance for this repo, or every instance on the machine, with a confirmation
+- **New comparison** — pick branch1/branch2 (type to filter, or type any ref that isn't in the list — a SHA, tag, `HEAD~N`) and start a new session
+- **Config** — prints the effective config and its sources, same as `branchdiff config`
+- **Branches** / **History** / **Search code** — browse local + remote branches and tags, browse commit history, or search tracked file contents, same as `branchdiff branches` / `branchdiff history` / `branchdiff search <query>` (Search prompts you for a query first)
+- **Auto sessions** / **Cron schedules** — lists every running auto session, or every cron schedule, same as `branchdiff auto list` / `branchdiff auto cron list`
+- **Guideline** / **Changelog** — opens this user guide, or the changelog, same as `branchdiff guide` / `branchdiff changelog`
+- **Quit**
+
+Run it **outside a git repository** and it still works: no `git repo:` line, only the all-repos variant of Stats, Browse, and Kill-all is offered (unqualified — there's no repo-scoped alternative to contrast it with), and New comparison/Branches/History/Search code are hidden (there's no repo for them to act on) — Config, Auto sessions, Cron schedules, Guideline, and Changelog stay available either way.
+
+Piping `view`'s output (e.g. `branchdiff view < /dev/null`, or running it from a script) skips the interactive picker entirely and prints the same plain list `branchdiff list` / `branchdiff list current` would.
+
+<details>
+<summary>Technical breakdown</summary>
+
+Built with Ink (React for CLIs), rendered full-screen via the terminal's alternate screen buffer — the same mechanism `vim`/`htop` use, so your normal scrollback is untouched and restored exactly as it was on quit, Ctrl+C, or any other exit. Actions that shell out (New/Change comparison, Stats, Config, Branches, History, Search code, Auto sessions, Cron schedules, Guideline, Changelog) leave the picker, run the underlying command with its normal terminal output, and return automatically once it's done — Config, Auto sessions, and Cron schedules specifically wait for a keypress first, since their output would otherwise be covered again immediately.
+
+Stats/Branches/History/Search code/Guideline/Changelog never pile up a server per click: each one reuses one shared instance instead of spawning its own — the machine-wide one behind Guideline/Changelog/`Stats (all repos)` (same content no matter which repo you're in), and a separate per-repo one behind `Stats (this repo)`/Branches/History/Search code — and either one starts only if nothing's already serving it. Both are deliberately separate from any actual diff/review session for the repo, so ending one never disturbs the other. Once opened, the status line under the menu shows that page's actual link, as an OSC 8 terminal hyperlink: a modifier-click opens it directly in terminals that support the escape sequence (most modern ones do), with the exact combo down to the terminal — e.g. macOS Terminal.app: Cmd+double-click; iTerm2: Cmd+click; most Linux/Windows terminals: Ctrl+click — a plain click never opens it, in any terminal. Either way the visible text is the plain URL, copyable by hand if the browser doesn't open it.
+
+</details>
+
+### VS Code extension
+
+**branchdiff for VS Code** is a new companion extension that brings the same "glance without a terminal" idea to your editor, mirroring what `branchdiff view` above offers at the command line. It's a thin client — no feature is reimplemented, the full branchdiff web app just gets an editor-tab viewport alongside a glance panel.
+
+**Install:**
+
+- **Open VSX** — search "branchdiff" in the Extensions pane of any Open VSX-backed editor: Cursor, Windsurf, Antigravity, VSCodium, Theia, and Gitpod. This is the live install path today: [open-vsx.org/extension/Encryptioner/branchdiff](https://open-vsx.org/extension/Encryptioner/branchdiff).
+- **VS Code Marketplace** — coming soon. Mainline VS Code users, use the manual `.vsix` install below in the meantime.
+- **Manual `.vsix` (no marketplace, works in any editor above too)** — every release's `.vsix` is attached to [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases). Download it, then either Extensions pane → `⋯` → **Install from VSIX…**, or:
+  ```bash
+  code --install-extension branchdiff-<version>.vsix
+  ```
+  The same file installs into any Open VSX-backed fork via that editor's own CLI (`cursor`, `windsurf`, `codium` — all take `--install-extension`). Manual installs don't auto-update — to upgrade, install the next release's `.vsix` over it (the old version is replaced, no uninstall needed).
+
+Requires the branchdiff CLI on your PATH (any [install method](#install) above).
+
+**What it adds:**
+
+- **Zero-touch startup** — opening a git workspace adopts an already-running branchdiff server for that repo, or starts one in the background. No command to type.
+- **In-editor UI** — the complete branchdiff web app embedded in an editor tab, following your editor's light/dark theme from the first frame; VS Code's own shortcuts (Command Palette, Quick Open, sidebar, panel, terminal, save, settings, Explorer/Search/Source Control/Extensions) keep working while it has focus. Links that open elsewhere (History/Search/Stats from the app's own menu, another repo's "open →" link) open as a new tab instead.
+- **Activity-bar panel** — live counts for Stats, Instances, Auto sessions, Cron schedules, and Configs, plus quick links to Branches, History, Search code, Guideline, Changelog, and New comparison. A refresh icon re-fetches on demand instead of waiting on the poll.
+- **Status bar** — the branchdiff logo plus a running-server count; click for a quick-pick menu with the same rows.
+
+**Mirrors `view`'s scope split.** Like the terminal picker above, the extension never picks a scope for you — Stats and Instances each show as two rows, "(this repo)" and "(all repos)":
+
+| `branchdiff view` row | VS Code equivalent |
+|---|---|
+| Stats (this repo) / Stats (all repos) | Activity-bar / status-bar **Stats (this repo)** / **Stats (all repos)** |
+| Browse running instances (this repo) / (all repos) | Activity-bar / status-bar **Instances (this repo)** / **(all repos)** |
+| Kill all instances (this repo) / (all repos) | Status-bar quick-pick **Kill All Instances (This Repo / All Repos)** |
+| New comparison | Activity-bar **New comparison…** row, or the `branchdiff: Compare Branches…` command |
+| Config | Activity-bar **Configs** row |
+| Branches / History / Search code | Activity-bar **Branches** / **History** / **Search code** rows |
+| Auto sessions / Cron schedules | Activity-bar **Auto sessions** / **Cron schedules** rows |
+| Guideline / Changelog | Activity-bar **Guideline** / **Changelog** rows (open in browser) |
+| Quit | Close the editor tab — a server started outside the extension is never killed by it |
+
+The two surfaces are hand-kept in sync rather than sharing code — `packages/vscode` is a standalone thin client with no dependency on CLI internals — so a change to one side of this table should always be checked against the other.
+
+<details>
+<summary>Technical breakdown</summary>
+
+The extension activates on workspace open, computing the workspace's repo hash the same way the CLI does and adopting a healthy registry match or spawning `branchdiff --no-open --quiet` as a foreground child it owns. The embedded editor tab is a `WebviewPanel` iframing the server root; keystrokes inside the cross-origin iframe are forwarded to VS Code's own keybindings via `postMessage`, and the app mirrors the editor's color theme for the session only, without touching its own persisted theme preference. See `docs/dev-guide/IDE-EXTENSIONS.md` for the full architecture and publishing setup.
+
+</details>
+
 ```bash
 branchdiff list              # show all running instances (with URLs); annotates each with the last AI review time and sorts most-recently-reviewed first
 branchdiff list current      # only the instances for the repo you're in
@@ -2373,8 +2472,9 @@ The dashboard shows:
   </details>
 
 - **Recent PRs** — a table per pull request: review pass count (every re-review of the same PR counts, not just its first), verdict, severity-tagged comment counts (must-fix / suggestion / nit / question), and resolved-thread fraction. Each PR number links to the PR on its forge (GitHub or Bitbucket) in a new tab. Comment bodies and PR descriptions are never included — counts only. A **↗** next to the pass count jumps straight to that PR's row in **Sessions** below, when it has a matching one.
-- **Sessions** — session-by-session breakdown: one row per review session with a real comparison (PR-linked, a plain branch-pair, or a local snapshot), sorted by created date. The tree view's file-browser session (nothing to compare) never appears here, and neither does a snapshot session with zero activity — a working-tree/`HEAD~N`/SHA comparison nobody ever ran a pass or reviewed files on. A branch-pair session always appears even with zero activity, since it's a persistent, reusable comparison rather than one-off SHA churn — branches, files/lines reviewed, and created/last-reviewed dates, since what was actually reviewed is the primary data here. Click a row to expand its full detail: repo, reviewed commit, active/archived status (with the archive date once archived), the PR link, tool, pass count, tokens, and cost. Click **Files** / **Lines** / **Created** / **Last reviewed** to sort by that column. A pass that ran on an untracked tool (or whose usage line didn't parse) shows **untracked** in the expanded Tokens line — same distinction the aggregate Token usage panel above makes. Browser-only — `branchdiff stats --json` carries the same per-session rows (`sessionsUsage`) for scripting, but `--share`/text output stay at the repo/PR level to avoid duplicating the Recent PRs table.
+- **Sessions** — session-by-session breakdown: one row per review session with a real comparison (PR-linked, a plain branch-pair, or a local snapshot), sorted by created date. The tree view's file-browser session (nothing to compare) never appears here, and neither does a snapshot session with zero activity — a working-tree/`HEAD~N`/SHA comparison nobody ever ran a pass or reviewed files on. A branch-pair session always appears even with zero activity, since it's a persistent, reusable comparison rather than one-off SHA churn — branches, files/lines reviewed, and created/last-reviewed dates, since what was actually reviewed is the primary data here. Click a row (or Tab to it and press Enter) to expand its full detail: repo, reviewed commit, active/archived status (with the archive date once archived), the PR link, tool, pass count, tokens, and cost. Click **Files** / **Lines** / **Created** / **Last reviewed** (or Tab to one and press Enter) to sort by that column. A pass that ran on an untracked tool (or whose usage line didn't parse) shows **untracked** in the expanded Tokens line — same distinction the aggregate Token usage panel above makes. Browser-only — `branchdiff stats --json` carries the same per-session rows (`sessionsUsage`) for scripting, but `--share`/text output stay at the repo/PR level to avoid duplicating the Recent PRs table.
 - **Per-repo breakdown** — a table of reviews, comments, threads, and last-reviewed date for every repo (hidden when scoped to one repo), plus a compact summary per repo: passes (times reviewed), distinct PRs, approved, changes-requested, and suggestions (`Passes`/`PRs`/`A`/`CR`/`S`; the summary tooltip expands every code). A Tokens column joins the table once any repo has real usage data — same gate as the global Token usage panel — so token/cost spend is visible per repo, not just as one combined total; it prints compact with the exact figure on hover like every dashboard token spot, while the CLI text and `--share` "Top repos" line carry the full number.
+- **Jump to** — a row of pills across the top links straight to each section below (Overview, Charts, Trends, Repos, PRs, Sessions, Instances, Auto sessions, Cron schedules, Configs — whichever actually have something to show). Each is a real link carrying that section's id as a URL hash (`#stats-section-overview`, etc.), so copying it from the address bar (or right-clicking a pill) gives a direct, bookmarkable link to that part of the dashboard; opening one expands a collapsed section automatically. This row, and the filters/toggles/export buttons above it, stay pinned to the top of the dashboard as you scroll, so switching between sections or adjusting the time window never needs a trip back up.
 - **Quick commands** — four collapsible sections mirroring CLI commands you'd otherwise run in a terminal: **Instances** (`branchdiff list`), **Auto sessions** (`branchdiff auto list`), **Cron schedules** (`branchdiff auto cron list` **and** `branchdiff prune-worktrees cron list` — both namespaces in one list, each row tagged by kind), and **Configs** (`branchdiff config` — see [Config File](#config-file) below for the precedence model). Each fetches live data on expand, grouped by repo, with a **Refresh** button, and lets you act on any entry directly — **Kill** an instance, **Attach**/**Stop** an auto session, **Remove** a cron schedule (works on either kind) — every action button's tooltip naming the exact CLI command it performs.
 - **Bulk actions** — once a section has at least one entry, a page-level **Kill all** / **Stop all** / **Remove all** button appears, matching the per-row commands (`branchdiff killall`, `auto stopall`); the Cron schedules section's **Remove all** clears both namespaces (`auto cron removeall` and `prune-worktrees cron removeall` together, since the one section already shows both). Same click-to-arm, click-again-to-confirm pattern as every per-row action.
 
@@ -2470,10 +2570,11 @@ Stop retyping long flag sets. branchdiff reads two optional JSON files and fills
 | `~/.branchdiff/config.json` | Global — applies everywhere |
 | `.branchdiff.json` | Folder-level — a repo root, or the directory you ran branchdiff from |
 
-Both are optional; a missing file is not an error. Two top-level keys are recognized:
+Both are optional; a missing file is not an error. Three top-level keys are recognized:
 
 - **`defaults`** — mirrors the root command's flags (`base`, `compare`, `mode`, `port`, `open`, `detach`, `quiet`, `dark`, `unified`, `new`, `previous`, `worktree`, `sync`), by their commander attribute name (`--no-open` → `open`).
 - **`auto`** — mirrors every `auto` flag, by its camelCase name (`--max-files` → `maxFiles`).
+- **`ui`** — browser preferences, global config only (never a `.branchdiff.json`): `fileSort` sets the diff view's file ordering (`path-asc`, `path-desc`, `status-asc`, `status-desc`, `changes-asc`, `changes-desc`). Saved automatically when you pick an order from the [sidebar sort button](#sidebar-file-sorting) — hand-editing works too.
 
 ```json
 // .branchdiff.json
@@ -2488,10 +2589,11 @@ Both are optional; a missing file is not an error. Two top-level keys are recogn
 - **Launch-wide** — resolved once for the whole run (e.g. `repoPaths`, `watch`, `keepServers`): CLI flag → launch directory's `.branchdiff.json` → global config → built-in default.
 - **Per-repo** — resolved separately for each target repo, so a multi-repo run can give each its own size gates, skill, notify setting, and so on: CLI flag → that repo's own `.branchdiff.json` → launch directory's `.branchdiff.json` → global config → built-in default.
 - **Exec-only** (`exec`, `tool`) — only from `~/.branchdiff/config.json` or a CLI flag, never from any `.branchdiff.json` — a committed folder-level config can't make `auto` run an arbitrary shell command the moment someone else clones the repo.
+- **UI-only** (`ui.*`) — browser preferences such as the diff view's file ordering; global config only, so a repo you clone can't restyle your viewer.
 
 Run `branchdiff config` to see the fully-merged effective config for where you're standing, with the tier each value came from — a key nobody set anywhere still shows its actual built-in default, so you never have to hunt for what a flag defaults to. `branchdiff config sample` writes a starter file with the commonly-useful keys (`--full` for every key with a fixed default, `--global` for `~/.branchdiff/config.json` instead of the current directory).
 
-**Also from the browser** — the same resolution is browsable at `branchdiff stats` → **Configs**: pick a launch directory and expand **Global** / **Launch dir** / each repo to see its raw file plus the fully-resolved per-key table, with **create** offered wherever a file doesn't exist yet (seeded from what's currently in effect). Copy a file's path/content or open it in your default editor straight from the tree.
+**Also from the browser** — the same resolution is browsable at `branchdiff stats` → **Configs**: pick a launch directory and expand **Global** / **Launch dir** / each repo to see its raw file plus the fully-resolved per-key table (the `defaults`, `auto`, and `ui` section blocks sit alongside), with **create** offered wherever a file doesn't exist yet (seeded from what's currently in effect). Copy a file's path/content or open it in your default editor straight from the tree. A row whose value came from something other than the section's built-in default is highlighted and labeled `changed ← <tier>` instead of the plain `← <tier>`, so an override never blends into the rest of the table; the `ui` block's `fileSort` value is spelled out in plain language (e.g. `Lines changed, descending`) with the raw config value alongside it in parentheses, rather than only the raw `changes-desc` string.
 
 <details>
 <summary>Technical breakdown</summary>
@@ -2965,6 +3067,7 @@ Each feature links to the section that covers it:
 - [**Destructive commands ask first**](#destructive-commands-ask-first) — `clear`, `prune`, `state reset`, `auto log delete` and both `cron removeall`s confirm before deleting, `--force` skips the prompt, and a script or cron job without a terminal is refused rather than guessed at
 - [**Export & Import**](#export-import) — back up review & tour data to JSON and restore it on another machine; conflict strategies: merge, skip, overwrite
 - [**Multiple instances**](#instance-management) — run several sessions simultaneously: different repos each on their own port, or different branch comparisons within the same repo
+- [**VS Code extension**](#vs-code-extension) — in-editor UI plus an activity-bar glance panel mirroring `branchdiff view`'s repo/all-repos split; install from Open VSX or a manual `.vsix` (Marketplace coming soon)
 - [**Close session from browser**](#close-session-from-the-browser) — stop the server and close the tab from any 3-dot menu, no terminal needed
 - [**UI state persistence**](#navigating-the-diff-view) — collapse state, viewed file markers, and filter preferences persist across port changes and machines via repo fingerprinting
 - [**Sidebar filtering**](#sidebar-filtering) — filter files by 10 states: Commented, Uncommented, Resolved, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged
