@@ -46,6 +46,7 @@ SEL="--port <that one port>"
 ```
 
 - **Verify first:** run `branchdiff agent list $SEL` and confirm the reported ref/PR is the one you were asked to work on. If it is not, STOP.
+- **Cross-check against the live server, not just the CLI's own answer.** `--port`/`--session` resolution and the server actually serving the browser for that port can disagree if a stray session row happens to share the exact same `ref` string as the real one — `agent` then silently reads/writes a different session than what anyone looking at the browser sees. Compare the `sessionId` from `curl -s http://localhost:<port>/api/info` against what `branchdiff agent list $SEL --json` operates on (each thread's `sessionId` field); if they differ, STOP and tell the user before posting or resolving anything — do not treat the CLI's own resolution as authoritative over the live server's.
 - **Refresh remote state** so you work on fresh code — pulls the latest PR comments and refuses if your local branch is behind the PR head (the same pull + stale guard `review run` and `auto` apply). No-ops when the session isn't PR-linked:
   ```bash
   branchdiff agent refresh $SEL
