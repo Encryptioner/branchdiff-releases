@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-12T14:57:31.855Z",
+  "generatedAt": "2026-09-12T16:12:44.443Z",
   "startUrl": "https://encryptioner.github.io/branchdiff-releases/",
   "pages": [
     "https://encryptioner.github.io/branchdiff-releases/",
     "https://encryptioner.github.io/branchdiff-releases/guideline.html",
     "https://encryptioner.github.io/branchdiff-releases/changelog.html"
   ],
-  "chunkCount": 496,
+  "chunkCount": 497,
   "chunks": [
     {
       "anchor": "visual-git-diff-in-your-browser",
@@ -96,7 +96,7 @@
       "anchor": "channel-status",
       "title": "Visual git diff in your browser. — Install",
       "url": "https://encryptioner.github.io/branchdiff-releases/#channel-status",
-      "text": "npm 2.3.0 | Binaries (GitHub) 2.3.0 | PyPI 2.2.3 | Homebrew 2.2.3 | Scoop 2.2.3 | APT 2.2.3"
+      "text": "npm 2.3.1 | Binaries (GitHub) 2.3.1 | PyPI 2.3.1 | Homebrew 2.3.1 | Scoop 2.3.1 | APT 2.3.1"
     },
     {
       "anchor": "nodejs-node-18",
@@ -2079,6 +2079,12 @@
       "text": "on their own port, or different branch comparisons within the same repo VS Code extension — in-editor UI plus an activity-bar glance panel mirroring branchdiff view 's repo/all-repos split; install from Open VSX or a manual .vsix (Marketplace coming soon) Close session from browser — stop the server and close the tab from any 3-dot menu, no terminal needed UI state persistence — collapse state, viewed file markers, and filter preferences persist across port changes and machines via repo fingerprinting Sidebar filtering — filter files by 10 states: Commented, Uncommented, Resolved, Viewed, Unviewed, Stale (viewed but changed), Collapsed, Expanded, Staged, Unstaged Working tree toggle — switch between staged and unstaged changes from the toolbar"
     },
     {
+      "anchor": "fixed",
+      "title": "Changelog — [2.3.1] - 2026-09-12 — Fixed",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed",
+      "text": "Fixed Standalone binary installs - Homebrew, apt, Scoop, PyPI wheels fixed. view command implementation update."
+    },
+    {
       "anchor": "added",
       "title": "Changelog — [2.3.0] - 2026-09-12 — Added",
       "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#added",
@@ -2115,15 +2121,15 @@
       "text": "Changed Easier to read in both light and dark mode — text meets the standard readability contrast everywhere, and in dark mode panels, cards, and borders stand out from the page. Buttons and selected toggles keep readable text in dark mode, and date pickers, scrollbars, chart tooltips, and pie charts follow the dark theme. Errors, warnings, and successes use one consistent set of colors on every screen, and a success toast is easy to tell apart from an error toast. Pressing Tab shows a clear focus ring on every button, link, and toggle, and the comment box lights up while you type in it. The smallest labels and badges are a size larger. On the Stats page, section titles, overview figures, and tables read at a glance: table headers stay visible as you scroll, and the Sessions table can be sorted and expanded from the keyboard. If your system asks for reduced motion, animations are switched off."
     },
     {
-      "anchor": "fixed",
+      "anchor": "fixed-2",
       "title": "Changelog — [2.3.0] - 2026-09-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-2",
       "text": "Fixed --port / --session always targets the session actually being reviewed — in a rare case, a leftover single-ref session could end up carrying the exact same branch identifier as a real two-branch comparison, and commands aimed at that comparison's port could land on the leftover session instead — so comments posted with agent comment / resolve never showed up in the browser. Session lookup can no longer confuse the two, and any comments already misplaced this way are moved back automatically the next time branchdiff runs. branchdiff guide and branchdiff changelog no longer leak a server on every call — each one used to always start a brand-new, unregistered server, invisible to branchdiff list / kill / killall , so repeated use quietly piled up processes that only Ctrl+C (or the machine restarting) ever cleaned up. Both now reuse a shared server if one's already running for them and register the one they spawn, exactly like branchdiff stats , branches , history , search , show , and tree already did. This shared server — used for Stats/Branches/History/Search/Guideline/Changelog — is registered separately from any actual diff/review session for the repo (or, for Guideline/Changelog/ stats with no --repo , shared machine-wide, since that content is the same everywhere): stopping one never disturbs the other. branchdiff clear now also stops every"
     },
     {
-      "anchor": "fixed",
+      "anchor": "fixed-2",
       "title": "Changelog — [2.3.0] - 2026-09-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-2",
       "text": "instance for the repo before deleting its data, not just one. Platform activity colors \"changes requested\" verdicts and warnings — a changes-requested review verdict, and a platform's fetch warnings, use the warning color, consistent with the rest of the app. auto list names a run's log once, not twice — a session started with --log listed two pointers to the same recording: the log file itself on the log: line, and the folder holding it on the auto log: line. One pointer remains — the run's log folder, with the command that reads it — while a session without a run log still shows its plain session log line. Shell completion knows when a flag wants a value — in bash, typing a flag like --previous , --approve , --refs , --session , --date , or any of the other value-taking flags and pressing Tab re-offered the whole flag list instead of letting you type the value; 19 flags were affected, and zsh offered a value to the valueless --skills-hash . Both completions now match the CLI itself on which flags take a value, and --log 's new optional size completes in both shells."
     },
     {
@@ -2145,21 +2151,21 @@
       "text": "a detached run's session log ( ~/.branchdiff/auto-sessions/<sessionId>.log ) even without --log , since a cron schedule keeps such a file open for as long as it lives. A schedule records its fires once you re-add it with --log ; without it the session log still can't grow without bound. Commands that delete things now confirm first — clear , prune , state reset , auto log delete , and both cron removeall s ask before deleting, naming exactly what disappears, and --force skips the prompt. In a script, cron job, or CI, where no prompt could ever be answered, they refuse and say which flag to pass instead of deleting on an assumption. Commands that only stop a session or server still act immediately — nothing is lost when they do."
     },
     {
-      "anchor": "fixed-2",
+      "anchor": "fixed-3",
       "title": "Changelog — [2.2.3] - 2026-09-04 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-2",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-3",
       "text": "Fixed The change map's \"what this change does\" summary no longer goes missing when a route, CLI flag, or schema change is written across two lines — a route registration, CLI flag, or table/column declaration split across a wrapped line (a router call's path landing on the line after its verb, a long argument list broken by a formatter) is now read correctly instead of silently dropping the whole summary when nothing else in the diff was detected. The diff view no longer goes blank while you scroll — scrolling a comparison could land you on an empty screen for a stretch, with the files reappearing only after scrolling back; on a diff carrying comments it could also drop you at the last file after a short drag. Files now stay painted wherever you scroll, and the scrollbar reflects the real length of the comparison. A file with one enormous line no longer swallows the page — an inlined SVG path, a minified bundle, or any other single line running to hundreds of thousands of characters used to wrap into thousands of rows, leaving one file occupying a vast blank stretch of the page. Such a line now stays on its own row and scrolls sideways, so the file reads at its true size; ordinary long lines keep wrapping as"
     },
     {
-      "anchor": "fixed-2",
+      "anchor": "fixed-3",
       "title": "Changelog — [2.2.3] - 2026-09-04 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-2",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-3",
       "text": "before. Collapsed and viewed files stay the right size after a reload — with files marked viewed (or a folder collapsed), reopening a comparison could show a gap where a file should be until you scrolled past it. A force-pushed branch is reviewed at its new head — after a git reset --hard and a force-push, an automated review could read the branch as it stood before the rewrite: it reported that nothing had changed, left every earlier finding open, and published a verdict labelled with the new commit. Reviews read the commit the pull request actually points at, so findings the force-push fixed stop coming back. A rewritten branch is picked up again by branchdiff auto — a force-push that removes commits used to look like \"no new commits since last review\", so the branch was passed over on every cycle until some later commit happened to land on it. Every general comment on a pull request now reaches your local copy — once one general (non-inline) comment existed locally, later ones — a teammate's note, the automated verdict — were treated as already present and never pulled, so the browser view fell behind the pull request. Inline comments the platform re-anchored after a force-push were also pulled in a second time as duplicates while the original kept its"
     },
     {
-      "anchor": "fixed-2",
+      "anchor": "fixed-3",
       "title": "Changelog — [2.2.3] - 2026-09-04 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-2",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-3",
       "text": "old position and never picked up its resolved state, which is why a resolved issue could keep reappearing in the verdict. Moving a class that's exported only as a pre-built singleton instance is now read as a relocation, not silently as nothing — a class with no export / pub / public keyword of its own, exported solely via a later export default new X() (or the equivalent instantiated-singleton idiom in Rust, Go, Java, and C#), previously vanished from export tracking entirely: moving its declaration to a new file registered zero removed exports and zero relocations, so the change went unmentioned. The change map and change brief now recognize this pattern in every supported language, reporting the move like any other relocation."
     },
     {
@@ -2199,15 +2205,15 @@
       "text": "around instead of chasing the horizontal scrollbar. Ctrl/⌘+scroll (or a trackpad pinch) zooms in and out centered on the cursor. The zoom buttons and reset-to-fit stay alongside, plain scroll still scrolls, and content that fits across the dialog clicks normally."
     },
     {
-      "anchor": "fixed-3",
+      "anchor": "fixed-4",
       "title": "Changelog — [2.2.2] - 2026-09-02 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-3",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-4",
       "text": "Fixed Inserted Change map / Commit history blocks now append to the end of the PR description instead of landing at the caret — an inserted block is a self-contained section (its own heading and closing rule), and dropping it wherever the caret happened to sit could splice it mid-sentence or mid-list, corrupting the markdown around it. Re-clicking still updates the existing block in place. The PR description's \"Commit history\" insert no longer comes back empty on a branch that only ever merges a sibling branch in — the insert walks the branch's own first-parent line; on a branch whose entire first-parent line is merges (e.g. a stage branch repeatedly merged into a dev branch, with no direct commits of its own), merge commits are kept in the list rather than filtered out, each tagged _(merge)_ . Toggling First parent in the diff sidebar's Commits panel no longer jumps the sidebar — the previous commit list now stays visible while the new one loads, so the panel updates in place instead of the whole section briefly disappearing and reappearing. AI-authored change-map review comments no longer wrap sections in a collapsible <details> block — GitHub and Bitbucket render PR comments as plain markdown, so the block showed up as literal <details> / <summary> tags instead of collapsing; the comment now reads"
     },
     {
-      "anchor": "fixed-3",
+      "anchor": "fixed-4",
       "title": "Changelog — [2.2.2] - 2026-09-02 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-3",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-4",
       "text": "as plain sections throughout. The Stats dashboard's Sessions table no longer fills up with empty snapshot rows — reviewing your own working tree, HEAD~N , or a raw commit repeatedly creates a fresh local snapshot on every commit; rows for these that nobody ever reviewed (no files/lines looked at, no AI pass run) are now left out, so the table only shows comparisons someone actually did something with. Branch-pair comparisons still always show, even with no activity yet."
     },
     {
@@ -2235,9 +2241,9 @@
       "text": "list; the Merges label shows a live count. The standalone browser starts with every reachable commit and merges shown; the sidebar's Commits panel starts with First parent and Merges both on, since reviewing a single branch's own work is the common case there. Useful on any branch that periodically syncs from a shared integration branch, where the full list otherwise gets flooded with commits that aren't really that branch's own work."
     },
     {
-      "anchor": "fixed-4",
+      "anchor": "fixed-5",
       "title": "Changelog — [2.2.1] - 2026-08-29 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-4",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-5",
       "text": "Fixed A pass's verdict comment and its PR approval now land in the same cycle, even when publishing takes a while — pushing a large batch of comments and replies to GitHub/Bitbucket (or pulling a busy PR's comment history back) is network work that can legitimately take over a minute; that no longer gets cut off mid-flight and reported as a failed push while the comments actually arrive, which used to leave auto --approve 's approval waiting for the next watch cycle as a redundant publish-only retry. Editing a PR now opens with its existing description loaded — the edit dialog used to show an empty description box, so saving rewrote the PR's description from scratch; the description (images and HTML included) now loads verbatim, edits are saved back verbatim, and an emptied box clears the PR's description only when one was actually there to remove. Windows release builds no longer stall out their full job on a hung packaging step — a stuck compile fails fast within its step budget, so the Windows binary and Scoop channels publish on time instead of sitting in a hung job for the maximum duration."
     },
     {
@@ -2295,9 +2301,9 @@
       "text": "that tool — project-level and global/user-level permission settings — before relying on this for real reviews. An unrecognized --exec is left exactly as written; branchdiff warns instead of guessing."
     },
     {
-      "anchor": "fixed-5",
+      "anchor": "fixed-6",
       "title": "Changelog — [2.2.0] - 2026-08-28 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-5",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-6",
       "text": "Fixed Date stamps are ISO-8601 everywhere — stored, exported, and imported — session, thread, comment, and tour timestamps all read the same 2026-07-27T12:38:51.514Z shape, so export bundles and --json output parse with any tool and sort correctly across machines. Dates in the UI and CLI render in your device's timezone (AM/PM where your locale uses it) instead of a raw UTC string. Mermaid diagrams in comments follow the app theme live — toggling between light and dark re-renders an existing diagram in place with the new theme's colors, instead of keeping the colors from whenever the page was opened. auto --skill review passes now count toward the session's pass total — a skill-driven pass left the session's pass count untouched, since only the classic mode's child review run process incremented it; auto now increments it directly for skill mode too, so per-tool token stats and the change map's \"prior passes\" figure include skill-run sessions."
     },
     {
@@ -2313,15 +2319,15 @@
       "text": "watch or cron-scheduled run a stop time, on both auto and prune-worktrees cron — accepts an ISO 8601 datetime or an epoch-ms timestamp; a --watch run stops cleanly at its next cycle boundary once the deadline passes, and a cron-fired run (either namespace) also removes its own schedule so nothing keeps firing past it — a scheduled prune-worktrees that fires past its deadline removes its schedule and prunes nothing. Shown wherever a session or schedule is listed — CLI, API, and the Stats dashboard. prune closes every dangling reference before wiping ~/.branchdiff — stops detached auto runs and every cron schedule (both auto and prune-worktrees namespaces) before wiping the directory, so nothing keeps running or firing against data that no longer exists; the sweep runs even if the directory was already removed by hand. Binary files show what kind of file changed, and images render inline — the diff view labels a binary file by type (Image, PDF, Font, Archive, Video, Audio, ...); for a recognized image, the old and new versions render side by side in the diff (just the one side that exists, for an added or deleted file). A text file that git labels binary only because it contains a stray NUL byte is diffed as text instead, with each stray NUL shown as a visible \\0"
     },
     {
-      "anchor": "fixed-6",
+      "anchor": "fixed-7",
       "title": "Changelog — [2.1.2] - 2026-08-25 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-6",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-7",
       "text": "Fixed A minified vendor file with an extremely long single line no longer freezes the diff view — syntax highlighting skips any line past a length threshold and falls back to plain text, the same protection the inline word-diff already has for this exact case. A teammate's PR comment can no longer be re-posted under your account by a push — every thread pulled from a PR now remembers its PR-side comment id, so a later push matches the existing PR comment by identity — even after the PR's line numbers or the comment wording drift — and adds only genuinely new replies; the original author stays on the original comment. As a backstop, a thread whose root comment originated on the PR is never re-posted: if its stored link is too stale to match anything, the push reports the thread and tells you to Pull to re-link it. Resolutions travel the same link — a pulled thread you resolve locally gets marked resolved on the PR too. The general (PR-level) comment is pushed last on Bitbucket, matching GitHub — inline file comments land first and the general summary lands last, so it stays at the top of the PR's comment activity instead of being buried under the file comments that follow it. Naming the reviewed branch first no longer"
     },
     {
-      "anchor": "fixed-6",
+      "anchor": "fixed-7",
       "title": "Changelog — [2.1.2] - 2026-08-25 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-6",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-7",
       "text": "renders a silently empty diff — branchdiff detects the inverted order (the natural gesture for a worktree branch) and corrects it automatically, printing a line naming the correction; the CLI, the API, and URL-built comparisons all apply the same fix, so the file list and every per-file diff agree on direction."
     },
     {
@@ -2343,15 +2349,15 @@
       "text": "by cronId ) resolve \"what's live\" through one reconciled view (the session registry unioned with every live per-repo lock), flagging such a session unregistered so it's distinguishable at a glance while remaining stoppable exactly like any other row. auto cron remove / removeall reach a schedule's live session the same way, even when that session's own registry entry never landed. auto 's session registry writes atomically — a crash or partial write mid-write can no longer leave auto-registry.json silently recovered to an empty list. Every --detach or cron-fired auto startup also logs the exact ~/.branchdiff paths it wrote (or failed to write) its lock/registry entries to, in its own session log — a diagnostic for tracking down a session that never shows up anywhere."
     },
     {
-      "anchor": "fixed-7",
+      "anchor": "fixed-8",
       "title": "Changelog — [2.1.1] - 2026-08-13 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-7",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
       "text": "Fixed A worktree-conflict skip message no longer names git worktree remove as the fix for a conflict held by the main checkout — when a PR's branch is already checked out somewhere branchdiff won't touch (your own linked worktree, or the main checkout), the message now points you at git worktree list to see which one it is before naming the right escape hatch: switch that branch off there, or git worktree remove <path> only when it's actually a linked worktree — the command errors on the main checkout, so it's no longer presented as a one-size-fits-all fix regardless of which case applies. The classic (non- --skill ) auto / review run review and resolve passes now carry the same AI-reviewer PATH self-heal hint skill mode already had — the literal export PATH=... prompt text that lets the AI recover branchdiff 's location when its own tool sandbox strips inherited environment variables was only ever appended to skill/resolve prompts; the classic diff+JSON pipe's instructions (which tell the AI to run the exact same branchdiff agent comment / general-comment / resolve / dismiss commands) carried no such hint, so on a machine or sandbox where the AI's nested shell dropped PATH , the reviewer could report branchdiff unreachable with nothing posted — and, with nothing new to publish, the verdict push"
     },
     {
-      "anchor": "fixed-7",
+      "anchor": "fixed-8",
       "title": "Changelog — [2.1.1] - 2026-08-13 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-7",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
       "text": "never reached the PR either. Both classic-mode instruction blocks (review and resolve) now carry the identical hint, closing the one mode this class of fix (v2.1.0) missed. A named, specific failure line when the AI reviewer can reach --exec / --tool but not branchdiff itself — this exact failure used to fall through to either the generic \"reviewer command not found\" reason (whose fix, \"check --exec / --tool and PATH\", points at the wrong binary — the AI ran fine; branchdiff is the one it couldn't resolve) or, when the AI's wording didn't match, an unhelpful raw-output dump with no named reason at all. The per-PR failure line and --notify toast now name this case on its own and point at the actual fix: retry once (often a one-off sandbox glitch) or install branchdiff globally so it's on the machine's default PATH regardless of what the AI's own sandbox strips."
     },
     {
@@ -2415,87 +2421,87 @@
       "text": "— the same # -anchor the table of contents, the guide's in-page cross-references, and any /guideline#… / /changelog#… URL already resolve — so sharing or bookmarking a single section is one click, and the copied URL opens the page scrolled straight to it. Both pages also widened their content column, so long documents read with less vertical scrolling. The button appears on hover on a pointer device and stays visible on touch."
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "Fixed A .branchdiff.json / config.json port, timeout, parallel, or repo-concurrency value written as a JSON number instead of a string could crash auto 's --exec child process — these four flags are string-typed everywhere else in branchdiff (their CLI defaults and every downstream comparison expect a string), but a config file loaded a bare JSON number for them unchanged; passed straight into the --exec child's spawn argv, which requires every element to be a string, that crashed the run instead of reviewing anything, and also silently misclassified an otherwise-default value as customized in auto 's own run summary. Config-file values for port / timeout / parallel / repoConcurrency are now normalized to strings on read, matching exactly what the equivalent CLI flag would have produced. Guideline TOC links now scroll to their section — headings containing inline code (e.g. branchdiff auto ) rendered an id built from String(children) , which stringified React elements as [object Object] instead of their text. A recursive flattenText() helper fixes the mismatch between the TOC's link and the heading's actual id. Two guide sections moved to the correct TOC level — \"Automatic PR review\" and \"Agent command reference\" are top-level topics; their headings are promoted from ### to ## . auto always names the repo(s) it's acting on — the per-run summary and each scan"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "cycle state the resolved --repo-paths target(s) even at one repo, so a single-repo run's log line (or a cron job's log file) is never ambiguous about which repo a \"skip\" or \"0 candidate PRs\" result came from. auto --watch shows the next cycle's clock time , not just the countdown, so a Next cycle in 10m line in a log file says exactly when to expect the next one. auto cron list prints the remove command — each listing now ends with a branchdiff auto cron remove --id <cronId> reminder. Multi-repo --repo-paths on older git installs — on git before 2.31 (no --path-format flag support, e.g. the git 2.25 that ships by default on Ubuntu 20.04 servers), repo-root resolution could collapse every repo to the same bogus value, merging distinct repos into one target and pointing every git call at the process's ambient working directory instead of the actual repo — surfacing as auto reporting a repo has no remote when it does. Fixed by validating the git output is actually an absolute path before trusting it. auto cron add now honors repoPaths from config — its pre-flight repo resolution only ever looked at a literal --repo-paths flag, so a repoPaths set in the launch directory's .branchdiff.json or in ~/.branchdiff/config.json (the same config the real scheduled auto run already reads)"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "was ignored, refusing with \"not a git repository, and no git repositories directly under this directory\" even though the scheduled run itself would have resolved fine. It now reads the same launch-tier config the scheduled invocation does, in the same order. A line break in a scheduled argument no longer breaks a cron fire — a newline inside a value (most likely a free-text --prompt ) split the generated crontab entry across two physical lines, leaving the first on an unclosed quote; cron ran it anyway and failed with a sh syntax error at every fire, with no session, log, or toast to notice by — the schedule just looked permanently idle. shellQuote now flattens any line break to a space before writing, so every scheduled value is safe regardless of which flag carries it; cron add additionally warns when it flattens one, naming the value. auto finds branchdiff for its AI reviewer under cron, systemd, and CI — and the reviewer never substitutes a manual review when it can't — under a launcher with a minimal PATH (cron's default, a systemd unit, a CI runner), the AI reviewer auto spawns couldn't resolve branchdiff by name, so it couldn't read the diff or post its comments — surfacing as a review that posted nothing, or an AI that reported branchdiff"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "wasn't installed. auto passes its own install location to every process it spawns, so the reviewer (and any descendant branchdiff process) resolves branchdiff no matter how bare the launcher's environment is; in skill mode, that same install location is also spelled out as literal text in the prompt, so the reviewer can export PATH and recover even if its own tool sandbox strips inherited environment variables on top of the process env. If branchdiff still can't be reached — or a command that worked moments earlier stops working mid-review — the review/resolve skills instruct the AI to stop the pass and report the failure instead of reviewing the checkout manually outside branchdiff, which would post nothing branchdiff can track and repeat as a duplicate comment on the next scheduled pass. --worktree recovers a checkout whose directory disappeared while git still had it registered — an ephemeral disk reset, a container restart, or manual cleanup between review cycles can remove a .worktrees/pr-<n> directory while git worktree list keeps reporting it as present (git only drops the registration on an explicit prune ); reused as-is, the missing directory was handed to the AI reviewer's process as its working directory, and Node's spawn failed with a spawn sh ENOENT that reads as if the shell itself were missing rather than naming the actual"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "cause. --worktree mode now detects a registered-but-missing checkout, prunes the stale entry, and recreates it before the review runs. branchdiff -p 0 / branchdiff unstaged now shows new files, not just modified ones — the working-tree-only view only ever diffed tracked files, so a brand-new file you hadn't staged yet was invisible even though git status counts it as part of your unstaged changes. It now matches git status (and the agent diff --include-unstaged /branch-comparison \"Include unstaged\" views, which already included them). The sidebar's Staged/Unstaged filter badges now work on the plain working-tree view ( branchdiff / branchdiff work ), not only inside a branch comparison — clicking either badge narrows the file list to just that layer, same as it already did with \"Include staged\"/\"Include unstaged\" checked on a branch comparison. auto cron add no longer needs PATH , forge auth, or --notify env vars hand-copied into the crontab entry — a cron-fired job runs under cron's own minimal environment, not the shell that ran cron add : a bare git / gh / --tool / --exec call could fail to resolve, an env-var-only Bitbucket credential ( BITBUCKET_USERNAME / BITBUCKET_API_TOKEN , as opposed to ~/.branchdiff/credentials.json ) wasn't inherited at all, and --notify 's desktop toast had no DISPLAY / DBUS_SESSION_BUS_ADDRESS to reach the login session's bus — each surfacing"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "as a schedule that silently does less than it should. cron add copies PATH and whichever of DISPLAY / DBUS_SESSION_BUS_ADDRESS are set in its own shell straight into that schedule's generated script (and prints which ones it copied) — a one-time snapshot, since neither ever rotates. Forge auth ( BITBUCKET_USERNAME / BITBUCKET_API_TOKEN / GH_TOKEN / GITHUB_TOKEN / GH_HOST / GH_ENTERPRISE_TOKEN ) is handled differently, on purpose: a scheduled run's exec is wrapped in the user's own login shell, which re-sources their profile fresh on every single cron fire, so a token rotated after cron add never goes stale for the rest of the schedule's life; a long-running --watch loop (one process across many cycles, so it never gets that fresh shell) re-reads the same vars from the login shell at the top of every cycle instead. Nothing to set up either way for a team using only GitHub, only Bitbucket, or neither, with or without --notify . A scheduled auto cron add no longer risks the OS's crontab line-length cap — every scheduled flag/value, the forwarded env, and the login-shell wrap live in that generated script rather than the crontab line itself, so the line crontab actually stores is a short, constant /bin/sh '<script>' no matter how many flags a schedule carries or how long --repo-paths / --dest / --source"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "/ --prompt are. cron remove deletes the script along with the crontab (or, on macOS, LaunchAgent plist) entries. Applies on both backends: crontab on Linux, launchd on macOS. auto cron add warns when --repo-paths (or its absence) resolves against the wrong directory — cron / crond always runs with cwd=$HOME , never the directory cron add was run from, so a relative --repo-paths value (or none at all, relying on the implicit \"use this directory\" default) resolved fine at add time and then silently failed at every single fire, with no toast, log, or session entry to notice by. cron add now warns up front when a seed isn't absolute or ~/ -prefixed, or when no --repo-paths was given at all. auto cron schedules via launchd on macOS — no Full Disk Access needed — on macOS the cron daemon can be up and auto cron list 's last start / last end can even show the schedule firing, yet no job ever runs: since Catalina, macOS blocks /usr/sbin/cron from exec'ing a user crontab job unless cron itself has Full Disk Access, killing the forked job before exec with no error anywhere. On macOS, cron add now schedules via a per-user LaunchAgent ( launchctl -loaded, reloaded automatically at every login so it survives reboots) instead of a crontab entry —"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "a user LaunchAgent runs in your own login context and execs freely, so it fires with no grant and no silent fork-and-die. The --start / --end cron-expr vocabulary, cron list / remove , and cronId are unchanged; Linux keeps using cron / crond crontab entries. CLI error messages are consistent and point at the fix, not just the problem — \"Not a git repository\" was worded and cased differently across nine call sites ( resolve-session.ts , open / tree / clear / history / review / info / state ), most with no next step; unified behind one printNotGitRepoError() helper ( cli-output.ts ) so the wording can't drift again. auto 's GitHub/Bitbucket auth-failure summary lines now name the exact fix inline ( run \\ gh auth login` , set BITBUCKET_USERNAME and BITBUCKET_API_TOKEN ) instead of stating only the symptom. A PR URL session failing to start ( auto , review run --url ) shows the actual git / gh error plus a one-line fix — auth, a stale worktree lock, rate-limiting, a missing gh install, or missing Bitbucket credentials — instead of only a generic \"failed to checkout\" line pointing at a log directory, and it's never misreported as a Claude/AI auth problem. review context / review threads / review run`'s benign \"nothing to review/resolve\" outcomes switched from error-red to"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "the same dim/informational styling the rest of the CLI already uses for \"nothing to do\" — they still exit non-zero for scripts, just without looking like a crash. auto , review run , and cron name the reason when the AI reviewer fails — when claude / codex / gemini / --exec exits non-zero, the per-PR failure line and the --notify desktop toast give a short named reason and a one-line fix instead of the reviewer's raw output: a subscription or billing issue, an invalid or missing API key, rate-limited (429), overloaded (529), a network error, the command not found on PATH , or a timeout. Transient failures (rate-limit, overload, network) note that the next --watch cycle retries on its own; the rest point at the action to take (re-auth, resolve billing, fix --exec / --tool ). Dashboard's Instances/Auto sessions/Cron schedules sections tell a failed fetch apart from a genuinely empty list — a server-down or permission error while loading any of the three previously rendered the exact same \"No running instances\"/\"No auto sessions\"/\"No cron schedules\" text as a real empty result, so a real failure looked identical to \"nothing to see here\". Each section now shows what went wrong plus a Retry button instead. BlamePanel gets the same treatment for a failed blame fetch, matching the pattern FileHistoryPanel already"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "used. PR action menu items show their CLI equivalent, not just the stats dashboard's buttons — hovering Approve/Merge/Close/Reopen/etc. in the PR actions dropdown (toolbar) now shows a \"Same as branchdiff pr ... \" tooltip, extending the tooltip pattern the stats dashboard already used for Kill/Stop/Remove to the one other place branchdiff performs a one-shot action with a direct CLI equivalent. A few CLI commands now point at the obvious next command — branchdiff list ends with a kill --port / open <ref> hint (matching auto list / auto cron list 's existing pattern); auto 's \"(no --exec — session prepared, no AI review run)\" log line now names review context and --exec / --tool as the ways to actually get a review; review context / threads / import / run 's --help descriptions cross-link the sibling command each one's output feeds into or receives from; a stale pre-v2.0.0 skill file's warning gives the exact rm command instead of just \"safe to delete\". A bare status remark no longer blocks the auto-verdict gate — a human comment that's just an acknowledgment (\"PR Updated\", \"LGTM\", \"done\", \"+1\" and the like, with no actual feedback in it) used to count the same as any other open human comment and block --approve / --request-changes forever. Only a comment carrying real feedback blocks now. The"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "AI reviewer resolves a thread once the commenter itself has signed off on it — during verdict reconciliation, if a human's own most recent reply on a thread already says the issue is fine (\"fixed\", \"done\", \"lgtm\", \"wontfix\", \"please close\"), the AI resolves it directly instead of leaving it open forever waiting for a separate close action. It still never resolves an unaddressed human concern on its own. Reconciling prior findings matches by content, not by stale line position — when checking whether an earlier review comment is already fixed, the AI now judges the current code by what the comment describes, not by whether its originally-flagged line still looks similar; a fix that landed at a different line, or a different file, than first flagged is recognized instead of being re-flagged as new. Resolved/dismissed comment summaries — and every local comment edit — reach the PR on the next push — a thread the agent resolved or dismissed (with its summary reply, e.g. \"Fixed in commit X\" or \"Won't fix — out of scope\") was left out of the browser's Push / Sync All and branchdiff sync push , so other PR reviewers never saw the agent's rationale or the dismissal decision; only a plain user reply on an open thread synced. Every local mutation now re-queues a thread"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "for push — an agent or user reply, a resolve/dismiss with its summary, an edit, or a delete that leaves the thread standing — so the next sync pushes it to GitHub or Bitbucket like any open thread (both platforms push root + replies identically). A reply pulled from the PR is the one exception (it's already there). Dedup is content-keyed, so widening the push set can append a new reply but never duplicate one. A pushed resolved or dismissed thread also closes on the PR, not just its comment text — pushing a resolved/dismissed thread landed its summary reply on the PR but left the PR thread itself open, so reviewers saw the rationale yet the thread still read as unresolved; only the explicit agent resolve --sync / dismiss --sync flag had mirrored the closed state. Push / Sync All and branchdiff sync push now mirror the resolved/dismissed state onto the PR thread too (GitHub GraphQL resolveReviewThread , Bitbucket comment resolve), best-effort alongside the comment push — a missing remote id or API hiccup never fails the push itself. Both platforms supported. Comparing two branches ( branchdiff b1 b2 , or branchdiff b1 against your current branch) shows only the committed changes between them — your own uncommitted or untracked working-directory files are never mixed into someone else's branch"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "comparison, matching what agent file /full-file-context already showed and keeping a branch-pair session's comments anchored to stable, committed content. The local server's CORS policy is scoped to its own port — only your own browser tab talking to this exact branchdiff instance is trusted; another local web page bound to a different port can no longer read its API responses. The Stats dashboard's Configs open/create actions reject cross-origin requests — another local web page bound to a different port could trigger the Configs viewer's \"open in editor\" action, or have it write a new .branchdiff.json to disk. Both actions are now rejected unless they come from this exact branchdiff instance. auto cron schedule writes on macOS are now safe under concurrent add / remove , and a failed launchd load no longer leaves a schedule looking configured when it isn't — matches the crontab backend's existing safeguards. A reviewer timeout names the command and duration again — auto --parallel 's per-PR failure line and --notify toast say which --exec / --tool command timed out and after how long, instead of a generic \"Reviewer timed out\". A PR checkout recovers from a stale worktree conflict instead of failing the whole run — gh pr checkout (used by auto , review run --url , and a direct branchdiff <pr-url> ) fails with"
     },
     {
-      "anchor": "fixed-8",
+      "anchor": "fixed-9",
       "title": "Changelog — [2.1.0] - 2026-08-12 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-8",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
       "text": "\"branch already used by another worktree\" when the PR's branch is already checked out elsewhere, including branchdiff's own leftover .worktrees/pr-<n> from an earlier interrupted cycle. When that leftover is a clean, branchdiff-owned worktree that isn't a possibly-live sibling under --parallel , branchdiff removes it and retries the checkout once automatically. When it isn't safe to reclaim — the branch sits in your own worktree or the main checkout, a dirty pr-<n> , or a --parallel sibling that could be mid-review — that PR is skipped with a message naming exactly where the branch is held and how to free it, instead of stopping the whole run. The Branches and Tags tabs show newest refs first, and paginate for large repos — both tabs order refs by creator date (newest at top) instead of alphabetically by name, so the most recent branches and tags are the first thing you see. A repo can carry a branch per ticket; once a list exceeds a page, a Load more / Load all footer (matching the commit list) pages through the rest, and the remaining count is shown beside it. The local-then-remote grouping, the search box, and the All/Local/Remote filter all keep that newest-first order, and paging resets to the top whenever the filter changes."
     },
     {
@@ -2667,51 +2673,51 @@
       "text": "the AI runs branchdiff agent commands itself, which a headless CLI won't do while it's waiting for approval prompts nobody can answer. --tool claude|gemini|opencode|codex now adds each CLI's auto-approve flag automatically (and says so); --tool cursor is flagged as needing its Auto-review setting, --tool llm (which runs no tools) is steered to classic mode, and a spelled-out --exec is warned if the flag looks missing. Reviews run in an isolated .worktrees/ checkout. Told when a pick is waiting — in a --watch loop without --review , --notify now also fires when a new cycle has PRs waiting for your selection, so the loop doesn't stall silently while you're away from the terminal. One worktree per PR, named pr-<n> — every --worktree review (direct URL, auto , or review run ) now checks out into .worktrees/pr-<n> and reuses that one checkout, instead of auto and review run each creating a second worktree named after the branch. The reviewed-at footer is part of the comment — the file:line · reviewed at <sha> line under a finding is now part of the comment body itself (editable, identical locally and on the pushed PR), not a separate block below it. It's the context a human needs to go fix the issue by line outside branchdiff."
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "Fixed A missing native binding now says how to fix itself, and branchdiff checks for it before you're relying on it — when branchdiff's SQLite module (better-sqlite3) has no working compiled binding — after a Node upgrade, or when the binding file was replaced while a server held it open (common on NTFS/FUSE mounts) — the error names the cause and the exact remedy ( branchdiff killall && npm rebuild better-sqlite3 ) instead of a bare \"exited with code 1\", which reads as a branchdiff bug rather than an environment one. This is what causes branchdiff auto to report failed … starting session on one cycle and a misleading done — 0 comments on another (the AI couldn't reach the CLI to post), for the same underlying reason. branchdiff doctor opens a real database to check this, not just whether the module is requireable — the native addon only loads on first use, so a require-only check could report healthy right up until the first real command needs a database. branchdiff auto cron add runs the same check before writing anything to your crontab: a scheduled job re-runs the exact same binary forever, so a broken binding there would otherwise fail silently on every single fire with nothing but a log file to notice — it now refuses up front"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "instead. A session's address opens that session — typing just localhost:<port> landed on the working-tree view instead of the comparison running there, and with several sessions open branchdiff list could print the wrong port for one of them. The port you reach now takes you to its own comparison. Reviews no longer drift onto the wrong PR — with two branchdiff sessions open on one repo, a review started for one PR could end up commenting on the other, and simply leaving the other PR's browser tab open was enough to trigger it. An AI review is now tied to its own session for its entire run. Concurrent reviews stay isolated — with several sessions live, commands that used to fall back to a shared \"current session\" now require you to name one, and the generated AI skills carry their session with every call. Two automated reviews can run side by side without reading each other's comments. A new PR no longer inherits an old, closed one's comments — branch-pair sessions are matched by branch name alone, so if a PR closed and a new one later opened for the same branch names, opening it (in the browser, via branchdiff auto , or review run --url ) used to resume the old PR's session — showing its stale comments against"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "the new PR's diff. branchdiff now notices when the PR number attached to a session changes and starts a fresh one automatically, the same as --new / --fresh but without you having to remember to run it. The old PR's comments are archived, not deleted — see them with branchdiff session history . branchdiff session history works again — the documented no-argument form always failed with \"Missing b1 or b2\"; it now defaults to the current branch pair. It also reported \"0 threads\" for every archived session regardless of content, which made archived comments look lost. Both fixed, and archived sessions can now be read back with branchdiff review threads --session <id> --status all . Error pages no longer print the same message twice — single-line errors (e.g. \"Invalid git ref\") repeated the text in the details box below. PR commands work when you're not standing on the PR's branch — sync push , sync pull , pr info , pr approve , pr merge , pr comment and the rest resolved the pull request from your checked-out branch. Reviewing a PR from a URL, in a worktree, or via auto meant they failed with \"No PR found for the current branch\"; they now follow the session's own branch. This is what stopped auto --push from ever publishing. Pushed comments"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "are remembered as pushed — comments sent from the CLI were created on the PR but not recorded locally as synced, so they looked unpushed forever and agent resolve --sync had no remote thread to resolve. branchdiff pr info shows the PR — title, state, head, reviewers and URL were all blank on both GitHub and Bitbucket. sync push reports what it did — it always said \"Created: 0\" even when comments were posted. Desktop notifications work on Windows — the notification never appeared, and text from a PR title or branch name could be interpreted as PowerShell instead of shown. Notifications are now sent safely and are fully detached, so a system without a notifier can't stall a review. --worktree works on shared or root-owned checkouts — git refused to operate inside the worktree branchdiff had just created (\"detected dubious ownership\") for anyone relying on safe.directory . --worktree reviews no longer crash on repos with git hooks — creating the review worktree ran the repository's own post-checkout hook (e.g. husky), and a hook that failed there aborted the whole review with a raw error stack. These machine-driven, throwaway checkouts now run without firing hooks, and any genuine failure is reported as one clean line instead of a crash. No more spurious \"HEAD has moved\" warning — every agent command"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "printed it when comparing two branches, telling you to restart a session that was working fine. The repository name is shown, not the folder you happen to be in — reviewing in a worktree labelled the UI, the window title and branchdiff list with something like pr-2142-review instead of the repo. The name now comes from the repository's remote (falling back to the main checkout's folder when there is no remote), so a clone living in a differently-named directory shows its real name too. A worktree counts as the same repository — branchdiff open , kill --repo , clear and the review / agent commands could not see a session started from the main checkout when run inside a worktree, and vice versa. Worst case, clear run from a worktree wiped the shared review data while leaving the other instance running. branchdiff prune asks before deleting everything — it wiped review data for every repo under ~/.branchdiff with no confirmation, unlike clear (which only touches the current repo and already prompted). It now shows how many repos and running instances are affected and asks first, same y/N pattern as clear ; --force skips the prompt for scripts and AI agents. Reviews refuse to run on stale code — when your local branch was behind the pull request, branchdiff already detected"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "it, then threw the evidence away and reviewed the old revision anyway. It now stops and tells you to update the branch; --allow-stale reviews the local revision regardless. A reused review worktree follows the PR — reviewing the same PR a second time with --worktree left the worktree parked on the first review's commit, so the AI read old file content alongside a current diff. A worktree holding your own uncommitted files is still left untouched rather than reset. branchdiff list shows the real review time — every session fell back to a single per-repository marker, so a brand-new session could report a review from months ago, and rows for other repositories showed the current directory's timestamp. Sessions with no review of their own now say \"no review yet\". .worktrees/ no longer shows up as an untracked change — checking a PR out with --worktree made your git status (and branchdiff's own working-tree view) look dirty, which is exactly what the option promises not to do. Your .gitignore is left alone. branchdiff update tells you when the skills changed — the check existed but compared a placeholder against itself, so it never once fired and upgrades left your installed skills quietly out of date. branchdiff review skill installs a skill that works — it wrote a flat .claude/skills/branchdiff-review.md , a"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "layout no AI tool looks for, so the skills silently never appeared. It now writes the same <skill-name>/SKILL.md layout as branchdiff skill add , and points out the stale flat file if you have one. Blank/white screen on scroll eliminated — the virtualizer now uses per-item absolute positioning ( position: absolute + top: item.start per file block) instead of a single translated wrapper. Wrong height estimates no longer displace all subsequent items, eliminating the half-screen blank gap during fast scroll in branch comparison mode. Positioning with top rather than transform keeps each file's header sticky, so the filename stays pinned at the top of the viewport as you scroll through its diff — lazy-loaded files no longer render their name below the changes. Marking a file viewed scrolls to next file — clicking the eye checkbox in the diff view now advances to the next file instead of jumping to the top of the page. Collapsing a file scrolls to next file — clicking a file header to collapse it also advances to the next file, matching the viewed-file behavior. Viewed state persists across sessions — reopening a branch comparison in a new branchdiff instance now correctly restores which files you had already marked as viewed. Review commands no longer kill existing instances — health check timeout increased from 2s"
     },
     {
-      "anchor": "fixed-9",
+      "anchor": "fixed-10",
       "title": "Changelog — [2.0.0] - 2026-08-05 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-9",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
       "text": "to 5s with automatic retries (3 attempts, 500ms apart). Busy servers are no longer falsely marked unhealthy and killed when an AI agent spawns branchdiff <refs> --no-open . Comment threads overflow in full-file compare — comment threads no longer exceed the visible pane width. Uses CSS container queries ( container-type: inline-size + max-width: 100cqi ) to constrain comments to the code pane, while long code lines still scroll horizontally. Action buttons (resolve, collapse, delete) always remain visible with shrink-0 . Session URL missing full path — branchdiff review run and branchdiff review import now always print the full clickable URL (e.g. http://localhost:5391/diff?b1=main&b2=feat&mode=git ) instead of just http://localhost:5391 . Falls back to constructing the URL from registry data when the stored URL is unavailable. Last review timestamp shared across comparisons — branchdiff list now shows per-comparison review times instead of one shared timestamp per repo. Review activity is stored per-ref, so each branch comparison shows when it was last reviewed independently. General comments are visible when browsing the file tree — the \"General comments\" panel only rendered in the branch comparison view; opening the same session from the repository file browser ( branchdiff show , the sidebar file tree) showed a \"general\" count with no way to reach them, and clicking it tried to navigate to a file named __general__ ."
     },
     {
@@ -2751,15 +2757,15 @@
       "text": "Changed Consistent startup output — All startup paths now print the same banner: title, PORT , pid , status tag, description, and URL. Covers foreground, --detach (Background), \"already running\", and branchdiff tree . Previously branchdiff tree showed no PORT/PID and the detach path was missing the branchdiff header. Commit view now defaults to split instead of unified, matching the diff page behavior. PR dialog comment count no longer goes stale after a pull — the count now live-syncs from the fetched PR details without needing to close and reopen the dialog. \"Threads to push\" counter now only counts unsynced threads (not already-pushed ones), fixing the bug where the count remained non-zero after a successful push. PR dialog pull section layout — the \"N new\" indicator moves from an inline chip inside the title text to an amber-colored subtitle line. The Pull button stands alone on the right, giving the left column enough room for the thread count and status text without crowding. Merge commits visually identified — both the main commit list and the branch comparison commit sidebar now show a small purple merge badge next to any commit with 2+ parents. Detected from git log --format=%P (parent hashes), so squash-merged and fast-forwarded commits are correctly excluded."
     },
     {
-      "anchor": "fixed-10",
+      "anchor": "fixed-11",
       "title": "Changelog — [1.6.1] - 2026-05-22 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-11",
       "text": "Fixed Refresh button now picks up unstaged and newly-staged edits — clicking Refresh on the staleness banner sometimes still showed old file contents; a full browser reload was the only workaround. Refresh now reliably loads the latest content for both unstaged and staged files. Refresh preserves your scroll position — clicking Refresh used to jump you away from the file you were reading because rows briefly collapsed to placeholder heights while diffs reloaded. The view now stays anchored on the file you were on. Clicking a file in the sidebar lands on the right file — when the file's diff hadn't been loaded yet, scrolling would land in the wrong place and the file was hard to find. Sidebar clicks (and jumps from staged/unstaged chips and thread links) now load the file's diff first, so it ends up at the top of the view on the first click. Sync status disappearing after modal reopen — matched threads (threads that existed locally and corresponded to a remote comment) were not marked synced_at in the DB. They now are, so closing and reopening the dialog shows the correct persisted state. PR badge position — moved to after the Collapse button and before the Delete icon in the thread header, keeping action buttons uninterrupted. False \"N local threads not pushed\" badge after a"
     },
     {
-      "anchor": "fixed-10",
+      "anchor": "fixed-11",
       "title": "Changelog — [1.6.1] - 2026-05-22 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-10",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-11",
       "text": "successful push — when a single thread in a batch failed (e.g. its file wasn't in the PR diff yet), the old all-or-nothing logic left every other successfully-pushed thread marked as unsynced. Push now returns a syncedThreadIds list and the server marks exactly those threads, so partial-success batches no longer leave stale \"unpushed\" badges. Applies to both GitHub and Bitbucket. branchdiff review run killing long AI calls — default exec timeout raised from 120s → 600s, stdin writes now honor backpressure (avoids hangs on large diff contexts), EPIPE from short-circuiting child processes is swallowed, a force- SIGKILL fallback runs 2s after SIGTERM so unresponsive tools can't leave zombies, and the result promise is now latched so we don't double-resolve when both timeout and close fire. Port-reuse session safety — when a browser tab is left open on port 5391 and a different review session later runs on the same port, the UI now blocks all API traffic until the user refreshes (previously only a different repo triggered the gate). The server also rejects any request carrying a stale X-Branchdiff-Server-Id with 409 STALE_SERVER , closing the race window between server restart and the UI's next /api/info poll. Comments from the wrong session can no longer be shown."
     },
     {
@@ -2775,9 +2781,9 @@
       "text": "stored as standard GFM and render correctly when synced to GitHub or Bitbucket."
     },
     {
-      "anchor": "fixed-11",
+      "anchor": "fixed-12",
       "title": "Changelog — [1.6.0] - 2026-05-13 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-11",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-12",
       "text": "Fixed Sidebar file click now expands collapsed files — Clicking a file in the sidebar scrolled to it but left it collapsed, making the diff hard to find. The file is now automatically expanded before scrolling. Keyboard file navigation (J/K) has the same fix. Stale diff refresh now works without hard reload — When files changed on disk, clicking \"Refresh\" in the staleness banner did not always reflect updated changes. The refresh handler now awaits refetch completion before resetting the staleness baseline, so fresh data is always rendered. Previously a browser hard reload (Ctrl+Shift+R) was needed. Bitbucket Request Changes sets reviewer state — The action was posting a comment instead of calling the dedicated /request-changes API endpoint. The reviewer state now correctly changes to \"changes requested\" and the toolbar badge shows the red ✗ indicator. Comments auto-sync when requesting changes on Bitbucket — Unresolved local comment threads are now automatically pushed to the PR before the request-changes action executes, so all feedback arrives together in one notification."
     },
     {
@@ -2793,15 +2799,15 @@
       "text": "Added Bitbucket merge strategy selection — The merge confirmation dialog now shows a strategy picker for Bitbucket PRs: Merge commit , Squash , and Fast-forward . The selection is sent as merge_strategy to the Bitbucket API. Previously Bitbucket always used the repository default. -p 0 shows unstaged changes only — --previous now accepts 0 as an alias for branchdiff unstaged . Useful for quickly reviewing what an AI coding agent just changed before staging. Combining a source ref with -p 0 is rejected since unstaged changes are repo-local, not branch-relative."
     },
     {
-      "anchor": "fixed-12",
+      "anchor": "fixed-13",
       "title": "Changelog — [1.5.1] - 2026-05-10 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-12",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-13",
       "text": "Fixed branchdiff unstaged and branchdiff staged now show changes — A regression in ref validation rejected the working-tree pseudo-refs ( unstaged , staged , work , . ) because git rev-parse --verify returns no match for them. The /api/diff validator short-circuited to an empty diff before the resolver could route them. isValidGitRef now treats pseudo-refs as valid, restoring the documented behavior. Bitbucket PR approve no longer returns 400 — Approving a PR via the toolbar failed because Content-Type: application/json was sent on bodyless POST requests. Bitbucket's API rejected the empty body. Content-Type is now only set when a request body exists, and empty success responses are handled gracefully. Bitbucket reviewers now display correctly — Two bugs prevented reviewer info from showing: (1) the code looked for a user wrapper on reviewers[] items that does not exist in the Bitbucket API — fields are directly on each item; (2) reviewers awaiting review were incorrectly shown as \"commented\" because participants[] with state: null was treated as having commented. Defaults to pending and only maps 'commented' for explicit non-null participant states. GitHub DISMISSED reviewer state now handled — Admin-dismissed reviews were not in the recognized states set and fell back to PENDING . DISMISSED is now recognized and rendered correctly. Bitbucket SUPERSEDED PRs no longer show Reopen — The SUPERSEDED state was incorrectly"
     },
     {
-      "anchor": "fixed-12",
+      "anchor": "fixed-13",
       "title": "Changelog — [1.5.1] - 2026-05-10 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-12",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-13",
       "text": "grouped with closed PRs, causing a Reopen button to appear for an operation the Bitbucket API does not support. Reopen is now only shown for DECLINED and CLOSED . GitHub Comment action now posts a standalone comment — The action was using gh pr review --comment , which creates a formal review object. Changed to gh pr comment for a regular PR comment. PR action errors now shown inline in dialogs — Errors from the confirm dialog (merge, close, request changes, comment) and the edit PR modal now appear inline inside the modal. The dialog stays open on failure so the user can read the error and retry without losing typed input. Non-modal actions (approve, mark draft, reopen) still show the toolbar error banner. Platform detection when both GitHub and Bitbucket PRs exist — The active platform was always resolved as GitHub when both PRs were present. The platform is now captured at action-trigger time. ESLint unused variable error resolved — The actionLoading state in the toolbar was declared but never read. Fixed with the skip-destructure pattern."
     },
     {
@@ -2829,15 +2835,15 @@
       "text": "Improved branchdiff update — reliable package manager detection — The update command now resolves symlinks ( realpathSync ) to find the actual package manager store path, explicitly queries pnpm list -g to verify ownership when path checks fail, and shows full installation context (detected PM, binary path, update command) upfront before any version check. On failure, it lists all alternative update commands and the --pm override flag. branchdiff info — installation section — The info command now shows the detected package manager, binary path, resolved symlink target, and update command in a new Installation section. AI review skill — constructive tone — The review skill now includes tone guidelines: collaborative language, acknowledging good code, explaining reasoning rather than prescribing fixes, and leading with the problem instead of judgments. AI review skill — nth-time review awareness — Reviews now check resolved and dismissed threads before analyzing. Previously resolved issues are not re-raised. Dismissals are only challenged if new evidence contradicts the dismissal reason. Prior fixes are acknowledged in the summary."
     },
     {
-      "anchor": "fixed-13",
+      "anchor": "fixed-14",
       "title": "Changelog — [1.5.0] - 2026-05-08 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-13",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-14",
       "text": "Fixed Bitbucket PR creation no longer fails when author is a default reviewer — When the PR author was configured as a default reviewer in the Bitbucket repository settings, PR creation failed with a 400 error. The fix fetches the authenticated user's UUID from Bitbucket's /user endpoint and filters them out of the default reviewers list before creating the PR. Full-file view now loads unstaged new files — Files present only in the working tree (new, unstaged) showed blank content when opened in full-file view. The fix passes the correct layer='working' to the API, matching how unified/split diff modes handle working-tree files. Inline comments no longer appear in multiple places simultaneously — Comments on code ranges were sometimes displayed in both the orphaned-threads section and counted as inline-anchored threads at the same time. The fix aligns the anchor check and render position to use endLine consistently, matching how hunk diffs position threads."
     },
     {
-      "anchor": "fixed-14",
+      "anchor": "fixed-15",
       "title": "Changelog — [1.4.2] - 2026-05-07 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-14",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-15",
       "text": "Fixed File section sort now matches sidebar tree order — Files in the diff view are now sorted with directories before files at each path level, then alphabetically within each group. Previously the diff view used a flat localeCompare on full paths, which caused a mismatch (e.g., release-notes/v1.4.2.md appeared after README.md in the diff view while the sidebar correctly placed the release-notes/ directory before root-level files)."
     },
     {
@@ -2859,9 +2865,9 @@
       "text": "Improved Full file mode — copy button for each pane — In the split view of the full file comparison, a copy icon now appears in the header of the old (changed) and new sides. Clicking copies the full content of that pane to the clipboard."
     },
     {
-      "anchor": "fixed-15",
+      "anchor": "fixed-16",
       "title": "Changelog — [1.4.1] - 2026-05-06 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-15",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-16",
       "text": "Fixed Bitbucket PR creation now includes default reviewers — When opening a pull request from the branchdiff UI, Bitbucket's configured default reviewers are now automatically fetched and included in the request. Previously they were silently omitted. GitHub is unaffected ( gh pr create delegates reviewer assignment to the server). npm install on Node 18 no longer fails — npm install -g @encryptioner/branchdiff on Node 18 was immediately failing because scripts/postinstall.js was missing from the published package. The files field in package.json now explicitly includes it. APT repository — GPG key signature verified correctly — apt update was failing with NO_PUBKEY 8AFCC29C5DD7C18F because the ASCII-armored public key was being written directly to /etc/apt/keyrings/ without dearmoring. Install instructions now pipe through gpg --dearmor to produce the binary format apt expects."
     },
     {
@@ -2895,9 +2901,9 @@
       "text": "New Commands & Flags branchdiff info — Show current repo fingerprint, name, and state table size. branchdiff state reset — Clear all UI state (collapse, viewed markers) for the current repo without affecting sessions or comments. --earlier-commit flag — compare a branch against its parent commit. branchdiff --earlier-commit compares the current branch against HEAD~1 ; branchdiff --earlier-commit feature compares feature against feature~1 . Cannot be combined with --base / --compare ."
     },
     {
-      "anchor": "fixed-16",
+      "anchor": "fixed-17",
       "title": "Changelog — [1.3.2] - 2026-04-30 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-16",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-17",
       "text": "Fixed Bitbucket PR handling no longer checks out branches — opening a Bitbucket PR URL now fetches the source and destination refs without modifying your working tree. Previously, checkoutPr would run git checkout and create local tracking branches, leaving the repo on a different branch. The new fetchPrBranch only runs git fetch , which is sufficient since the diff viewer compares remote refs server-side. Cross-repo PRs (forks) still add a temporary remote and fetch from it. branchdiff review import - no longer leaks stdin listeners — reading from stdin now properly removes data and end listeners after the stream closes, preventing memory leaks in long-running processes."
     },
     {
@@ -2913,9 +2919,9 @@
       "text": "Improved branchdiff update auto-detects package manager — instead of hardcoding npm install -g , the command now detects whether branchdiff was installed via Homebrew, pnpm, yarn, or npm and shows the correct update command. Supports --pm <pm> flag to override detection. Comment thread width in full file view — comment threads in the full file comparison modal now respect the viewport width constraint to show the comment without horizontal scroll"
     },
     {
-      "anchor": "fixed-17",
+      "anchor": "fixed-18",
       "title": "Changelog — [1.3.1] - 2026-04-29 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-17",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-18",
       "text": "Fixed Hunk navigation keyboard shortcuts — the n (next hunk) and p (previous hunk) shortcuts now reliably jump between changed sections. Fixed DOM selector that was incorrectly matching non-hunk rows, causing navigation to skip or select wrong locations."
     },
     {
@@ -2931,9 +2937,9 @@
       "text": "Improved Dark mode color contrast — amber and green text in merge-conflict banner, toolbar, and import modal now use lighter shades in dark mode for better readability. Consistent styling — warning backgrounds in export/import dialogs now use a unified color pattern. Instant CSS tooltips — toolbar items (Swap, Behind counter) now display tooltips on hover via a new Tip component. Tooltips appear smoothly with zero delay and intelligently position above or below based on context."
     },
     {
-      "anchor": "fixed-18",
+      "anchor": "fixed-19",
       "title": "Changelog — [1.3.0] - 2026-04-27 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-18",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-19",
       "text": "Fixed Running branchdiff in a non-git directory no longer pollutes the terminal with raw git error output — errors are handled silently at the server level, including the file browser and fingerprint routes. The \"Browse files\" option in the 3-dot menu is hidden when branchdiff is running outside a git repository. The file browser ( branchdiff tree ) and tour routes now show a friendly \"No git repository found\" page instead of crashing when opened outside a git working tree."
     },
     {
@@ -2955,9 +2961,9 @@
       "text": "Added GitHub PR sync — push and pull review comment threads between branchdiff and your GitHub PR. Bitbucket PR sync — push and pull review comment threads between branchdiff and your Bitbucket PR. Scrollable thread list in PR sync dialogs — see all files with comment counts, including reply chains. Sync result shown inline after push/pull — clearly shows new vs already-synced threads. branchdiff guide — open the user guide in a browser without a git repository. branchdiff changelog — view release notes in a browser without a git repository. Changelog accessible from the diff viewer's 3-dot menu. branchdiff review context --refs <refs> — generate AI review context for any branch comparison without starting a session first. branchdiff clear — stop the running instance for the current repo and delete its stored review data."
     },
     {
-      "anchor": "fixed-19",
+      "anchor": "fixed-20",
       "title": "Changelog — [1.2.0] - 2026-04-25 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-19",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-20",
       "text": "Fixed PR comment push now correctly distinguishes new threads from threads already synced to the PR. Reply chains preserved when pushing to and pulling from GitHub and Bitbucket PRs."
     },
     {
@@ -2973,9 +2979,9 @@
       "text": "Added View/unview and expand/collapse all files in the diff viewer. Swap button (↔) to reverse which branch is on the left and right. Staged changes shown in branch comparison mode."
     },
     {
-      "anchor": "fixed-20",
+      "anchor": "fixed-21",
       "title": "Changelog — [1.0.2] - 2026-04-21 — Fixed",
-      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-20",
+      "url": "https://encryptioner.github.io/branchdiff-releases/changelog.html#fixed-21",
       "text": "Fixed Restored compatibility with Node 18. Server no longer hangs when the device sleeps or shuts down. Server now only accepts connections from localhost."
     },
     {
