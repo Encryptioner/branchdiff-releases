@@ -61,12 +61,12 @@ No Node.js required — installs a single static binary.
 
 Download a precompiled binary for your platform from [GitHub Releases](https://github.com/encryptioner/branchdiff-releases/releases):
 
-| Platform | Command |
-|----------|---------|
+| Platform                  | Command                                                                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **macOS (Apple Silicon)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-darwin-arm64 && chmod +x branchdiff` |
-| **Linux (x64)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-x64 && chmod +x branchdiff` |
-| **Linux (ARM64)** | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-arm64 && chmod +x branchdiff` |
-| **Windows** | Download [`branchdiff-win-x64.exe`](https://github.com/encryptioner/branchdiff-releases/releases/latest) from the Releases page |
+| **Linux (x64)**           | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-x64 && chmod +x branchdiff`    |
+| **Linux (ARM64)**         | `curl -fsSL -o branchdiff https://github.com/encryptioner/branchdiff-releases/releases/latest/download/branchdiff-linux-arm64 && chmod +x branchdiff`  |
+| **Windows**               | Download [`branchdiff-win-x64.exe`](https://github.com/encryptioner/branchdiff-releases/releases/latest) from the Releases page                        |
 
 #### Option 6: Run without installing
 
@@ -111,11 +111,11 @@ sudo apt update && sudo apt install branchdiff
 
 ### Supported platforms
 
-| | Supported |
-|---|---|
-| **OS** | Linux (any distro — including older LTS releases like Ubuntu 18.04/20.04), macOS, Windows |
-| **Node.js** (npm/pnpm/yarn/npx installs only — not needed for the standalone binary, Homebrew, Scoop, pip/uv/pipx, or apt) | 18+ |
-| **git** | Any version. Older `git` (pre-2.31, e.g. the git 2.17/2.25 that ships by default on Ubuntu 18.04/20.04) is fully supported — repo-root resolution detects and falls back cleanly when a `git` build predates a flag branchdiff prefers. |
+|                                                                                                                            | Supported                                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **OS**                                                                                                                     | Linux (any distro — including older LTS releases like Ubuntu 18.04/20.04), macOS, Windows                                                                                                                                               |
+| **Node.js** (npm/pnpm/yarn/npx installs only — not needed for the standalone binary, Homebrew, Scoop, pip/uv/pipx, or apt) | 18+                                                                                                                                                                                                                                     |
+| **git**                                                                                                                    | Any version. Older `git` (pre-2.31, e.g. the git 2.17/2.25 that ships by default on Ubuntu 18.04/20.04) is fully supported — repo-root resolution detects and falls back cleanly when a `git` build predates a flag branchdiff prefers. |
 
 `branchdiff auto cron add`/`cron list`/`cron remove` are **Unix only** — not available on Windows. On macOS they're backed by launchd (user LaunchAgents); on Linux by `cron`/`crond` crontab entries. The `--start`/`--end` cron-expr vocabulary and `cronId` are the same on both. Everything else, including a plain `--watch` loop without `cron`, works identically on every OS above.
 
@@ -129,16 +129,16 @@ branchdiff update
 
 The `update` command auto-detects your installation method and runs the appropriate upgrade command. It resolves symlinks and queries package manager stores for reliable detection:
 
-| Detected method | Update command |
-|---|---|
-| **npm** | `npm install -g @encryptioner/branchdiff@latest` |
-| **pnpm** | `pnpm add -g @encryptioner/branchdiff@latest` |
-| **yarn** | `yarn global add @encryptioner/branchdiff@latest` |
-| **Homebrew** | `brew upgrade branchdiff` |
-| **pip / uv / pipx** | `pip install --upgrade branchdiff` |
-| **Scoop** | `scoop update branchdiff` |
-| **apt** | `sudo apt update && sudo apt install --only-upgrade branchdiff` |
-| **Standalone binary** | Downloads the latest binary from GitHub Releases |
+| Detected method       | Update command                                                  |
+| --------------------- | --------------------------------------------------------------- |
+| **npm**               | `npm install -g @encryptioner/branchdiff@latest`                |
+| **pnpm**              | `pnpm add -g @encryptioner/branchdiff@latest`                   |
+| **yarn**              | `yarn global add @encryptioner/branchdiff@latest`               |
+| **Homebrew**          | `brew upgrade branchdiff`                                       |
+| **pip / uv / pipx**   | `pip install --upgrade branchdiff`                              |
+| **Scoop**             | `scoop update branchdiff`                                       |
+| **apt**               | `sudo apt update && sudo apt install --only-upgrade branchdiff` |
+| **Standalone binary** | Downloads the latest binary from GitHub Releases                |
 
 Before updating, the command shows the detected package manager, binary path, and update command it will run:
 
@@ -196,43 +196,43 @@ Detection resolves symlinks to find the actual package manager store, checks `pn
 
 ### Quick Reference
 
-| I want to… | Command |
-|---|---|
-| See my uncommitted changes | `branchdiff` |
-| Compare with main | `branchdiff main` |
-| Compare two branches | `branchdiff main feat` |
-| View a GitHub PR | `branchdiff https://github.com/owner/repo/pull/123` |
-| View a Bitbucket PR | `branchdiff https://bitbucket.org/workspace/repo/pull-requests/123` |
-| Browse repo files | `branchdiff tree` |
-| Review a PR without switching branches | `branchdiff <pr-url> --worktree` |
-| Auto-review my open PRs | `branchdiff auto --tool claude` |
-| Auto-review PRs across all my repos | `branchdiff auto --repo-paths ~/work --tool claude` |
-| Browse commit history | `branchdiff history` |
-| Browse the repo at an old commit | `branchdiff show HEAD~5` |
-| Browse branches & tags | `branchdiff branches` |
-| Search code across the repo | `branchdiff search "TODO"` |
-| Export session data | `branchdiff export --all` |
-| Import session data | `branchdiff import backup.json` |
-| View last commit | `branchdiff HEAD~1` |
-| Compare branch vs parent | `branchdiff -p` |
-| Compare branch vs 3rd commit back | `branchdiff -p 3` |
-| Inspect a single commit | Click any commit in the sidebar while viewing a branch diff |
-| Show repo info & installation | `branchdiff info` |
-| Clear UI state | `branchdiff state reset` |
-| Show PR status | `branchdiff pr info [--json]` |
-| Create a PR | `branchdiff pr create --title "Fix" --source feat --dest main` |
-| Merge a PR | `branchdiff pr merge` |
-| Approve a PR | `branchdiff pr approve --comment "LGTM"` |
-| Push comments to PR | `branchdiff sync push` |
-| Pull comments from PR | `branchdiff sync pull` |
-| Show active session | `branchdiff session current` |
-| Archive session | `branchdiff session archive` |
-| Review with a clean slate | `branchdiff review run --exec "claude -p" --fresh` |
-| Resolve a thread on the PR too | `branchdiff agent resolve <id> --sync` |
-| Target one of several sessions | `branchdiff agent list --port 5391` |
-| AI agent reference | `branchdiff agent guide` |
-| Dark mode / unified view | `branchdiff main --dark --unified` |
-| Clean up stale PR worktrees across repos | `branchdiff prune-worktrees --repo-paths ~/work` |
+| I want to…                               | Command                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| See my uncommitted changes               | `branchdiff`                                                        |
+| Compare with main                        | `branchdiff main`                                                   |
+| Compare two branches                     | `branchdiff main feat`                                              |
+| View a GitHub PR                         | `branchdiff https://github.com/owner/repo/pull/123`                 |
+| View a Bitbucket PR                      | `branchdiff https://bitbucket.org/workspace/repo/pull-requests/123` |
+| Browse repo files                        | `branchdiff tree`                                                   |
+| Review a PR without switching branches   | `branchdiff <pr-url> --worktree`                                    |
+| Auto-review my open PRs                  | `branchdiff auto --tool claude`                                     |
+| Auto-review PRs across all my repos      | `branchdiff auto --repo-paths ~/work --tool claude`                 |
+| Browse commit history                    | `branchdiff history`                                                |
+| Browse the repo at an old commit         | `branchdiff show HEAD~5`                                            |
+| Browse branches & tags                   | `branchdiff branches`                                               |
+| Search code across the repo              | `branchdiff search "TODO"`                                          |
+| Export session data                      | `branchdiff export --all`                                           |
+| Import session data                      | `branchdiff import backup.json`                                     |
+| View last commit                         | `branchdiff HEAD~1`                                                 |
+| Compare branch vs parent                 | `branchdiff -p`                                                     |
+| Compare branch vs 3rd commit back        | `branchdiff -p 3`                                                   |
+| Inspect a single commit                  | Click any commit in the sidebar while viewing a branch diff         |
+| Show repo info & installation            | `branchdiff info`                                                   |
+| Clear UI state                           | `branchdiff state reset`                                            |
+| Show PR status                           | `branchdiff pr info [--json]`                                       |
+| Create a PR                              | `branchdiff pr create --title "Fix" --source feat --dest main`      |
+| Merge a PR                               | `branchdiff pr merge`                                               |
+| Approve a PR                             | `branchdiff pr approve --comment "LGTM"`                            |
+| Push comments to PR                      | `branchdiff sync push`                                              |
+| Pull comments from PR                    | `branchdiff sync pull`                                              |
+| Show active session                      | `branchdiff session current`                                        |
+| Archive session                          | `branchdiff session archive`                                        |
+| Review with a clean slate                | `branchdiff review run --exec "claude -p" --fresh`                  |
+| Resolve a thread on the PR too           | `branchdiff agent resolve <id> --sync`                              |
+| Target one of several sessions           | `branchdiff agent list --port 5391`                                 |
+| AI agent reference                       | `branchdiff agent guide`                                            |
+| Dark mode / unified view                 | `branchdiff main --dark --unified`                                  |
+| Clean up stale PR worktrees across repos | `branchdiff prune-worktrees --repo-paths ~/work`                    |
 
 Any ref works: branch name, commit SHA, tag, `HEAD~N`, `origin/<branch>`.
 
@@ -377,7 +377,7 @@ git fetch origin --prune
 git branch -f <branch> origin/<branch>      # local ref now matches the remote
 ```
 
-On a machine that only ever *reviews* — an automated `branchdiff auto` host — nothing needs a local branch at all: comparisons name `origin/…` refs and review checkouts are made from the pull request's own head commit. Deleting the local copy (`git branch -D <branch>`) there is the cleaner answer than realigning it after every force-push.
+On a machine that only ever _reviews_ — an automated `branchdiff auto` host — nothing needs a local branch at all: comparisons name `origin/…` refs and review checkouts are made from the pull request's own head commit. Deleting the local copy (`git branch -D <branch>`) there is the cleaner answer than realigning it after every force-push.
 
 Pass `--no-sync` to skip the step — useful offline, or when you deliberately want to compare the local revision:
 
@@ -434,12 +434,14 @@ branchdiff main feat --mode file
 ```
 
 Example: both branches added the same line via different commits.
+
 - **File mode** → no change (content is identical)
 - **Git mode** → modified (commit paths differ)
 
 ### Delta mode (Δ) — browser only
 
 Available via the toolbar toggle. Shows what the two modes disagree on:
+
 - **Git-only (amber)** — appears in git diff but not file diff
 - **File-only (blue)** — appears in file diff but not git diff
 - **Shared** — both modes agree
@@ -457,6 +459,7 @@ branchdiff tree              # browse the repo file tree
 Navigate the full repository structure in a sidebar tree. Click any file to preview it in the main area.
 
 **Supported previews:**
+
 - **Source code** — syntax highlighting for 50+ languages
 - **Markdown** — rendered with GitHub-flavored markdown
 - **SVG** — rendered as image
@@ -552,10 +555,12 @@ Use **View all** and **Unview all** buttons in the toolbar for batch operations 
 By default, large diffs (200+ lines) are collapsed behind an "Expand large diff" placeholder to keep the UI responsive.
 
 **Toolbar controls:**
+
 - **Expand all** button — expand every collapsed diff in the current view
 - **Collapse all** button — collapse all expanded diffs
 
 **Right-click menu:**
+
 - Right-click any folder to see **Expand all** / **Collapse all** for all files under that folder
 - Right-click any individual file to **Expand** or **Collapse** its diff
 
@@ -646,11 +651,11 @@ Working tree, staged changes, or a specific commit get their own session per HEA
 
 ### Summary
 
-| Comparison type | Comments survive new commits? | Start fresh |
-|---|---|---|
-| `branchdiff main..feature` | Yes | `--new` or "New review" button |
-| `branchdiff HEAD~1` | No — new commit = new session | — |
-| `branchdiff` (working tree) | No — new commit = new session | — |
+| Comparison type             | Comments survive new commits? | Start fresh                    |
+| --------------------------- | ----------------------------- | ------------------------------ |
+| `branchdiff main..feature`  | Yes                           | `--new` or "New review" button |
+| `branchdiff HEAD~1`         | No — new commit = new session | —                              |
+| `branchdiff` (working tree) | No — new commit = new session | —                              |
 
 ---
 
@@ -662,19 +667,19 @@ Click the **+** button that appears on any diff line to start a comment thread. 
 
 **Formatting shortcuts:**
 
-| Shortcut | Result |
-|---|---|
-| `**text**` or `Ctrl+B` | **Bold** |
-| `*text*` or `Ctrl+I` | *Italic* |
-| `` `code` `` | `inline code` |
-| ` ``` ` then Enter | fenced code block |
-| `# `, `## `, `### ` | Heading levels |
-| `- ` or `* ` | Bullet list |
-| `1. ` | Numbered list |
-| `> ` | Blockquote |
-| `~~text~~` | ~~Strikethrough~~ |
-| `[text](url)` | Hyperlink |
-| `Shift+Enter` | Hard line break within a paragraph |
+| Shortcut                        | Result                             |
+| ------------------------------- | ---------------------------------- |
+| `**text**` or `Ctrl+B`          | **Bold**                           |
+| `*text*` or `Ctrl+I`            | _Italic_                           |
+| `` `code` ``                    | `inline code`                      |
+| ` ``` ` then Enter              | fenced code block                  |
+| `# `, `## `, `### `             | Heading levels                     |
+| `- ` or `* `                    | Bullet list                        |
+| `1. `                           | Numbered list                      |
+| `> `                            | Blockquote                         |
+| `~~text~~`                      | ~~Strikethrough~~                  |
+| `[text](url)`                   | Hyperlink                          |
+| `Shift+Enter`                   | Hard line break within a paragraph |
 | `ArrowDown` (inside code block) | Exit code block and continue below |
 
 Comments are stored as standard GitHub-Flavored Markdown and render correctly when synced to GitHub or Bitbucket. Every thread's first comment shows a small "reviewed at `<sha>`" line underneath (plus `file:line` for inline threads) — visible here and, once you `sync push`, on the remote PR comment too — so it's always clear which commit a finding applies to. Because that line changes with the commit, `sync push` recognizes an already-posted comment by its remote id rather than its exact text, so running it again after the PR picks up new commits never reposts what's already there.
@@ -683,12 +688,12 @@ Comments are stored as standard GitHub-Flavored Markdown and render correctly wh
 
 Use tags in your comment body to categorize feedback:
 
-| Tag | Meaning |
-|---|---|
-| `[must-fix]` | Bug, security issue, data loss — must be fixed before merge |
-| `[suggestion]` | Improvement, not required |
-| `[nit]` | Style, naming, cosmetic |
-| `[question]` | Unclear behavior, needs clarification |
+| Tag            | Meaning                                                     |
+| -------------- | ----------------------------------------------------------- |
+| `[must-fix]`   | Bug, security issue, data loss — must be fixed before merge |
+| `[suggestion]` | Improvement, not required                                   |
+| `[nit]`        | Style, naming, cosmetic                                     |
+| `[question]`   | Unclear behavior, needs clarification                       |
 
 Tags appear as colored badges in the UI, making it easy to scan comment threads by severity.
 
@@ -736,14 +741,14 @@ claude plugin install branchdiff-skills@branchdiff
 curl -fsSL https://encryptioner.github.io/branchdiff-releases/install-skill.sh | sh -s -- --agent opencode all
 ```
 
-| Slash command | What it does |
-|---|---|
-| `/branchdiff-review` | AI reads the diff and posts inline comments with severity tags |
-| `/branchdiff-review main feature` | Review a specific branch comparison by ref |
-| `/branchdiff-review http://localhost:5391/diff?b1=main&b2=feature&mode=git` | Paste the URL from your browser — server, branches, and mode are parsed automatically |
-| `/branchdiff-resolve` | AI reads open threads, fixes the code, resolves each comment |
-| `/branchdiff-resolve abc123` | Resolve a single thread by ID |
-| `/branchdiff-resolve http://localhost:5391/diff?b1=main&b2=feature&mode=git` | Paste the URL to target a specific running session |
+| Slash command                                                                | What it does                                                                          |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `/branchdiff-review`                                                         | AI reads the diff and posts inline comments with severity tags                        |
+| `/branchdiff-review main feature`                                            | Review a specific branch comparison by ref                                            |
+| `/branchdiff-review http://localhost:5391/diff?b1=main&b2=feature&mode=git`  | Paste the URL from your browser — server, branches, and mode are parsed automatically |
+| `/branchdiff-resolve`                                                        | AI reads open threads, fixes the code, resolves each comment                          |
+| `/branchdiff-resolve abc123`                                                 | Resolve a single thread by ID                                                         |
+| `/branchdiff-resolve http://localhost:5391/diff?b1=main&b2=feature&mode=git` | Paste the URL to target a specific running session                                    |
 
 **Skill options:**
 
@@ -759,14 +764,14 @@ branchdiff skill add --force                 # replace files branchdiff didn't w
 `--target` picks the directory. The default installs into the current repo; pass a
 comma-separated list to install in several places at once.
 
-| Target | Directory | Reach |
-|---|---|---|
-| `claude-project` *(default)* | `.claude/skills` | This repo |
-| `claude-user` | `~/.claude/skills` | Every repo on this machine |
-| `opencode-project` | `.opencode/skills` | This repo |
-| `opencode-user` | `$XDG_CONFIG_HOME/opencode/skills` | Every repo on this machine |
-| `agents-project` | `.agents/skills` | This repo, tool-neutral |
-| `agents-user` | `~/.agents/skills` | Every repo, tool-neutral |
+| Target                       | Directory                          | Reach                      |
+| ---------------------------- | ---------------------------------- | -------------------------- |
+| `claude-project` _(default)_ | `.claude/skills`                   | This repo                  |
+| `claude-user`                | `~/.claude/skills`                 | Every repo on this machine |
+| `opencode-project`           | `.opencode/skills`                 | This repo                  |
+| `opencode-user`              | `$XDG_CONFIG_HOME/opencode/skills` | Every repo on this machine |
+| `agents-project`             | `.agents/skills`                   | This repo, tool-neutral    |
+| `agents-user`                | `~/.agents/skills`                 | Every repo, tool-neutral   |
 
 Short aliases: `claude`/`project`/`local`, `user`/`global`/`home`, `opencode`, `agents`.
 
@@ -789,12 +794,12 @@ Claude Code, opencode, and the tool-neutral `.agents` convention all read.
 Re-run `branchdiff skill add` after upgrading branchdiff; each release can change
 the skills. It rewrites what it wrote before and leaves your own work alone:
 
-| Existing file | What happens |
-|---|---|
-| None | Created |
-| Unchanged from a previous `skill add` | Reported *up to date*, not rewritten |
-| An older generated skill | **Updated** — pre-2.0.0 files are copied to `SKILL.md.bak` first |
-| Something you wrote yourself | Kept, with a warning. `--force` replaces it |
+| Existing file                         | What happens                                                     |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| None                                  | Created                                                          |
+| Unchanged from a previous `skill add` | Reported _up to date_, not rewritten                             |
+| An older generated skill              | **Updated** — pre-2.0.0 files are copied to `SKILL.md.bak` first |
+| Something you wrote yourself          | Kept, with a warning. `--force` replaces it                      |
 
 **Don't edit a generated skill in place** — the next `skill add` replaces it, which
 is the point of the command. To customise, generate under your own prefix and edit
@@ -809,32 +814,37 @@ re-run is worth doing.
 The simplest way to start a review is to pass a URL as the skill argument. Three forms are accepted:
 
 **1. Branchdiff URL** (server already running — copy from your browser):
+
 ```
 /branchdiff-review http://localhost:5391/diff?b1=origin%2Fmain&b2=origin%2Ffeature&mode=git
 ```
+
 The skill parses out the server address, base branch (`b1`), source branch (`b2`), and diff mode — no manual refs needed.
 
 **2. GitHub PR URL** (no session needed — the skill creates one):
+
 ```
 /branchdiff-review https://github.com/owner/repo/pull/123
 ```
 
 **3. Bitbucket PR URL** (same — auto-creates a session):
+
 ```
 /branchdiff-review https://bitbucket.org/workspace/repo/pull-requests/123
 ```
 
 For PR URLs, the skill runs `branchdiff <pr-url> --no-open` under the hood — that command checks out the PR locally, derives base/compare refs, and starts the session.
 
-**Multiple sessions per repo can run in parallel** — one per ref pair. `branchdiff <pr-url>` reuses an existing session only when the repo *and* the derived ref pair both match. If your workspace already has sessions running for unrelated refs, the PR URL starts a new one alongside them.
+**Multiple sessions per repo can run in parallel** — one per ref pair. `branchdiff <pr-url>` reuses an existing session only when the repo _and_ the derived ref pair both match. If your workspace already has sessions running for unrelated refs, the PR URL starts a new one alongside them.
 
 **Extra guidance for one pass — `instructions`.** Both `/branchdiff-review` and `/branchdiff-resolve` accept an optional free-form `instructions` argument after the URL/ref, e.g. `/branchdiff-review <url> skip files under ai/`. Applied alongside the normal workflow, not instead of it — the same knob `branchdiff auto --prompt` uses for unattended runs.
 
 **Desktop notifications — `--notify`.** Add `--notify` to `/branchdiff-review` or `/branchdiff-resolve` (e.g. `/branchdiff-review <url> --notify`) to get a desktop toast when the pass starts and when it completes — useful if you step away from the chat during a long review. It fires via `branchdiff agent notify` and is off by default. It only applies when you run the skill yourself; when `branchdiff auto` drives a skill, `auto` fires its own toasts and the skill stays silent.
 
-> **Session lifecycle** — a skill-created session keeps running in the background until you stop it explicitly (`branchdiff killall` or `branchdiff kill --port N`). It does **not** auto-end when the review/resolve pass completes. The skill prints the session URL at the end of each run so you can jump back to the browser. If the session was started with `--worktree`, its `.worktrees/pr-<n>` checkout is *not* removed when you stop it — add `--worktree-remove` to `kill`/`killall` to clean it up too (kept and reported instead if it holds untracked or modified files).
+> **Session lifecycle** — a skill-created session keeps running in the background until you stop it explicitly (`branchdiff killall` or `branchdiff kill --port N`). It does **not** auto-end when the review/resolve pass completes. The skill prints the session URL at the end of each run so you can jump back to the browser. If the session was started with `--worktree`, its `.worktrees/pr-<n>` checkout is _not_ removed when you stop it — add `--worktree-remove` to `kill`/`killall` to clean it up too (kept and reported instead if it holds untracked or modified files).
 
 `/branchdiff-review` reads the full diff, analyzes each changed file, and posts inline comments tagged by severity:
+
 - `[must-fix]` — bugs, security issues, data loss risks
 - `[suggestion]` — concrete improvements, missing tests
 - `[question]` — unclear behavior needing clarification
@@ -860,7 +870,7 @@ Reviews are **additive**, not repetitive. Before analyzing code, the review skil
 
 This makes follow-up reviews (2nd, 3rd, nth pass) practical without repeating the same feedback loop.
 
-When you ask for a verdict, the skill also reconciles threads still **open** from earlier passes: it re-checks each against the current diff (by what the comment describes, not by its old line number — a fix can land at a different spot than originally flagged) and, if genuinely fixed, resolves its own prior findings — but only ever *replies* to a human's ("Looks fixed — OK to close?"), since closing someone else's thread is always their call, unless the human already made that call themselves: a thread whose latest reply is a closing remark ("fixed", "done", "lgtm", "wontfix") is resolved directly, quoting them. A fixed thread no longer blocks the verdict; an uncertain one is left untouched.
+When you ask for a verdict, the skill also reconciles threads still **open** from earlier passes: it re-checks each against the current diff (by what the comment describes, not by its old line number — a fix can land at a different spot than originally flagged) and, if genuinely fixed, resolves its own prior findings — but only ever _replies_ to a human's ("Looks fixed — OK to close?"), since closing someone else's thread is always their call, unless the human already made that call themselves: a thread whose latest reply is a closing remark ("fixed", "done", "lgtm", "wontfix") is resolved directly, quoting them. A fixed thread no longer blocks the verdict; an uncertain one is left untouched.
 
 ### Starting over — `--fresh`
 
@@ -874,7 +884,7 @@ branchdiff review run --exec "claude -p" --fresh
 
 ### Reviews read from git, not your checkout
 
-The branch you have checked out is often *not* the code under review — you may be on another task, in a worktree, or comparing two remote refs for a PR. So the AI reads file content at the compared refs:
+The branch you have checked out is often _not_ the code under review — you may be on another task, in a worktree, or comparing two remote refs for a PR. So the AI reads file content at the compared refs:
 
 ```bash
 branchdiff agent file src/app.ts --ref feature   # content at that ref
@@ -923,11 +933,11 @@ Pick one:  --port <n>   or  --session <id>
 
 Three ways to answer it:
 
-| | When to use |
-|---|---|
-| `--port 5391` | One-off. The port is right there in the error and in `branchdiff list`. |
+|                                     | When to use                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------- |
+| `--port 5391`                       | One-off. The port is right there in the error and in `branchdiff list`.      |
 | `export BRANCHDIFF_SESSION_ID=<id>` | You'll be on this session for a while — set it once, drop the flag entirely. |
-| `--yes` | You genuinely mean "whichever was last active". |
+| `--yes`                             | You genuinely mean "whichever was last active".                              |
 
 Resolution order is `BRANCHDIFF_SESSION_ID` → `--session` → `--port` → the shared pointer, and that last one is only consulted when a single session is live.
 
@@ -938,6 +948,7 @@ The generated review and resolve skills follow the same rule automatically: they
 ### Resolve skill workflow
 
 `/branchdiff-resolve` reads all open review threads and resolves them:
+
 1. Pulls the PR's latest comments first, and stops if the local branch is behind the PR head — a fix belongs on current code
 2. Reads each thread's comment body to understand the requested change
 3. Confirms the reviewed code is actually present in the tree it's about to edit
@@ -1070,9 +1081,9 @@ The map can also be dropped straight into a PR description: the [create-PR](#cre
 - The map opens on a bold **Level 0 — Summary** heading — the tier line, area table and "what this change does" brief above, present on every map regardless of diff shape. The diagram levels that can follow (whole-change overview, per-section file drill-down, hot-file symbol tables) are numbered by what a given diff actually renders, not a fixed scheme — the whole-change overview is routinely skipped (a single section with no cross-area wiring), so the file drill-down that follows opens on "Level 1" rather than jumping straight to "Level 2" with no "Level 1" ever shown. Every Level heading is bold, so it stands out from the prose and diagrams around it.
 - Computation is deterministic and local — zero AI tokens, diagrams included. An area is the first two path segments of a file; a section is a connected component of changed areas joined by cross-area import edges; wiring comes from import statements in changed files plus unchanged files that import changed ones. The mermaid and ASCII diagrams are rendered straight from that same wiring data — a solid edge for changed-to-changed, a dashed one for changed-to-existing — deliberately leaving out integration edges (unchanged consumers of the changed code): that `from` area is often the same one already drawn for a changed edge, so a second arrow between two nodes already connected would only confuse the picture rather than add information. Each mermaid block carries its section's area list as a `title:` frontmatter, so the "view full diagram" popup (below) already has a real header instead of the generic fallback. The AI's job is to pick the block matching its target platform when the map ships both, not to author one. File content is read at the compared ref (`b2`), or the working tree for uncommitted-work reviews — the same source split the diff itself uses.
 - Edge labels carry symbol names, not just counts, when the map can tell what actually flows: the diff's added lines are scanned for top-level `export function`/`class`/`const`/`type`/etc declarations in code files (a markdown/plan file's fenced example is never counted, only real source), and a changed-to-changed edge is labeled with whichever of those names the importing side's named-import clause actually names — capped at 3 names plus a "+N more" tail, count kept alongside (`×9: computeChangeMapBlock, sectionEdges`). An edge with no matched new export falls back to the bare count. This is regex-level, not a type checker — a name match is a real named-import naming a real new export, nothing inferred beyond that.
-- A matched symbol's own leading comment becomes the node's second line, when one exists: the diff's added lines immediately above the export declaration — a contiguous run of `/** */` or `//` lines, no gap — are read back and the first sentence kept (capped tighter than the edge label, ~70 characters, since it lives inside a node box). Quotes and newlines in that text are sanitized so they can't break the mermaid label they're embedded in. This is real author-written prose already in the diff, not model-generated — the one deterministic source that can say *what* new code does instead of only *where* it lives. Coverage varies by codebase and author habit — not every new export gets a doc comment — so this is a bonus when present, never a requirement: a symbol with none simply keeps its plain node label, exactly as if this didn't exist.
-- Every section's diagram block is followed by one explicit line — `No doc comment on: <node> (<symbol>), …` — naming every node the wiring matched a symbol for but found no leading comment to describe (omitted entirely when there's nothing to name). This turns "the map has a gap here" from something the AI would have to notice by comparing mermaid syntax into a fact stated outright: the review skill fills an undocumented-symbol gap only from a file it's *already reading* for Step 4, never an extra read spent solely on the diagram. A separate hybrid-assist step covers the other kind of gap — one unclear wiring detail, such as what an edge actually carries — and is allowed exactly one extra read via `branchdiff agent file` to resolve it, informing a label edit but never adding a node or edge of its own.
-- The AI's intent-summary sentence is genuinely the model's own — the one thing in this section that isn't deterministic. It comes from context already in hand (diff content, PR description), never an extra read, and it's why the review skill still adds value on top of the map: the map computes *where* and *what's wired*, never *why*.
+- A matched symbol's own leading comment becomes the node's second line, when one exists: the diff's added lines immediately above the export declaration — a contiguous run of `/** */` or `//` lines, no gap — are read back and the first sentence kept (capped tighter than the edge label, ~70 characters, since it lives inside a node box). Quotes and newlines in that text are sanitized so they can't break the mermaid label they're embedded in. This is real author-written prose already in the diff, not model-generated — the one deterministic source that can say _what_ new code does instead of only _where_ it lives. Coverage varies by codebase and author habit — not every new export gets a doc comment — so this is a bonus when present, never a requirement: a symbol with none simply keeps its plain node label, exactly as if this didn't exist.
+- Every section's diagram block is followed by one explicit line — `No doc comment on: <node> (<symbol>), …` — naming every node the wiring matched a symbol for but found no leading comment to describe (omitted entirely when there's nothing to name). This turns "the map has a gap here" from something the AI would have to notice by comparing mermaid syntax into a fact stated outright: the review skill fills an undocumented-symbol gap only from a file it's _already reading_ for Step 4, never an extra read spent solely on the diagram. A separate hybrid-assist step covers the other kind of gap — one unclear wiring detail, such as what an edge actually carries — and is allowed exactly one extra read via `branchdiff agent file` to resolve it, informing a label edit but never adding a node or edge of its own.
+- The AI's intent-summary sentence is genuinely the model's own — the one thing in this section that isn't deterministic. It comes from context already in hand (diff content, PR description), never an extra read, and it's why the review skill still adds value on top of the map: the map computes _where_ and _what's wired_, never _why_.
 - The browser modal's diagrams are the identical data the AI reviewer's general comment uses — same areas, edges, labels, doc snippets — with the agent-addressed prose stripped out: the HTML-comment wrapper, the "author ONE general comment" header, and the "No doc comment on: …" gap note all exist to steer an AI writing a comment, not a person looking at a picture.
 - The **Insert change map** button itself is platform-agnostic: it always appends the prose plus the mermaid fences verbatim, ASCII duplicates dropped — the same markdown on GitHub and Bitbucket, so editing and the live Preview toggle behave identically either way and nothing gets written to either forge just from inserting or previewing. GitHub needs nothing further; it renders mermaid natively.
 - Bitbucket has no mermaid support, so its description needs every diagram rasterized to an image — but that conversion happens only at **save** time (create or edit), never while the dialog is still open being drafted. On save, if the description's change-map block still holds mermaid fences, each one (the whole-change overview, then one per section drill-down) is rendered to its own PNG in the browser (light theme, white background — the image ends up on Bitbucket's white page), one at a time — mermaid keeps internal state that isn't safe for rendering several diagrams at once — and uploaded to the repo's Downloads area through the Bitbucket API under its own filename (`change-map-<key>-<index>.png`), and the block is rewritten to reference each image in place of its fence, captioned from that diagram's own title. The filenames are keyed to the context (PR id when editing, source branch when creating) plus the diagram's position, so a later save overwrites the same files instead of accumulating versions. Rendering or uploading is all-or-nothing: if any one diagram fails, every diagram in the map (not just the failed one) falls back to its ASCII fence instead — a map that's part pictures, part raw syntax would read worse than one that's consistently text — with an inline note; the save itself still goes through. Whatever the previous save actually left in the repo (however many images that was) is checked against what the outgoing description still references after this save, and anything no longer linked — the whole change-map set, if the block was removed or fell back to ASCII, or just the extras if this save produced fewer diagrams than last time — is deleted instead of left orphaned on bitbucket.org. Images the final description still links elsewhere always survive, whether branchdiff or the PR author uploaded them: the delete decision scans the text actually being saved, not branchdiff's own filenames.
@@ -1145,6 +1156,7 @@ branchdiff https://github.com/owner/repo/pull/123 --review --exec "claude -p" --
 ```
 
 **Picking what to review with — exactly one of:**
+
 - `--tool <name>` — shorthand for a known AI CLI: `claude`, `codex`, `opencode`, `gemini`, `cursor`, `llm`, `antigravity`. Same presets `auto` uses.
 - `--exec "<cmd>"` — spell out any other AI CLI directly.
 
@@ -1352,22 +1364,22 @@ branchdiff auto --repo-paths ~/work/api,../web --tool claude          # name the
 
 **Which flags for which scenario.** One rule applies to every row below, before anything else: **run it from a real terminal, or pass `--review`.** `auto` always asks (unless told not to), so outside a TTY with no `--review` it refuses immediately rather than hang on a prompt nothing can answer — this has nothing to do with `--tool`/`--exec`. Beyond that, `--tool`/`--exec` is the only flag anything else depends on — without one, `auto` still finds PRs, decides which need review, and lets you pick, but stops short of running an AI (first row). Everything else composes freely, except the two hard requirements called out in bold.
 
-| Scenario | Command | Requires | Optional extras |
-|---|---|---|---|
-| Just see what needs reviewing, no AI yet | `branchdiff auto` | a terminal (or `--review`) — see rule above | `--source`/`--dest` to narrow the list |
-| Interactive, pick which PRs to review | `branchdiff auto --tool claude` | `--tool` or `--exec` | `--worktree`, `--fresh`, `--prompt` |
-| Fully unattended (cron, CI, a script) | `branchdiff auto --tool claude --review` | `--tool`/`--exec` **and `--review`** (mandatory here — nothing can answer the prompt in a script) | `--notify`, `--push` |
-| Never offer to review my own PRs | `branchdiff auto --tool claude --review --skip-author` | `--tool`/`--exec` | `--source`/`--dest` (narrow the list too), `--watch` — composes with any other row; `--skip-author` is a filter, not a mode |
-| Leave the giant PRs to a human | `branchdiff auto --tool claude --max-files 200 --max-lines 4000` | `--tool`/`--exec` | `--min-files`/`--min-lines` to skip trivial ones too; composes with any other row — these are filters, not a mode |
-| Keep watching for new commits | `branchdiff auto --watch 10 --tool claude --review` | `--watch` | `--watch` alone uses the 10-min default; `--review`/`--notify` — not enforced, but there's no one at the terminal to answer the per-cycle prompt otherwise |
-| Publish comments to the PR | `branchdiff auto --tool claude --push` | `--tool`/`--exec` — `--push` silently does nothing without an actual review to publish | forge credentials already set up (`gh auth login` / Bitbucket env vars), same as manual `sync push` |
-| See the verdict reasoning locally, no remote action | `branchdiff auto --tool claude --request-changes` | `--tool`/`--exec` — works with or without `--push`; without it, only a local verdict comment is created, nothing reaches the remote PR and no approve/request-changes call is made | `--approve` too; either alone still gets the other side an AI-written recommendation instead of silence |
-| Set an actual PR verdict (approve / request changes) | `branchdiff auto --tool claude --push --request-changes` | **`--push`** — the verdict comment still gets created without it, but the remote approve/request-changes call is skipped | `--approve` too (full auto-verdict); either alone still gets the other side an AI-written recommendation instead of silence. Any open human-started thread blocks approval too, not just `[must-fix]` ones — except a bare status remark ("PR Updated", "LGTM", "done") or one whose latest reply already signals it's fine to close |
-| Review several PRs concurrently | `branchdiff auto --tool claude --worktree --parallel 3` | **`--worktree`** — `auto` refuses `--parallel > 1` without it, since concurrent PRs would race checking out the same working tree | `--worktree-remove`, `--review` (otherwise the one selection prompt still happens up front, then the picks run in parallel) |
-| Don't touch my working tree at all | `branchdiff auto --tool claude --worktree` | — | `--worktree-remove` to also clean the checkout up afterward |
-| Drive an actual review skill, not JSON | `branchdiff auto --tool claude --skill` | `--tool`/`--exec` — `--skill`/`--skill-name`/`--additional-skill` have nothing to pipe to without one | `--skill-name`, `--additional-skill`, `--prompt` |
-| Review PRs across several repos in one go | `branchdiff auto --repo-paths ~/work --tool claude` | — (run it from a parent directory and discovery does the same thing) | `--repo-concurrency`, `--keep-servers`, `--review`; everything else works per repo exactly as it does in one |
-| Fix + resolve open threads locally, after review | `branchdiff auto --tool claude --resolve` | `--tool`/`--exec` — `--resolve`/`--resolve-skill-name`/`--additional-resolve-skill` have nothing to pipe to without one | `--resolve-skill-name`, `--additional-resolve-skill`, `--resolve-prompt`, `--skill` (compose review + resolve in one pass) |
+| Scenario                                             | Command                                                          | Requires                                                                                                                                                                           | Optional extras                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Just see what needs reviewing, no AI yet             | `branchdiff auto`                                                | a terminal (or `--review`) — see rule above                                                                                                                                        | `--source`/`--dest` to narrow the list                                                                                                                                                                                                                                                                                               |
+| Interactive, pick which PRs to review                | `branchdiff auto --tool claude`                                  | `--tool` or `--exec`                                                                                                                                                               | `--worktree`, `--fresh`, `--prompt`                                                                                                                                                                                                                                                                                                  |
+| Fully unattended (cron, CI, a script)                | `branchdiff auto --tool claude --review`                         | `--tool`/`--exec` **and `--review`** (mandatory here — nothing can answer the prompt in a script)                                                                                  | `--notify`, `--push`                                                                                                                                                                                                                                                                                                                 |
+| Never offer to review my own PRs                     | `branchdiff auto --tool claude --review --skip-author`           | `--tool`/`--exec`                                                                                                                                                                  | `--source`/`--dest` (narrow the list too), `--watch` — composes with any other row; `--skip-author` is a filter, not a mode                                                                                                                                                                                                          |
+| Leave the giant PRs to a human                       | `branchdiff auto --tool claude --max-files 200 --max-lines 4000` | `--tool`/`--exec`                                                                                                                                                                  | `--min-files`/`--min-lines` to skip trivial ones too; composes with any other row — these are filters, not a mode                                                                                                                                                                                                                    |
+| Keep watching for new commits                        | `branchdiff auto --watch 10 --tool claude --review`              | `--watch`                                                                                                                                                                          | `--watch` alone uses the 10-min default; `--review`/`--notify` — not enforced, but there's no one at the terminal to answer the per-cycle prompt otherwise                                                                                                                                                                           |
+| Publish comments to the PR                           | `branchdiff auto --tool claude --push`                           | `--tool`/`--exec` — `--push` silently does nothing without an actual review to publish                                                                                             | forge credentials already set up (`gh auth login` / Bitbucket env vars), same as manual `sync push`                                                                                                                                                                                                                                  |
+| See the verdict reasoning locally, no remote action  | `branchdiff auto --tool claude --request-changes`                | `--tool`/`--exec` — works with or without `--push`; without it, only a local verdict comment is created, nothing reaches the remote PR and no approve/request-changes call is made | `--approve` too; either alone still gets the other side an AI-written recommendation instead of silence                                                                                                                                                                                                                              |
+| Set an actual PR verdict (approve / request changes) | `branchdiff auto --tool claude --push --request-changes`         | **`--push`** — the verdict comment still gets created without it, but the remote approve/request-changes call is skipped                                                           | `--approve` too (full auto-verdict); either alone still gets the other side an AI-written recommendation instead of silence. Any open human-started thread blocks approval too, not just `[must-fix]` ones — except a bare status remark ("PR Updated", "LGTM", "done") or one whose latest reply already signals it's fine to close |
+| Review several PRs concurrently                      | `branchdiff auto --tool claude --worktree --parallel 3`          | **`--worktree`** — `auto` refuses `--parallel > 1` without it, since concurrent PRs would race checking out the same working tree                                                  | `--worktree-remove`, `--review` (otherwise the one selection prompt still happens up front, then the picks run in parallel)                                                                                                                                                                                                          |
+| Don't touch my working tree at all                   | `branchdiff auto --tool claude --worktree`                       | —                                                                                                                                                                                  | `--worktree-remove` to also clean the checkout up afterward                                                                                                                                                                                                                                                                          |
+| Drive an actual review skill, not JSON               | `branchdiff auto --tool claude --skill`                          | `--tool`/`--exec` — `--skill`/`--skill-name`/`--additional-skill` have nothing to pipe to without one                                                                              | `--skill-name`, `--additional-skill`, `--prompt`                                                                                                                                                                                                                                                                                     |
+| Review PRs across several repos in one go            | `branchdiff auto --repo-paths ~/work --tool claude`              | — (run it from a parent directory and discovery does the same thing)                                                                                                               | `--repo-concurrency`, `--keep-servers`, `--review`; everything else works per repo exactly as it does in one                                                                                                                                                                                                                         |
+| Fix + resolve open threads locally, after review     | `branchdiff auto --tool claude --resolve`                        | `--tool`/`--exec` — `--resolve`/`--resolve-skill-name`/`--additional-resolve-skill` have nothing to pipe to without one                                                            | `--resolve-skill-name`, `--additional-resolve-skill`, `--resolve-prompt`, `--skill` (compose review + resolve in one pass)                                                                                                                                                                                                           |
 
 **Notifications link to the PR.** With `--notify`, each toast — and the `done`/`ready` lines in your terminal — carries a link to the PR (or, for a review that finished without pushing its comments, to the local session view). Clicking it opens your browser directly where supported; anywhere else the URL is shown in the toast and the terminal, so it's still one click away.
 
@@ -1408,7 +1420,7 @@ A path that doesn't exist, or isn't a directory, stops the run with an error rat
 
 A repo already being reviewed by another `auto` is skipped (with a note) instead of raced; `--force-session` overrides that per repo. Picking enough PRs in one cycle prints a one-time heads-up — a full pass per PR takes a while, and each one parks a `.worktrees/pr-<n>` until it's cleaned up — pointing at `--worktree-remove` and a longer `--watch` interval; purely advisory, nothing about how the cycle runs changes. The threshold scales with `--watch <minutes>` (half the interval, e.g. `--watch 10` warns at 5+ PRs, `--watch 20` at 10+) — a longer interval has more slack before the next cycle, so it tolerates more PRs before the warning is worth showing; bare `--watch`/no `--watch` uses the same 10m default the interval itself falls back to elsewhere, so 5+.
 
-`--keep-servers` is deliberately not a cap on how many servers are alive *during* a cycle: a cycle reviewing 12 PRs holds up to 12 servers while it works, then retires the oldest down to `<n>` once **every** review has finished, so nothing is ever stopped mid-review. Ctrl-C skips the sweep on purpose — in-flight work is abandoned, not finished, so its servers stay up; `branchdiff killall` is the cleanup, bearing in mind it stops *every* branchdiff server on the machine, not only this run's.
+`--keep-servers` is deliberately not a cap on how many servers are alive _during_ a cycle: a cycle reviewing 12 PRs holds up to 12 servers while it works, then retires the oldest down to `<n>` once **every** review has finished, so nothing is ever stopped mid-review. Ctrl-C skips the sweep on purpose — in-flight work is abandoned, not finished, so its servers stay up; `branchdiff killall` is the cleanup, bearing in mind it stops _every_ branchdiff server on the machine, not only this run's.
 
 </details>
 
@@ -1441,16 +1453,16 @@ Rows are grouped under the repo they belong to. The directory every repo sits un
 
 `--tool` covers the common CLIs; `--exec` takes any command that reads a prompt on stdin and prints review JSON on stdout. This table is for `auto`'s **classic** mode (no `--skill`/`--resolve`) — it parses review JSON only, so it doesn't need the AI to run `branchdiff agent` commands itself, and doesn't auto-add an approval flag. `--skill`/`--resolve` mode does need that (see below), and auto-adds the flag for any tool it can detect — from `--tool <name>` or sniffed from `--exec`'s own first word, same detection [usage-tracking](#tokencost-tracking-when-it-turns-on-and-with-exec-specifically) uses — logging what it added and a deny-list reminder:
 
-| Flag | Runs | Classic mode | Skill/resolve mode |
-|------|------|:---:|---|
-| `--tool claude` | `claude -p` | ⚠️ add `--dangerously-skip-permissions` yourself | ✅ auto-adds `--dangerously-skip-permissions` |
-| `--tool gemini` | `gemini -p` | ⚠️ add `--yolo` yourself | ✅ auto-adds `--yolo` |
-| `--tool opencode` | `opencode run` | ⚠️ add `--auto` yourself | ✅ auto-adds `--auto` |
-| `--tool codex` | `codex exec -` | ⚠️ add `--dangerously-bypass-approvals-and-sandbox` yourself | ✅ auto-adds `--dangerously-bypass-approvals-and-sandbox` |
-| `--tool cursor` | `cursor-agent -p` | ⚠️ needs Auto-review run mode enabled in cursor settings (no headless flag) | ⚠️ same |
-| `--tool llm` | `llm` | ✅ `llm` runs no tools at all, so it can't block — it just prints the JSON | ❌ `llm` runs no tools — use classic mode |
-| `--tool antigravity` | `agy --print-timeout 30m` | ⚠️ add `--dangerously-skip-permissions` yourself | ✅ auto-adds `--dangerously-skip-permissions` |
-| `--exec "<cmd>"` (no `--tool`) | anything else, e.g. `--exec "llm -m gpt-4o"` | ⚠️ add your tool's auto-approve flag yourself | ✅ auto-adds it if the command's first word names a known tool, else ⚠️ add it yourself |
+| Flag                           | Runs                                         |                                Classic mode                                 | Skill/resolve mode                                                                      |
+| ------------------------------ | -------------------------------------------- | :-------------------------------------------------------------------------: | --------------------------------------------------------------------------------------- |
+| `--tool claude`                | `claude -p`                                  |              ⚠️ add `--dangerously-skip-permissions` yourself               | ✅ auto-adds `--dangerously-skip-permissions`                                           |
+| `--tool gemini`                | `gemini -p`                                  |                          ⚠️ add `--yolo` yourself                           | ✅ auto-adds `--yolo`                                                                   |
+| `--tool opencode`              | `opencode run`                               |                          ⚠️ add `--auto` yourself                           | ✅ auto-adds `--auto`                                                                   |
+| `--tool codex`                 | `codex exec -`                               |        ⚠️ add `--dangerously-bypass-approvals-and-sandbox` yourself         | ✅ auto-adds `--dangerously-bypass-approvals-and-sandbox`                               |
+| `--tool cursor`                | `cursor-agent -p`                            | ⚠️ needs Auto-review run mode enabled in cursor settings (no headless flag) | ⚠️ same                                                                                 |
+| `--tool llm`                   | `llm`                                        | ✅ `llm` runs no tools at all, so it can't block — it just prints the JSON  | ❌ `llm` runs no tools — use classic mode                                               |
+| `--tool antigravity`           | `agy --print-timeout 30m`                    |              ⚠️ add `--dangerously-skip-permissions` yourself               | ✅ auto-adds `--dangerously-skip-permissions`                                           |
+| `--exec "<cmd>"` (no `--tool`) | anything else, e.g. `--exec "llm -m gpt-4o"` |                ⚠️ add your tool's auto-approve flag yourself                | ✅ auto-adds it if the command's first word names a known tool, else ⚠️ add it yourself |
 
 The root command's inline `--review` (see [Inline](#inline-start-the-session-and-review-it-in-one-command) above) auto-adds the flag in **both** classic and skill mode — its classic mode also drives the AI through `branchdiff agent` commands, unlike `auto`'s.
 
@@ -1480,9 +1492,9 @@ Root's inline `--review` instructs the AI to run `branchdiff agent comment`/`gen
   CLAUDE_CONFIG_DIR=~/.claude-account1 branchdiff auto --tool claude --skill --review
   ```
 
-  `--tool <name>` still supplies the right invocation *and* the skill-mode autonomy flag; the env var just selects which account/profile runs it. Set it once with `export` (or in the surrounding script) to apply it to a whole `--watch` session.
+  `--tool <name>` still supplies the right invocation _and_ the skill-mode autonomy flag; the env var just selects which account/profile runs it. Set it once with `export` (or in the surrounding script) to apply it to a whole `--watch` session.
 
-- **A tool family plus a custom launcher (`--tool` + `--exec` together).** When you need to override *how* the tool is launched but still want the family's skill-autonomy flag added for you, pass both — `--exec` sets the command, `--tool` names the family:
+- **A tool family plus a custom launcher (`--tool` + `--exec` together).** When you need to override _how_ the tool is launched but still want the family's skill-autonomy flag added for you, pass both — `--exec` sets the command, `--tool` names the family:
 
   ```bash
   branchdiff auto --tool claude \
@@ -1504,12 +1516,14 @@ Root's inline `--review` instructs the AI to run `branchdiff agent comment`/`gen
 A bare shell alias resolves to nothing under `sh -c`, so turn it into a wrapper script instead (`#!/bin/sh` + `exec env <YOUR_ENV_VAR>=<value> <your-cli> "$@"`) and pass that script to `--exec`.
 
 For a renamed or wrapper binary (`--tool` only accepts its seven preset names, so `--tool claude-account1` errors out naming the known list):
+
 ```bash
 branchdiff auto --tool claude --exec "claude-account1 -p" --skill --review   # runs claude-account1, still auto-adds --dangerously-skip-permissions
 branchdiff auto --exec "claude-account1 -p" --review                          # standalone — add the auto-approve flag yourself in skill mode
 ```
 
 Under cron, the env-prefix and wrapper-script forms survive unchanged — the `--exec` value is baked verbatim into the schedule, so nothing cron-specific to set up. One caveat per form:
+
 - **env-prefix in `--exec`** — works as-is, but the value lands in the generated per-schedule script (`~/.branchdiff/cron-scripts/<cronId>.sh`) in plain text, so put a config-dir or account selector there, not a raw API key. A key you `export` in `~/.zshrc`/`~/.bashrc` already reaches the tool at every fire via branchdiff's login-shell wrap — no crontab edit needed.
 - **wrapper script on `$PATH`** — its directory (e.g. `~/.local/bin`) must be on the `PATH` of the shell running `cron add`, since that `PATH` is snapshotted into the schedule and resolves the wrapper at every fire. The wrapper carries the env, so there are no `VAR=value` crontab lines to add.
 
@@ -1519,35 +1533,35 @@ Full env story at [Cron doesn't inherit your shell's `PATH` or env vars](#cron-d
 
 #### Controls
 
-| Flag | Default | What it does |
-|------|---------|--------------|
-| `--review` | off — asks | Skips the selection prompt and reviews every matching PR. Without it, PRs that need review are listed once — pick several with comma-separated numbers, `a` for all, or `q` to quit; in a non-interactive shell `auto` refuses rather than guessing. |
-| `--notify` | off | Desktop notification when a review starts, finishes, is pushed, or fails. Silently skipped if your system has no notifier. |
-| `--push` | off | Pushes that PR's comments (and, if set, the verdict comment below) to the remote. Without it, everything stays local. |
-| `--approve [level]` | off; 1 if bare | Always writes a local verdict comment reasoning about whether to approve. `level` (1-5, default 1) sets how strict the gate is. Actually approving on the remote additionally requires `--push`. Full gating rules in [Setting a PR verdict](#setting-a-pr-verdict-approve-level-request-changes-level) below. |
-| `--request-changes [level]` | off; 1 if bare | Same idea, for requesting changes — same `level` as `--approve` (the two must agree if both are set). See [Setting a PR verdict](#setting-a-pr-verdict-approve-level-request-changes-level) below. |
-| `--watch [min]` | off (single pass); 10 if bare | Keep looping every `<min>` minutes (`--watch 10`), or every 10 by default (`--watch` alone). Ctrl-C stops cleanly. Each cycle re-resolves the repos, so one cloned into the parent directory mid-run joins the next cycle. |
-| `--repo-paths <paths>` | this directory if it's a repo, else its direct child repos | Repos to review — comma-separated and repeatable, absolute, relative or `~/…`. A path that is itself a repo means that repo; any other directory expands to its **direct** child repos (one level down, never recursive). A path that doesn't exist stops the run. |
-| `--repo-concurrency <n>` | 4 (clamped 1-16) | How many repos are scanned at once. Reviews still run one repo at a time. |
-| `--keep-servers <n\|all>` | every server in a single repo; 4 in a multi-repo run | How many session servers this run **leaves alive after each cycle** — not a cap on how many are alive during one (a 12-PR cycle holds up to 12, then retires the oldest once every review has finished, never mid-review). Ctrl-C skips the sweep; use `branchdiff killall` to clean up. |
-| `--source` / `--dest` | any | Branch filters — comma-separated globs (`feature/*`) or `/regex/`. |
-| `--worktree` | off | Runs each reviewer in a `.worktrees/` checkout so your working tree is untouched. |
-| `--worktree-remove` | off | Removes that worktree after each review (kept by default; kept + warned if it holds untracked/modified files). |
-| `--fresh` | off | Archives existing local comments before each review. |
-| `--parallel <n>` | 1 (sequential) | Reviews up to `n` of the selected PRs at once instead of one at a time. Requires `--worktree` — otherwise concurrent PRs would race checking out the same working tree. |
-| `--no-skip` | off (skips reviewed) | Makes every matching PR eligible again, even one already reviewed at its current commit. Use it when a prior review recorded state but posted nothing (e.g. the AI was permission-blocked) — a successful re-review re-stamps the commit and normal skipping resumes. |
-| `--skip-author` | off | Drops PRs you opened yourself before they reach the candidate list, matched by the authenticated user (your GitHub login / Bitbucket uuid), so `auto` never offers to review your own work. Best-effort — a PR whose author can't be determined is kept, and if your own identity can't be resolved nothing is skipped. |
-| `--max-files <n>` / `--min-files <n>` | any size | Skips a PR changing more than `n` (or fewer than `n`) files. |
-| `--max-lines <n>` / `--min-lines <n>` | any size | Same, on diff lines — additions + deletions together. |
-| `--skill` | off | Drive the built-in "branchdiff" review skill instead of the context+JSON pipe — no install needed, see below. |
-| `--skill-name <name>` | — | Drive a custom skill instead (must already be installed via `skill add`; implies `--skill`). |
-| `--additional-skill <name>` | — | Merge another installed skill's guidance into the same pass (repeatable; implies `--skill`). |
-| `--prompt <text>` | — | Extra instructions passed to the AI for this run — merged into the skill prompt, or forwarded as `review run --prompt` in classic mode. It's **advisory, not a filter**: `--prompt "skip ai/**/plans"` *asks* the reviewer to ignore those paths; branchdiff still sends the full diff. Quote it so your shell keeps it intact — use double quotes if the text has an apostrophe (`--prompt "don't touch ai/"`). |
-| `--stack` | off | Injects the immediate ancestor PR's diff summary + description as read-only context, for any PR whose base branch is itself another open PR — see [Stacked PRs](#stacked-prs-ancestor-context-stack) above. Applies to the review pass only (classic and `--skill` alike); no effect on `--resolve`. |
-| `--resolve` | off | After the review pass, drive the built-in "branchdiff" resolve skill: the AI fixes open threads locally and resolves them. Local only — nothing is committed or pushed. Works even without `--skill` (resolves whatever's already open on top of the classic review pass). |
-| `--resolve-skill-name <name>` | — | Drive a custom resolve skill instead (must already be installed via `skill add --type resolve`; implies `--resolve`). |
-| `--additional-resolve-skill <name>` | — | Merge another installed resolve skill's guidance into the same pass (repeatable; implies `--resolve`). |
-| `--resolve-prompt <text>` | — | Extra instructions merged into the resolve prompt only (separate from `--prompt`, which is the review pass's). |
+| Flag                                  | Default                                                    | What it does                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--review`                            | off — asks                                                 | Skips the selection prompt and reviews every matching PR. Without it, PRs that need review are listed once — pick several with comma-separated numbers, `a` for all, or `q` to quit; in a non-interactive shell `auto` refuses rather than guessing.                                                                                                                                                             |
+| `--notify`                            | off                                                        | Desktop notification when a review starts, finishes, is pushed, or fails. Silently skipped if your system has no notifier.                                                                                                                                                                                                                                                                                       |
+| `--push`                              | off                                                        | Pushes that PR's comments (and, if set, the verdict comment below) to the remote. Without it, everything stays local.                                                                                                                                                                                                                                                                                            |
+| `--approve [level]`                   | off; 1 if bare                                             | Always writes a local verdict comment reasoning about whether to approve. `level` (1-5, default 1) sets how strict the gate is. Actually approving on the remote additionally requires `--push`. Full gating rules in [Setting a PR verdict](#setting-a-pr-verdict-approve-level-request-changes-level) below.                                                                                                   |
+| `--request-changes [level]`           | off; 1 if bare                                             | Same idea, for requesting changes — same `level` as `--approve` (the two must agree if both are set). See [Setting a PR verdict](#setting-a-pr-verdict-approve-level-request-changes-level) below.                                                                                                                                                                                                               |
+| `--watch [min]`                       | off (single pass); 10 if bare                              | Keep looping every `<min>` minutes (`--watch 10`), or every 10 by default (`--watch` alone). Ctrl-C stops cleanly. Each cycle re-resolves the repos, so one cloned into the parent directory mid-run joins the next cycle.                                                                                                                                                                                       |
+| `--repo-paths <paths>`                | this directory if it's a repo, else its direct child repos | Repos to review — comma-separated and repeatable, absolute, relative or `~/…`. A path that is itself a repo means that repo; any other directory expands to its **direct** child repos (one level down, never recursive). A path that doesn't exist stops the run.                                                                                                                                               |
+| `--repo-concurrency <n>`              | 4 (clamped 1-16)                                           | How many repos are scanned at once. Reviews still run one repo at a time.                                                                                                                                                                                                                                                                                                                                        |
+| `--keep-servers <n\|all>`             | every server in a single repo; 4 in a multi-repo run       | How many session servers this run **leaves alive after each cycle** — not a cap on how many are alive during one (a 12-PR cycle holds up to 12, then retires the oldest once every review has finished, never mid-review). Ctrl-C skips the sweep; use `branchdiff killall` to clean up.                                                                                                                         |
+| `--source` / `--dest`                 | any                                                        | Branch filters — comma-separated globs (`feature/*`) or `/regex/`.                                                                                                                                                                                                                                                                                                                                               |
+| `--worktree`                          | off                                                        | Runs each reviewer in a `.worktrees/` checkout so your working tree is untouched.                                                                                                                                                                                                                                                                                                                                |
+| `--worktree-remove`                   | off                                                        | Removes that worktree after each review (kept by default; kept + warned if it holds untracked/modified files).                                                                                                                                                                                                                                                                                                   |
+| `--fresh`                             | off                                                        | Archives existing local comments before each review.                                                                                                                                                                                                                                                                                                                                                             |
+| `--parallel <n>`                      | 1 (sequential)                                             | Reviews up to `n` of the selected PRs at once instead of one at a time. Requires `--worktree` — otherwise concurrent PRs would race checking out the same working tree.                                                                                                                                                                                                                                          |
+| `--no-skip`                           | off (skips reviewed)                                       | Makes every matching PR eligible again, even one already reviewed at its current commit. Use it when a prior review recorded state but posted nothing (e.g. the AI was permission-blocked) — a successful re-review re-stamps the commit and normal skipping resumes.                                                                                                                                            |
+| `--skip-author`                       | off                                                        | Drops PRs you opened yourself before they reach the candidate list, matched by the authenticated user (your GitHub login / Bitbucket uuid), so `auto` never offers to review your own work. Best-effort — a PR whose author can't be determined is kept, and if your own identity can't be resolved nothing is skipped.                                                                                          |
+| `--max-files <n>` / `--min-files <n>` | any size                                                   | Skips a PR changing more than `n` (or fewer than `n`) files.                                                                                                                                                                                                                                                                                                                                                     |
+| `--max-lines <n>` / `--min-lines <n>` | any size                                                   | Same, on diff lines — additions + deletions together.                                                                                                                                                                                                                                                                                                                                                            |
+| `--skill`                             | off                                                        | Drive the built-in "branchdiff" review skill instead of the context+JSON pipe — no install needed, see below.                                                                                                                                                                                                                                                                                                    |
+| `--skill-name <name>`                 | —                                                          | Drive a custom skill instead (must already be installed via `skill add`; implies `--skill`).                                                                                                                                                                                                                                                                                                                     |
+| `--additional-skill <name>`           | —                                                          | Merge another installed skill's guidance into the same pass (repeatable; implies `--skill`).                                                                                                                                                                                                                                                                                                                     |
+| `--prompt <text>`                     | —                                                          | Extra instructions passed to the AI for this run — merged into the skill prompt, or forwarded as `review run --prompt` in classic mode. It's **advisory, not a filter**: `--prompt "skip ai/**/plans"` _asks_ the reviewer to ignore those paths; branchdiff still sends the full diff. Quote it so your shell keeps it intact — use double quotes if the text has an apostrophe (`--prompt "don't touch ai/"`). |
+| `--stack`                             | off                                                        | Injects the immediate ancestor PR's diff summary + description as read-only context, for any PR whose base branch is itself another open PR — see [Stacked PRs](#stacked-prs-ancestor-context-stack) above. Applies to the review pass only (classic and `--skill` alike); no effect on `--resolve`.                                                                                                             |
+| `--resolve`                           | off                                                        | After the review pass, drive the built-in "branchdiff" resolve skill: the AI fixes open threads locally and resolves them. Local only — nothing is committed or pushed. Works even without `--skill` (resolves whatever's already open on top of the classic review pass).                                                                                                                                       |
+| `--resolve-skill-name <name>`         | —                                                          | Drive a custom resolve skill instead (must already be installed via `skill add --type resolve`; implies `--resolve`).                                                                                                                                                                                                                                                                                            |
+| `--additional-resolve-skill <name>`   | —                                                          | Merge another installed resolve skill's guidance into the same pass (repeatable; implies `--resolve`).                                                                                                                                                                                                                                                                                                           |
+| `--resolve-prompt <text>`             | —                                                          | Extra instructions merged into the resolve prompt only (separate from `--prompt`, which is the review pass's).                                                                                                                                                                                                                                                                                                   |
 
 A PR is re-reviewed only when non-merge commits land on it after the last review, so a `--watch` loop stays quiet until there's actually something new.
 
@@ -1566,7 +1580,7 @@ It's cheap by construction: the size comes from the PR listing wherever the forg
 
 #### Re-reviewing a PR whose review failed
 
-A review is recorded against the PR's current commit as soon as it completes — and a run that *completed but posted nothing* (say the AI was blocked on permissions and exited cleanly) still counts, so the next cycle reports `skip — no new commits since last review`. To make those PRs eligible again, add **`--no-skip`**: it ignores the "already reviewed" check for every matching PR, and a successful re-review re-stamps the commit so normal skipping resumes.
+A review is recorded against the PR's current commit as soon as it completes — and a run that _completed but posted nothing_ (say the AI was blocked on permissions and exited cleanly) still counts, so the next cycle reports `skip — no new commits since last review`. To make those PRs eligible again, add **`--no-skip`**: it ignores the "already reviewed" check for every matching PR, and a successful re-review re-stamps the commit so normal skipping resumes.
 
 <details>
 <summary>Technical breakdown</summary>
@@ -1617,7 +1631,7 @@ branchdiff auto --tool claude --skill --additional-skill security-focused --prom
 
 - **`--skill`** uses the instructions this package ships internally — nothing is written to `.claude/skills` or anywhere else; it's read straight from source and piped to the AI, so it works with zero setup.
 - **`--skill-name <name>`** is for a skill you generated with `branchdiff skill add --name <name>`. Since that content is yours, `auto` requires it to already be installed and exits with an error (naming the exact `skill add` command) if it isn't — it never guesses.
-- **`--additional-skill <name>`** folds another *installed* skill's guidance into the primary pass rather than running it separately — useful for a specialized skill (e.g. security-focused) that doesn't know branchdiff's own comment/resolve commands but adds a review angle worth including.
+- **`--additional-skill <name>`** folds another _installed_ skill's guidance into the primary pass rather than running it separately — useful for a specialized skill (e.g. security-focused) that doesn't know branchdiff's own comment/resolve commands but adds a review angle worth including.
 
 #### Adding a resolve pass — `--resolve`
 
@@ -1654,7 +1668,7 @@ branchdiff auto --tool claude --push --approve 2 --request-changes 2  # gate at 
 
 Before deciding, the AI reconciles **every** open thread from an earlier pass — not just `[must-fix]`-tagged ones, and this check is a property of the thread state itself, not of any particular skill or format: it applies the same way whether the default skill, a custom `--skill-name`, or classic JSON mode is driving the review, regardless of who opened a thread. It judges each by what the comment describes against the current code, never by the thread's stored line number — commits shift lines, so a fix can now sit at a different line, or even a different file, than the one originally flagged.
 
-It checks the thread's **last** comment first: if a human's own most recent reply signals agreement or closure ("fixed", "done", "lgtm", "wontfix", "please close"), the thread is resolved directly, quoting them — the commenter already made the call. Otherwise what the AI may *do* about a fixed one depends on who opened it: its own prior finding (`author.type` "agent") gets resolved directly (`branchdiff agent resolve` in skill mode, a `resolves` entry in classic mode's JSON); anyone else's (`author.type` "user") never gets resolved, even when the fix is obvious — instead the AI replies with a suggestion so the human still gets a pointer, but the thread stays open, and blocking, until they close it themselves. This is what makes the verdict converge correctly across cycles instead of staying stuck on stale findings, without the tool ever closing someone else's discussion for them without their say-so.
+It checks the thread's **last** comment first: if a human's own most recent reply signals agreement or closure ("fixed", "done", "lgtm", "wontfix", "please close"), the thread is resolved directly, quoting them — the commenter already made the call. Otherwise what the AI may _do_ about a fixed one depends on who opened it: its own prior finding (`author.type` "agent") gets resolved directly (`branchdiff agent resolve` in skill mode, a `resolves` entry in classic mode's JSON); anyone else's (`author.type` "user") never gets resolved, even when the fix is obvious — instead the AI replies with a suggestion so the human still gets a pointer, but the thread stays open, and blocking, until they close it themselves. This is what makes the verdict converge correctly across cycles instead of staying stuck on stale findings, without the tool ever closing someone else's discussion for them without their say-so.
 
 Classic (JSON) mode runs with `--mode full` under the hood when either flag is set, so the AI's context includes prior open threads to reason about — nothing else about classic mode changes.
 
@@ -1675,7 +1689,7 @@ This keeps running until you Ctrl-C. Each cycle it:
 1. `git fetch --prune`, then lists every open PR whose **source** matches `BDN-*/dev*` and whose **destination** is `development` and that picked up non-merge commits since its last review.
 2. Prompts you once — `Review which? (numbers, 'a'=all, 'q'=quit)` — since there's no `--review` (add it to skip the prompt and review everything matched; needed if nobody's at the terminal to answer each cycle).
 3. Reviews your picks **up to 3 at a time** (`--parallel 3`), each inside its own `.worktrees/` checkout (`--worktree`, required for `--parallel > 1`) so your working tree is never touched.
-4. Runs in **skill mode** (`--skill`): the built-in "branchdiff" review skill's instructions are piped to `claude -p`, which posts its own comments via `branchdiff agent` — no JSON to import. `--prompt` is merged into that skill prompt, *asking* the reviewer to skip `ai/**/plans` (advisory — the full diff is still sent).
+4. Runs in **skill mode** (`--skill`): the built-in "branchdiff" review skill's instructions are piped to `claude -p`, which posts its own comments via `branchdiff agent` — no JSON to import. `--prompt` is merged into that skill prompt, _asking_ the reviewer to skip `ai/**/plans` (advisory — the full diff is still sent).
 5. Fires a **desktop notification** (`--notify`) on each review's start/finish/failure — and, in a `--watch` loop without `--review`, when a new cycle has PRs waiting for your selection (so you're not stuck watching the terminal).
 6. Waits **5 minutes** (`--watch 5`), then repeats — staying quiet unless a matching PR has new commits.
 
@@ -1699,7 +1713,7 @@ Run `branchdiff-auto-cd` from any repo checkout to start the same watched, paral
 
 Alias a variant on top of the base alias instead of duplicating flags (`alias branchdiff-auto-c1='branchdiff-auto-cd --exec "..."'`), and tack extra flags onto any alias at the terminal for a one-off run (`branchdiff-auto-cd --no-skip --push`) — both expand and merge correctly.
 
-> **Skill mode needs unattended tool access.** In skill mode the AI runs `branchdiff agent` commands *itself*. Headless (`claude -p`), a CLI with permission prompts on will block on approvals nothing can grant and post nothing — a silent "0 comments". `--tool claude` handles this for you: in skill mode it appends `--dangerously-skip-permissions` (safe — each review runs in an isolated, detached `.worktrees/` checkout) and logs that it did — same if a bare `--exec "claude ..."` sniffs to a known tool. Set up a deny-list for the tool (project-level and global permission settings) before relying on this for real reviews. If your `--exec` doesn't name a recognized tool, add the flag yourself: `--exec "claude -p --dangerously-skip-permissions"` (or scope it with `--allowedTools`). branchdiff warns if it looks missing.
+> **Skill mode needs unattended tool access.** In skill mode the AI runs `branchdiff agent` commands _itself_. Headless (`claude -p`), a CLI with permission prompts on will block on approvals nothing can grant and post nothing — a silent "0 comments". `--tool claude` handles this for you: in skill mode it appends `--dangerously-skip-permissions` (safe — each review runs in an isolated, detached `.worktrees/` checkout) and logs that it did — same if a bare `--exec "claude ..."` sniffs to a known tool. Set up a deny-list for the tool (project-level and global permission settings) before relying on this for real reviews. If your `--exec` doesn't name a recognized tool, add the flag yourself: `--exec "claude -p --dangerously-skip-permissions"` (or scope it with `--allowedTools`). branchdiff warns if it looks missing.
 
 ### Unattended & cron scheduling
 
@@ -1751,13 +1765,13 @@ Logs are filed by the day they ran, so one day's runs sit together:
 
 The run id is the session id for a `--detach`/cron run, or `fg-<pid>` for a foreground one — the same id [`auto list`](#managing-sessions) shows, which is how that listing points straight at the run's log.
 
-| Command | Does |
-|---|---|
-| `branchdiff auto log list` | Every recorded run, grouped under the day it ran, with size and the time of each file. `--date 2026-09-03` narrows to one day; `--json` for scripts (each run carries its `date` and whether it's still `live`). |
-| `branchdiff auto log view --id <runId>` | Prints that run's log, oldest file first. `--lines <n>` prints just the tail of a long `--watch` run's log. |
-| `branchdiff auto log delete --id <runId>` | Removes that one run's logs, on every day it recorded any. |
-| `branchdiff auto log delete --date 2026-09-03` | Removes a whole day. |
-| `branchdiff auto log delete` | Removes all of them. |
+| Command                                        | Does                                                                                                                                                                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `branchdiff auto log list`                     | Every recorded run, grouped under the day it ran, with size and the time of each file. `--date 2026-09-03` narrows to one day; `--json` for scripts (each run carries its `date` and whether it's still `live`). |
+| `branchdiff auto log view --id <runId>`        | Prints that run's log, oldest file first. `--lines <n>` prints just the tail of a long `--watch` run's log.                                                                                                      |
+| `branchdiff auto log delete --id <runId>`      | Removes that one run's logs, on every day it recorded any.                                                                                                                                                       |
+| `branchdiff auto log delete --date 2026-09-03` | Removes a whole day.                                                                                                                                                                                             |
+| `branchdiff auto log delete`                   | Removes all of them.                                                                                                                                                                                             |
 
 Deleting asks first, and `--force` skips the prompt — see [Destructive commands ask first](#destructive-commands-ask-first). A run that's still going is never deleted out from under itself; stop it first. `branchdiff info` reports how much space these logs take.
 
@@ -1774,9 +1788,9 @@ Deleting asks first, and `--force` skips the prompt — see [Destructive command
 
 **Size cap.** One file stops growing past its cap — the size `--log` was given (KB/MB/GB or a bare byte count, parsed once at startup so a bad value never starts a run; 100 KB is the floor, since below it the head share and marker line the cap machinery reserves can't both fit), or 10 MB when it was given none. The tee keeps an in-memory byte count (no `stat` per write — a chatty child emits hundreds of appends a second) and, once it passes the cap, the file is rewritten keeping a bounded head — up to a fifth of the cap, enough to comfortably outlast the invocation/flags header and the run's earliest output — plus as much of the tail as fits once room for the marker line itself is set aside, with that line naming how much of the middle was dropped and how much of the tail survived. The rewrite trims to 90% of the cap rather than to the cap itself, so there's real headroom for new output before the file needs capping again — without that, a chatty run would sit right up against the cap and re-trigger this same whole-file rewrite on nearly every subsequent write. Both cuts land on a line boundary — the head at the last one at or before its budget, the tail at the first one at or after its own — falling back to a byte-wise cut only when the relevant side has no line boundary to land on at all (one enormous unbroken line). Because the head is always read from the start of the file, it survives every later cap unchanged; only the middle between it and the growing tail keeps shrinking. The byte count re-syncs from the file each time the cap fires.
 
-**Clocks.** The date directory and the file name are both local wall-clock, read from one clock, so the path is a single coherent moment — the day you'd call it, at the time you'd call it. Every timestamp *inside* the file is a full UTC ISO-8601 instant, so parsing is never ambiguous. A `--watch` run crossing midnight keeps the directory it started in rather than splitting in two.
+**Clocks.** The date directory and the file name are both local wall-clock, read from one clock, so the path is a single coherent moment — the day you'd call it, at the time you'd call it. Every timestamp _inside_ the file is a full UTC ISO-8601 instant, so parsing is never ambiguous. A `--watch` run crossing midnight keeps the directory it started in rather than splitting in two.
 
-**One file per detached run.** `--detach` already has to send the background process's output somewhere; with `--log` that somewhere *is* the run's log file, so a detached run produces exactly one file rather than a raw copy beside a timestamped one. `auto attach <sessionId>` tails that same file, which means a detached run started with `--log` gets a timestamped `attach` as well. Anything that bypasses normal output — a crash trace — still lands in it, untimestamped, which is exactly where you'd want to find it.
+**One file per detached run.** `--detach` already has to send the background process's output somewhere; with `--log` that somewhere _is_ the run's log file, so a detached run produces exactly one file rather than a raw copy beside a timestamped one. `auto attach <sessionId>` tails that same file, which means a detached run started with `--log` gets a timestamped `attach` as well. Anything that bypasses normal output — a crash trace — still lands in it, untimestamped, which is exactly where you'd want to find it.
 
 **Without `--log`, the session log still goes through the same tee.** A `--detach`/cron run's `~/.branchdiff/auto-sessions/<sessionId>.log` gets the same timestamped lines and the same capping as a run log, at the 10 MB default — a size handed to `--log` shapes that run's log, and a session log belongs to a run that never asked for one. What `--log` adds is the date-filed layout and the list/read/delete tooling over it. A foreground run without `--log` writes only to its terminal.
 
@@ -1786,14 +1800,14 @@ Deleting asks first, and `--force` skips the prompt — see [Destructive command
 
 #### Managing sessions
 
-| Command | Does |
-|---|---|
-| `branchdiff auto list` | Every running `auto`: foreground runs in other terminals too, alongside every `--detach`/cron session (id, repo(s), pid, mode, watch interval, log path). `--json` for scripts. |
-| `branchdiff auto attach <id>` | Read-only tail of that session's log — Ctrl-C stops watching only, never the session itself. An already-ended session prints its existing tail once and exits. |
-| `branchdiff auto log list` | The runs recorded with [`--log`](#run-logs-log), grouped by day. `auto list` also points at a running session's own log directly when it has one. |
-| `branchdiff auto stop <id>` | Sends the same `SIGINT` a foreground Ctrl-C would — releases repo locks, retires servers, logs `Stopped.`. Stopping an id already gone is a clean no-op, not an error. |
-| `branchdiff auto stop <pid>` | Same `SIGINT`, aimed at a **foreground** run by pid instead of a session id (a plain number is never a session id — those are UUIDs). Stopping your own pid, or a pid that's already gone, refuses/no-ops cleanly instead of erroring. The stopped run logs `Stopped — requested from another terminal (\`branchdiff auto stop\`).` instead of a bare `Stopped.`, so its own terminal shows it wasn't a local Ctrl-C. |
-| `branchdiff auto stopall` | Stops every live `auto` session in one call — registered, cron, or unregistered, across every repo (unscoped, like `killall`). Prints one line per session (stopped / already gone / failed) plus a summary count; a failure on one session never skips the rest. Nothing running is a clean, non-error message. |
+| Command                       | Does                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `branchdiff auto list`        | Every running `auto`: foreground runs in other terminals too, alongside every `--detach`/cron session (id, repo(s), pid, mode, watch interval, log path). `--json` for scripts.                                                                                                                                                                                                                                       |
+| `branchdiff auto attach <id>` | Read-only tail of that session's log — Ctrl-C stops watching only, never the session itself. An already-ended session prints its existing tail once and exits.                                                                                                                                                                                                                                                        |
+| `branchdiff auto log list`    | The runs recorded with [`--log`](#run-logs-log), grouped by day. `auto list` also points at a running session's own log directly when it has one.                                                                                                                                                                                                                                                                     |
+| `branchdiff auto stop <id>`   | Sends the same `SIGINT` a foreground Ctrl-C would — releases repo locks, retires servers, logs `Stopped.`. Stopping an id already gone is a clean no-op, not an error.                                                                                                                                                                                                                                                |
+| `branchdiff auto stop <pid>`  | Same `SIGINT`, aimed at a **foreground** run by pid instead of a session id (a plain number is never a session id — those are UUIDs). Stopping your own pid, or a pid that's already gone, refuses/no-ops cleanly instead of erroring. The stopped run logs ``Stopped — requested from another terminal (`branchdiff auto stop`).`` instead of a bare `Stopped.`, so its own terminal shows it wasn't a local Ctrl-C. |
+| `branchdiff auto stopall`     | Stops every live `auto` session in one call — registered, cron, or unregistered, across every repo (unscoped, like `killall`). Prints one line per session (stopped / already gone / failed) plus a summary count; a failure on one session never skips the rest. Nothing running is a clean, non-error message.                                                                                                      |
 
 Sessions covering different repos (or repo sets) are fully independent — distinct session id, distinct log file, each repo's own lock. Stopping one never touches another.
 
@@ -1825,11 +1839,11 @@ branchdiff auto cron removeall                 # removes every schedule, incl. o
 
 - `cron add` prints exactly what it just scheduled right under the confirmation — the crontab lines (Linux) or LaunchAgent plist paths (macOS) — so you can see it without a separate lookup.
 - **Also from the browser** — the Stats page's Cron schedules panel (see [Stats / dashboard](#stats-dashboard)) lists every schedule live, alongside a Kill/Stop/Remove action per row, so day-to-day management doesn't need a terminal at all — `auto cron add`/`removeall` and the standing-trust prompt above still need the CLI.
-- Naming repos explicitly (`--repo-paths "~/work/api,~/work/web"`) shows no prompt. Naming a **folder** shows a one-time **standing-trust** prompt first: any repo added to that folder *in the future* gets reviewed/pushed/verdicted automatically too, not only the repos listed today. Declining writes nothing.
+- Naming repos explicitly (`--repo-paths "~/work/api,~/work/web"`) shows no prompt. Naming a **folder** shows a one-time **standing-trust** prompt first: any repo added to that folder _in the future_ gets reviewed/pushed/verdicted automatically too, not only the repos listed today. Declining writes nothing.
 - **`--repo-paths` must be an absolute or `~/`-prefixed path, never a bare relative name.** `cron`/`crond` always runs jobs from `$HOME`, not the directory you were in when you ran `cron add` — a relative `--repo-paths "api,web"` looks fine when you add it, then silently does nothing at every single fire. This is the single most common cron setup mistake; see the Technical breakdown below for how to spot and fix it.
 - **`--notify` under cron just works** — no env vars to add yourself. Run `cron add ...` with `--notify` from your normal desktop session (not `sudo`, not a headless SSH session) and toasts fire on schedule exactly like a foreground `--notify` run. Skip it on a genuinely headless server.
 - **No catch-up.** A schedule only fires at the exact wall-clock minute it matches, and only while the scheduler itself is running — a minute missed to a sleeping/rebooting machine is skipped, never queued or replayed. Added the schedule after today's `--start` already passed? Today's window just doesn't run; see the Technical breakdown below for how to cover the gap by hand.
-- **More than one window a day** (e.g. 11am–1pm *and* 3pm–6pm)? Run `auto cron add` once per window — each gets its own tagged start/stop pair (`auto cron list` / `auto cron remove --id`), and both share each repo's lock so overlapping windows never double-review a PR.
+- **More than one window a day** (e.g. 11am–1pm _and_ 3pm–6pm)? Run `auto cron add` once per window — each gets its own tagged start/stop pair (`auto cron list` / `auto cron remove --id`), and both share each repo's lock so overlapping windows never double-review a PR.
 - Unix only (launchd on macOS, `cron`/`crond` on Linux) — `--detach` itself has no such constraint. `--detach`/`--yes` join the other launch-wide `auto` config keys too — see [Config File](#config-file) below.
 
 <details>
@@ -1844,11 +1858,13 @@ branchdiff auto cron removeall                 # removes every schedule, incl. o
 **On macOS, schedules run via a per-user LaunchAgent, not crontab** — a plain crontab job needs Full Disk Access since Catalina or cron silently kills it before exec, so `cron add` sidesteps that entirely on macOS (`launchctl`-loaded, survives reboots, no manual setup step). The `--start`/`--end` vocabulary maps straight onto launchd's `StartCalendarInterval` fields; the two plists (`<cronId>.start`/`.end`) live in `~/Library/LaunchAgents`, logs in `~/.branchdiff/launchd/`. On an always-on Linux server, confirm `cron` itself resumes after a reboot with `systemctl is-enabled cron` (`sudo systemctl enable --now cron` if not) — there's no branchdiff-side mechanism to re-arm a window missed while the machine was down either way.
 
 **Covering a gap by hand** (missed today's `--start`, or added the schedule late): fire the same invocation manually, dropping `--start`/`--end` and adding `--detach` yourself:
+
 ```bash
 branchdiff auto --repo-paths "repo-a,repo-b" \
   --tool claude --review --push --skip-author --approve --request-changes \
   --keep-servers 0 --watch 10 --detach
 ```
+
 This registers as a plain `manual` session (no `cronId`) sharing each repo's lock with the scheduled runs, so nothing double-reviews. The cron `--end` line only stops sessions tagged with its own `cronId`, so stop this one yourself when done (`branchdiff auto stop <sessionId>` from `auto list`). `auto list` shows every session — manual and cron alike — in one combined list, with a `mode` column (`manual` vs `cron (<cronId>)`) telling them apart; `auto cron list` shows schedules only (start/end expressions, next/last fire, running/waiting/idle), with no pid/log — that's what `auto list`/`attach` are for.
 
 **Stopping and reconciliation.** `auto stop --cron-id <cronId>` resolves to the same stop logic as stopping by session id, and finds a schedule's live session even when its registry entry is missing, as long as its per-repo lock is still held. A session stopped this way, or by `cron remove`/`removeall`, logs which command asked for the stop in its own terminal, so it's never mistaken for a local Ctrl-C.
@@ -1911,7 +1927,7 @@ branchdiff's self-hosted alternative to a hosted bot like CodeRabbit — your in
      --tool claude --review --push --skip-author --approve --request-changes \
      --keep-servers 0 --watch 10 --notify
    ```
-   `--approve`/`--request-changes` without `--push` only ever write a local reasoning comment — never the remote verdict — so this combination needs both to actually act unattended (see the verdict rows in [Which flags for which scenario](#automatic-pr-review-branchdiff-auto) above). `--keep-servers 0` is worth adding here specifically: nobody's opening the browser UI on a headless bot server, so there's no reason to leave any session server resident between cycles — it retires every server this run spawned at the end of each cycle instead of the default (a single named repo has *no* sweep at all otherwise — every server stays up forever). `--keep-servers` is an explicit override regardless of repo count, so `0` applies the same way to a one-repo `auto` run as it does here with two. `--watch 10` cycles every 10 minutes for the whole window instead of a single pass — this is what makes a 10am–8pm schedule actually keep reviewing all day rather than firing once at 10am and stopping; `--notify` fires a desktop notification on each start/done/push/failure, useful for a machine you're at (skip it on a headless server with no one to see it). Every flag here is baked verbatim into the generated script (see above) — nothing to remember or re-type at fire time, and no `--` separator needed before them; the crontab line this all sits behind stays a short, fixed shape regardless of how many flags this example has.
+   `--approve`/`--request-changes` without `--push` only ever write a local reasoning comment — never the remote verdict — so this combination needs both to actually act unattended (see the verdict rows in [Which flags for which scenario](#automatic-pr-review-branchdiff-auto) above). `--keep-servers 0` is worth adding here specifically: nobody's opening the browser UI on a headless bot server, so there's no reason to leave any session server resident between cycles — it retires every server this run spawned at the end of each cycle instead of the default (a single named repo has _no_ sweep at all otherwise — every server stays up forever). `--keep-servers` is an explicit override regardless of repo count, so `0` applies the same way to a one-repo `auto` run as it does here with two. `--watch 10` cycles every 10 minutes for the whole window instead of a single pass — this is what makes a 10am–8pm schedule actually keep reviewing all day rather than firing once at 10am and stopping; `--notify` fires a desktop notification on each start/done/push/failure, useful for a machine you're at (skip it on a headless server with no one to see it). Every flag here is baked verbatim into the generated script (see above) — nothing to remember or re-type at fire time, and no `--` separator needed before them; the crontab line this all sits behind stays a short, fixed shape regardless of how many flags this example has.
 6. **Check it.** `branchdiff auto cron list` shows each schedule's live status (`running`/`waiting`/`idle`) plus its next and last fire times, so you can confirm the bot is alive without waiting for it to fire:
    ```
      a1b2c3d4  0 10 * * 1-5 → 0 20 * * 1-5        [running]
@@ -1935,18 +1951,21 @@ Connect branchdiff to GitHub and Bitbucket: view PRs, sync comments both ways, a
 Sync review comments between branchdiff and GitHub PRs.
 
 **Prerequisites:**
+
 1. Install the [GitHub CLI](https://cli.github.com): `gh --version`
 2. Authenticate: `gh auth login`
 3. Your repo's git remote must point to `github.com`
 4. A PR must be open for your current branch
 
 **Required token scopes.** `gh auth login`'s default browser/device flow already grants everything branchdiff needs — nothing extra to configure for a normal account. The one scope that actually matters is **`repo`** (read/write on pull requests: view, checkout, comment, approve, request changes). Two cases need more:
+
 - **An org enforcing SAML SSO on private repos** also needs **`read:org`**, plus that token authorized for the org: `gh auth refresh -s read:org` and re-authorize when GitHub prompts.
 - **A fine-grained PAT** instead of the classic OAuth flow needs `Pull requests: Read and write` + `Contents: Read` on the repos branchdiff will touch (same as the bot-account setup below).
 
 Check current scopes any time with `gh auth status`. A 403 with wording like "Resource not accessible" or naming a missing scope means the token is authenticated but under-scoped — `gh auth refresh -s repo,read:org` fixes it without a full re-login; this is different from an actual auth failure (`gh auth login` again) or a rate limit (wait and retry) — see [When a PR's session fails to start](#when-a-prs-session-fails-to-start) for how `auto`/`review run` tell these apart.
 
 **Push local comments to GitHub:**
+
 1. Write comments in branchdiff (manually or via AI review)
 2. Click the PR number button in the toolbar (e.g. `#42`)
 3. Click **Push to PR** — each single-comment thread is posted as an inline review comment
@@ -1954,6 +1973,7 @@ Check current scopes any time with `gh auth status`. A 403 with wording like "Re
 **Pull GitHub comments into branchdiff:**
 
 branchdiff pulls automatically the moment a session opens against a PR-linked branch pair — no click required — so the discussion is already there the first time you look. Duplicate comments are skipped on every pull, so a manual pull afterwards is always safe to re-run:
+
 1. Click the PR number button
 2. Click **Pull from PR** — all review comments from the GitHub PR are imported as local threads
 3. Duplicate comments are automatically skipped
@@ -1961,6 +1981,7 @@ branchdiff pulls automatically the moment a session opens against a PR-linked br
 Every pulled thread remembers its PR-side comment id. A later push matches the PR comment by that identity — even if the PR's line numbers or the comment wording have drifted — and only adds genuinely new replies, so a comment that originated on the PR keeps its original author; it is never re-posted under your account.
 
 **Sync All (pull + push in one click):**
+
 1. Click the PR number button
 2. Click **Sync All** — pulls remote comments first, then pushes any remaining local unsynced threads
 
@@ -1971,6 +1992,7 @@ Push and Sync All pick up every thread with unsynced local changes, plus — via
 **Per-thread sync badge:**
 
 Every comment thread shows a small GitHub icon with a colored dot when a PR is active. The badge sits between the Collapse button and the Delete icon in the thread header:
+
 - **Green dot** — thread is synced with the remote PR (was pushed or pulled from it)
 - **Amber dot** — thread has not yet been pushed to the PR
 
@@ -2024,6 +2046,7 @@ chmod 600 ~/.branchdiff/credentials.json
 **Viewing and Syncing Bitbucket PRs**
 
 View a Bitbucket PR by pasting its URL:
+
 ```bash
 branchdiff https://bitbucket.org/workspace/repo/pull-requests/123
 ```
@@ -2035,15 +2058,18 @@ Push and pull review comments identically to GitHub — click the PR number butt
 When comparing two branches and no PR exists, branchdiff shows an "Open a Pull Request" button in the toolbar platform pill.
 
 **GitHub:**
+
 - Requires GitHub CLI installed and authenticated (same as PR sync)
 - Uses `gh pr create` — the branch must be pushed to the remote first
 - Source branch (b2) and destination branch (b1) are auto-detected from the comparison
 
 **Bitbucket:**
+
 - Requires Bitbucket credentials configured (same as PR sync)
 - Source and destination branches are auto-detected from the comparison
 
 **Steps:**
+
 1. Start a branch comparison (e.g., `branchdiff main..feature`)
 2. If no PR exists, the toolbar shows a yellow dot with the platform icon
 3. Click the pill to expand the details popup
@@ -2057,19 +2083,19 @@ When comparing two branches and no PR exists, branchdiff shows an "Open a Pull R
 
 When a PR already exists, the toolbar platform pill becomes a **dropdown menu**. Click the PR badge (e.g. `#42`) to see all available actions:
 
-| Action | What it does | Confirmation? |
-|--------|-------------|---------------|
-| **Approve** | Submit an approval review — tick **also post review comments** to push your pending local threads to the PR as part of approving | No — executes immediately (the confirm dialog appears when posting comments) |
-| **Request Changes** | Submit a changes-requested review with an optional comment | Yes |
-| **Comment** | Submit a review comment without approval/rejection | Yes — comment is required |
-| **Merge** | Merge the pull request | Yes — warning displayed (GitHub supports merge, squash, and rebase strategies) |
-| **Close PR** | Close/decline the PR without merging | Yes — warning displayed |
-| **Reopen PR** | Reopen a previously closed PR | No — only shown for closed PRs |
-| **Mark Ready for Review** | Convert draft → ready | No — only shown for draft PRs |
-| **Mark as Draft** | Convert ready → draft | No — only shown for open PRs |
-| **Edit Title/Description** | Edit the PR title and body inline — the existing description loads verbatim (images and HTML included), with the same Write/Preview toggle and Insert row (Commit history, Change map) the [create-PR dialog](#creating-pull-requests-from-the-ui) has; an emptied description box clears the PR's description only when one was actually there | Opens edit modal with ⌘+Enter to save |
-| **Sync Comments** | Open the comment sync dialog (Pull, Push, and Sync All) | No |
-| **Open in Browser** | Open PR on GitHub/Bitbucket | Opens in new tab |
+| Action                     | What it does                                                                                                                                                                                                                                                                                                                                    | Confirmation?                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Approve**                | Submit an approval review — tick **also post review comments** to push your pending local threads to the PR as part of approving                                                                                                                                                                                                                | No — executes immediately (the confirm dialog appears when posting comments)   |
+| **Request Changes**        | Submit a changes-requested review with an optional comment                                                                                                                                                                                                                                                                                      | Yes                                                                            |
+| **Comment**                | Submit a review comment without approval/rejection                                                                                                                                                                                                                                                                                              | Yes — comment is required                                                      |
+| **Merge**                  | Merge the pull request                                                                                                                                                                                                                                                                                                                          | Yes — warning displayed (GitHub supports merge, squash, and rebase strategies) |
+| **Close PR**               | Close/decline the PR without merging                                                                                                                                                                                                                                                                                                            | Yes — warning displayed                                                        |
+| **Reopen PR**              | Reopen a previously closed PR                                                                                                                                                                                                                                                                                                                   | No — only shown for closed PRs                                                 |
+| **Mark Ready for Review**  | Convert draft → ready                                                                                                                                                                                                                                                                                                                           | No — only shown for draft PRs                                                  |
+| **Mark as Draft**          | Convert ready → draft                                                                                                                                                                                                                                                                                                                           | No — only shown for open PRs                                                   |
+| **Edit Title/Description** | Edit the PR title and body inline — the existing description loads verbatim (images and HTML included), with the same Write/Preview toggle and Insert row (Commit history, Change map) the [create-PR dialog](#creating-pull-requests-from-the-ui) has; an emptied description box clears the PR's description only when one was actually there | Opens edit modal with ⌘+Enter to save                                          |
+| **Sync Comments**          | Open the comment sync dialog (Pull, Push, and Sync All)                                                                                                                                                                                                                                                                                         | No                                                                             |
+| **Open in Browser**        | Open PR on GitHub/Bitbucket                                                                                                                                                                                                                                                                                                                     | Opens in new tab                                                               |
 
 **GitHub** uses the `gh` CLI for all operations (requires `gh auth login`). **Bitbucket** uses the REST API (requires configured credentials).
 
@@ -2117,7 +2143,7 @@ Push shows created/updated/skipped counts. Pull shows new threads, new replies, 
 
 **Every comment shows its file:line and review commit — locally and once pushed.** An inline comment's first message carries a `` `file:line` · reviewed at `<sha>` `` line under the body (shown in the local UI, and appended when `sync push`/`push-thread` sends it to GitHub/Bitbucket). A general comment (not tied to a file/line) instead carries the review commit plus a `file:line` list of the inline findings pushed in the same batch, since it has nothing of its own to anchor to. This is display-only — the footer is never written into the stored comment body, so it never duplicates on a re-push and stays out of exports. Replies don't carry it, only a thread's first comment.
 
-**Resolved and dismissed threads sync too.** Push reaches every thread with a local change — resolving or dismissing a thread (with its summary reply), editing a comment, replying as the agent, or deleting a comment all mark that thread for the next push — so the resolution rationale and any dismissal decision reach the PR for other reviewers, not just open-thread comments. A reply pulled *from* the PR is the one case that doesn't re-queue, since it's already there. GitHub and Bitbucket both receive the root comment and its replies the same way. A pushed resolved or dismissed thread is also **closed on the PR**, not just its text — the same push that lands the summary reply marks the PR thread resolved (GitHub review threads resolve, Bitbucket comments resolve), so other reviewers see the rationale *and* the thread stops demanding attention. This mirror is best-effort alongside the comment push; it never fails the push itself.
+**Resolved and dismissed threads sync too.** Push reaches every thread with a local change — resolving or dismissing a thread (with its summary reply), editing a comment, replying as the agent, or deleting a comment all mark that thread for the next push — so the resolution rationale and any dismissal decision reach the PR for other reviewers, not just open-thread comments. A reply pulled _from_ the PR is the one case that doesn't re-queue, since it's already there. GitHub and Bitbucket both receive the root comment and its replies the same way. A pushed resolved or dismissed thread is also **closed on the PR**, not just its text — the same push that lands the summary reply marks the PR thread resolved (GitHub review threads resolve, Bitbucket comments resolve), so other reviewers see the rationale _and_ the thread stops demanding attention. This mirror is best-effort alongside the comment push; it never fails the push itself.
 
 #### Session management
 
@@ -2140,23 +2166,23 @@ Run and maintain branchdiff: keyboard map, shell completion, manage instances, m
 
 ## Keyboard shortcuts
 
-| Key | Action |
-|---|---|
-| `j` / `k` | Next / previous file |
-| `n` / `p` | Next / previous hunk |
+| Key       | Action                             |
+| --------- | ---------------------------------- |
+| `j` / `k` | Next / previous file               |
+| `n` / `p` | Next / previous hunk               |
 | `Shift+C` | Toggle the sidebar's Commits panel |
-| `Shift+F` | Toggle the sidebar's Files panel |
-| `u` | Unified view |
-| `s` | Split view |
-| `f` | Full file view |
-| `m` | Open change map |
-| `w` | Hide / show whitespace |
-| `x` | Collapse / expand current file |
-| `Shift+X` | Collapse / expand all files |
-| `r` | Toggle file as viewed |
-| `/` | Focus search |
-| `?` | Show keyboard shortcuts |
-| `Esc` | Close modal / blur search |
+| `Shift+F` | Toggle the sidebar's Files panel   |
+| `u`       | Unified view                       |
+| `s`       | Split view                         |
+| `f`       | Full file view                     |
+| `m`       | Open change map                    |
+| `w`       | Hide / show whitespace             |
+| `x`       | Collapse / expand current file     |
+| `Shift+X` | Collapse / expand all files        |
+| `r`       | Toggle file as viewed              |
+| `/`       | Focus search                       |
+| `?`       | Show keyboard shortcuts            |
+| `Esc`     | Close modal / blur search          |
 
 ---
 
@@ -2203,26 +2229,26 @@ branchdiff completion bash > ~/.local/share/bash-completion/completions/branchdi
 
 ### What gets completed
 
-| Context | Completions offered |
-|---|---|
-| First positional arg | All git branches (local + remote), `staged`, `unstaged`, `HEAD`, `.`, subcommands |
-| Second positional arg | All git branches (for two-ref comparison) |
-| `--mode` | `file`, `git`, `delta` |
-| `--base` / `--compare` | All git branches |
-| `branchdiff review <tab>` | `context`, `threads`, `import`, `run`, `skill`, `guide` |
-| `branchdiff review context <tab>` | `--format`, `--files`, `--full-files`, `--no-instructions`, `--with-threads`, `--stack` |
-| `branchdiff review run <tab>` | `--exec`, `--mode`, `--prompt`, `--url`, `--dry-run`, `--files`, `--fresh`, `--worktree`, `--worktree-remove`, `--timeout`, `--notify`, `--stack` |
-| `branchdiff auto <tab>` | `--watch`, `--source`, `--dest`, `--tool`, `--exec`, `--review`, `--notify`, `--push`, `--approve`, `--request-changes`, `--worktree`, `--worktree-remove`, `--fresh`, `--timeout`, `--parallel`, `--skill`, `--skill-name`, `--additional-skill`, `--prompt` |
-| `--tool` | `claude`, `opencode`, `codex`, `gemini`, `cursor`, `llm`, `antigravity` |
-| `branchdiff history` / `show <tab>` | All git branches and refs |
-| `branchdiff skill add <tab>` | `--target`, `--dir`, `--out`, `--type`, `--name`, `--force` |
-| `branchdiff agent <tab>` | every agent subcommand, then `--session`, `--port`, `--yes` |
-| `branchdiff sync <tab>` | `push`, `pull`, `push-thread` |
-| `branchdiff pr <tab>` | `info`, `create`, `merge`, `approve`, `request-changes`, `close`, `reopen`, `draft`, `ready`, `edit`, `comment` |
-| `branchdiff session <tab>` | `current`, `archive`, `history`, `delete` |
-| `branchdiff list` / `killall <tab>` | `current` |
-| `branchdiff kill <tab>` | `--repo`, `--pid`, `--port`, `--worktree-remove` |
-| `branchdiff completion <tab>` | `install`, `zsh`, `bash` |
+| Context                             | Completions offered                                                                                                                                                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First positional arg                | All git branches (local + remote), `staged`, `unstaged`, `HEAD`, `.`, subcommands                                                                                                                                                                             |
+| Second positional arg               | All git branches (for two-ref comparison)                                                                                                                                                                                                                     |
+| `--mode`                            | `file`, `git`, `delta`                                                                                                                                                                                                                                        |
+| `--base` / `--compare`              | All git branches                                                                                                                                                                                                                                              |
+| `branchdiff review <tab>`           | `context`, `threads`, `import`, `run`, `skill`, `guide`                                                                                                                                                                                                       |
+| `branchdiff review context <tab>`   | `--format`, `--files`, `--full-files`, `--no-instructions`, `--with-threads`, `--stack`                                                                                                                                                                       |
+| `branchdiff review run <tab>`       | `--exec`, `--mode`, `--prompt`, `--url`, `--dry-run`, `--files`, `--fresh`, `--worktree`, `--worktree-remove`, `--timeout`, `--notify`, `--stack`                                                                                                             |
+| `branchdiff auto <tab>`             | `--watch`, `--source`, `--dest`, `--tool`, `--exec`, `--review`, `--notify`, `--push`, `--approve`, `--request-changes`, `--worktree`, `--worktree-remove`, `--fresh`, `--timeout`, `--parallel`, `--skill`, `--skill-name`, `--additional-skill`, `--prompt` |
+| `--tool`                            | `claude`, `opencode`, `codex`, `gemini`, `cursor`, `llm`, `antigravity`                                                                                                                                                                                       |
+| `branchdiff history` / `show <tab>` | All git branches and refs                                                                                                                                                                                                                                     |
+| `branchdiff skill add <tab>`        | `--target`, `--dir`, `--out`, `--type`, `--name`, `--force`                                                                                                                                                                                                   |
+| `branchdiff agent <tab>`            | every agent subcommand, then `--session`, `--port`, `--yes`                                                                                                                                                                                                   |
+| `branchdiff sync <tab>`             | `push`, `pull`, `push-thread`                                                                                                                                                                                                                                 |
+| `branchdiff pr <tab>`               | `info`, `create`, `merge`, `approve`, `request-changes`, `close`, `reopen`, `draft`, `ready`, `edit`, `comment`                                                                                                                                               |
+| `branchdiff session <tab>`          | `current`, `archive`, `history`, `delete`                                                                                                                                                                                                                     |
+| `branchdiff list` / `killall <tab>` | `current`                                                                                                                                                                                                                                                     |
+| `branchdiff kill <tab>`             | `--repo`, `--pid`, `--port`, `--worktree-remove`                                                                                                                                                                                                              |
+| `branchdiff completion <tab>`       | `install`, `zsh`, `bash`                                                                                                                                                                                                                                      |
 
 Branch names come from `git branch -a` at completion time, so remote branches appear once fetched.
 
@@ -2234,7 +2260,7 @@ Multiple repos open at once — each gets its own port starting at 5391. You can
 
 ### Interactive terminal picker — `branchdiff view`
 
-A full-screen alternative to the raw commands below — arrow keys (or `j`/`k`) to move, digits (shown next to each row) to jump straight to it, `Enter` to select, `Esc` to go back, `q` to quit from anywhere, `r` to refresh the current screen's counts on demand. Up to 9 rows, a single digit `1`-`9` jumps instantly; past 9 rows every row switches to a 2-digit code (`01` through the last row's number, shown next to each row). There too, a digit no code can start with jumps instantly — pressing `6` on a 16-row menu (nothing runs `60`-`69`) goes straight to row `06` — while any digit that *could* start a code waits briefly for its second keystroke before resetting. A shortcut legend stays pinned at the bottom of every screen, and the highlighted row shows a one-line hint naming what it does and its CLI equivalent. Lists longer than the terminal is tall — the browse list's multi-line instance rows, a repo-wide branch list in New comparison — scroll in place around the highlighted row rather than running past the bottom of the screen, with a dim `↑ N more above` / `↓ N more below` line naming what's hidden on either side:
+A full-screen alternative to the raw commands below — arrow keys (or `j`/`k`) to move, digits (shown next to each row) to jump straight to it, `Enter` to select, `Esc` to go back, `q` to quit from anywhere, `r` to refresh the current screen's counts on demand. Up to 9 rows, a single digit `1`-`9` jumps instantly; past 9 rows every row switches to a 2-digit code (`01` through the last row's number, shown next to each row). There too, a digit no code can start with jumps instantly — pressing `6` on a 16-row menu (nothing runs `60`-`69`) goes straight to row `06` — while any digit that _could_ start a code waits briefly for its second keystroke before resetting. A shortcut legend stays pinned at the bottom of every screen, and the highlighted row shows a one-line hint naming what it does and its CLI equivalent. Lists longer than the terminal is tall — the browse list's multi-line instance rows, a repo-wide branch list in New comparison — scroll in place around the highlighted row rather than running past the bottom of the screen, with a dim `↑ N more above` / `↓ N more below` line naming what's hidden on either side:
 
 ```bash
 branchdiff view
@@ -2290,24 +2316,135 @@ Requires the branchdiff CLI on your PATH (any [install method](#install) above).
 
 **Mirrors `view`'s scope split.** Like the terminal picker above, the extension never picks a scope for you — Stats and Instances each show as two rows, "(this repo)" and "(all repos)":
 
-| `branchdiff view` row | VS Code equivalent |
-|---|---|
-| Stats (this repo) / Stats (all repos) | Activity-bar / status-bar **Stats (this repo)** / **Stats (all repos)** |
-| Browse running instances (this repo) / (all repos) | Activity-bar / status-bar **Instances (this repo)** / **(all repos)** |
-| Kill all instances (this repo) / (all repos) | Status-bar quick-pick **Kill All Instances (This Repo / All Repos)** |
-| New comparison | Activity-bar **New comparison…** row, or the `branchdiff: Compare Branches…` command |
-| Config | Activity-bar **Configs** row |
-| Branches / History / Search code | Activity-bar **Branches** / **History** / **Search code** rows |
-| Auto sessions / Cron schedules | Activity-bar **Auto sessions** / **Cron schedules** rows |
-| Guideline / Changelog | Activity-bar **Guideline** / **Changelog** rows (open in browser) |
-| Quit | Close the editor tab — a server started outside the extension is never killed by it |
+| `branchdiff view` row                              | VS Code equivalent                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Stats (this repo) / Stats (all repos)              | Activity-bar / status-bar **Stats (this repo)** / **Stats (all repos)**              |
+| Browse running instances (this repo) / (all repos) | Activity-bar / status-bar **Instances (this repo)** / **(all repos)**                |
+| Kill all instances (this repo) / (all repos)       | Status-bar quick-pick **Kill All Instances (This Repo / All Repos)**                 |
+| New comparison                                     | Activity-bar **New comparison…** row, or the `branchdiff: Compare Branches…` command |
+| Config                                             | Activity-bar **Configs** row                                                         |
+| Branches / History / Search code                   | Activity-bar **Branches** / **History** / **Search code** rows                       |
+| Auto sessions / Cron schedules                     | Activity-bar **Auto sessions** / **Cron schedules** rows                             |
+| Guideline / Changelog                              | Activity-bar **Guideline** / **Changelog** rows (open in browser)                    |
+| Quit                                               | Close the editor tab — a server started outside the extension is never killed by it  |
 
 The two surfaces are hand-kept in sync rather than sharing code — `packages/vscode` is a standalone thin client with no dependency on CLI internals — so a change to one side of this table should always be checked against the other.
 
 <details>
 <summary>Technical breakdown</summary>
 
-The extension activates on workspace open, computing the workspace's repo hash the same way the CLI does and adopting a healthy registry match or spawning `branchdiff --no-open --quiet` as a foreground child it owns. The embedded editor tab is a `WebviewPanel` iframing the server root; keystrokes inside the cross-origin iframe are forwarded to VS Code's own keybindings via `postMessage`, and the app mirrors the editor's color theme for the session only, without touching its own persisted theme preference. See `docs/dev-guide/IDE-EXTENSIONS.md` for the full architecture and publishing setup.
+The extension activates on workspace open, computing the workspace's repo hash the same way the CLI does and adopting a healthy registry match or spawning `branchdiff --no-open --quiet` as a foreground child it owns. The embedded editor tab is a `WebviewPanel` iframing the server root; keystrokes inside the cross-origin iframe are forwarded to VS Code's own keybindings via `postMessage`, and the app mirrors the editor's color theme for the session only, without touching its own persisted theme preference.
+
+</details>
+
+### Zed
+
+No branchdiff extension exists for Zed yet — instead, a ready-made copyable `tasks.json` runs branchdiff commands from Zed's own task runner.
+
+**Setup:**
+
+1. Save the JSON below as `~/.config/zed/tasks.json` (global) — recommended, since branchdiff works the same in every repo. Use a project's own `.zed/tasks.json` instead only if you want these tasks in just that one repo — don't save it to both, or every task shows up twice in the picker.
+2. Open any git repo in Zed. No reload needed.
+
+```json
+[
+  {
+    "label": "branchdiff: Open picker (view)",
+    "command": "branchdiff view",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": true,
+    "reveal": "always",
+    "reveal_target": "center"
+  },
+  {
+    "label": "branchdiff: Stats (this repo)",
+    "command": "nohup branchdiff stats --repo >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: Stats (all repos)",
+    "command": "nohup branchdiff stats >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: Instances (this repo)",
+    "command": "branchdiff list current",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "reveal_target": "center"
+  },
+  {
+    "label": "branchdiff: Instances (all repos)",
+    "command": "branchdiff list",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "reveal_target": "center"
+  },
+  {
+    "label": "branchdiff: Branches",
+    "command": "nohup branchdiff branches >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: History",
+    "command": "nohup branchdiff history >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: Guideline",
+    "command": "nohup branchdiff guide >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: Changelog",
+    "command": "nohup branchdiff changelog >/dev/null 2>&1 & disown",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "hide": "on_success"
+  },
+  {
+    "label": "branchdiff: Kill server (this repo)",
+    "command": "branchdiff killall current",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "reveal_target": "center"
+  },
+  {
+    "label": "branchdiff: Kill server (all repos)",
+    "command": "branchdiff killall",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "reveal_target": "center"
+  }
+]
+```
+
+**What's included:** Open picker (drops into `view`'s full menu — Stats, Browse, New comparison, Branches, History, Search, Guideline, Changelog, Kill-all), Stats / Instances / Kill server each as a "(this repo)" and "(all repos)" pair, Branches, History, Guideline, and Changelog.
+
+**"Kill server (all repos)" stops every branchdiff instance on the machine**, not just this one, with no confirmation prompt. Reach for "Kill server (this repo)" unless you mean every repo.
+
+**Running one:**
+
+1. `Cmd-Shift-R` (macOS) / `Alt-Shift-T` (Linux/Windows) opens the task picker directly. (`Cmd-Shift-P` / `Ctrl-Shift-P` → `task: spawn` also works.)
+2. Pick a task and press Enter.
+3. A printed `http://localhost:<port>/...` URL is clickable — modifier+click it (Cmd+click on macOS, Ctrl+click elsewhere) to open the browser.
+
+<details>
+<summary>Technical breakdown</summary>
+
+Stats/Branches/History/Guideline/Changelog run as `nohup <cmd> >/dev/null 2>&1 & disown` instead of the plain command. These commands own a dashboard server that keeps running after opening the browser (shared across repos so closing one review session never disturbs another), and without backgrounding, the CLI itself would sit in the foreground indefinitely on a fresh server, holding its Zed task tab open forever. Backgrounding returns control to the task immediately every time, so `hide: on_success` reliably closes the tab regardless of whether that run started a fresh server or reused one — the server itself keeps running detached from the terminal, exactly as it's meant to. Trade-off: output is discarded (`>/dev/null`), so a real failure here (e.g. `branchdiff` not on `PATH`) fails silently instead of showing an error — acceptable since the browser tab (or its absence) is already the signal.
+
+`Instances` and `Kill server` never spawn a server (registry-file only) and always exit immediately, so they don't need this.
 
 </details>
 
@@ -2340,7 +2477,7 @@ Rerunning `branchdiff` with the **same ref pair** in a repo that already has a r
 
 ### Stale-tab protection across port reuse
 
-If you stop branchdiff and later run a *different* review session on the same port (e.g. port 5391 hosted PR1's review, then later hosts PR2's), any browser tab still pointed at that port will not silently show the new session's comments. branchdiff handles this in two layers:
+If you stop branchdiff and later run a _different_ review session on the same port (e.g. port 5391 hosted PR1's review, then later hosts PR2's), any browser tab still pointed at that port will not silently show the new session's comments. branchdiff handles this in two layers:
 
 - Every API request from the UI carries an `X-Branchdiff-Server-Id` header. The server rejects requests carrying the previous process's id with `409 STALE_SERVER`.
 - The UI also polls `/api/info` and detects the mismatch, then shows an amber banner ("a new review session is running on this port — this tab's session is no longer active") with a **Refresh** button. All API traffic is gated until you refresh.
@@ -2412,11 +2549,11 @@ branchdiff import backup.json --dry-run                # preview without writing
 
 **Conflict strategies:**
 
-| Strategy | Behaviour |
-|---|---|
-| `merge` (default) | Keep whichever version has the newer timestamp |
-| `skip` | Leave existing data untouched, ignore incoming duplicates |
-| `overwrite` | Replace existing sessions with the imported version |
+| Strategy          | Behaviour                                                 |
+| ----------------- | --------------------------------------------------------- |
+| `merge` (default) | Keep whichever version has the newer timestamp            |
+| `skip`            | Leave existing data untouched, ignore incoming duplicates |
+| `overwrite`       | Replace existing sessions with the imported version       |
 
 Sessions are matched by their semantic key (`branch1 + branch2` for branch comparisons, `ref + HEAD hash` for snapshots) — not UUID. This prevents duplicate ghost sessions when importing across machines.
 
@@ -2425,6 +2562,7 @@ A round-trip preserves everything: PR number/platform/description, files/lines r
 ### UI
 
 Both Export and Import are also available in the **3-dot menu** (⋯) on the diff view and file browser:
+
 - **Export** — opens a checklist of sessions; select which to include and download the file. The downloaded filename includes the repository name and timestamp (e.g. `branchdiff-export-my-repo-2026-01-15_10-30-00.json`).
 - **Import** — upload a `.json` export file, choose conflict strategy, and confirm. A warning appears if the file came from a different repository.
 
@@ -2438,26 +2576,30 @@ See how much branchdiff has actually reviewed for you — reviews run, comments 
 branchdiff stats                          # opens the /stats dashboard (last 30 days by default)
 branchdiff stats --repo                   # scope to the current repo only (default: all repos)
 branchdiff stats --no-open                # print a text summary to stdout instead
-branchdiff stats --json                   # machine-readable JSON (for scripts)
+branchdiff stats --json                   # machine-readable JSON (for scripts — also what the dashboard's visualize view accepts)
 branchdiff stats --share                  # a shareable markdown summary block
 branchdiff stats --days 30 --no-open      # time-window: last N days (default 30; --days 0 = all time)
 branchdiff stats --since 2026-07-01 --until 2026-07-31 --no-open   # explicit range
 branchdiff stats --today --no-open        # time-window: today only
 branchdiff stats --json --sections sessions   # only compute some sections of the JSON
+branchdiff stats --file                   # write the JSON to an auto-named file instead of stdout — no more copying long output out of a terminal
+branchdiff stats --file my-stats.json     # or a name of your own
+branchdiff stats --share --file           # writes the markdown summary to a file instead
 ```
 
 `--sections` (comma-separated: `totals,charts,prs,sessions`) is a scripting knob for `--json` — compute only the pieces a script actually reads instead of the whole aggregate. Each value's name matches a section on the dashboard (same names the **What's stats?** glossary uses):
 
-| `--sections` value | Dashboard section(s) it feeds | What it computes |
-|---|---|---|
-| `totals` | **Overview** (the KPI tiles and highlight pills) and **Repos** (the per-repo table); also backs the verdict, Resolved, and thread-status pies and the repo bar chart inside **Charts** | Summary counts — reviews, threads, comments, replies, verdicts, resolved, severity, My activity/Whole PR splits, files/lines — plus aggregate token usage (tokens, cost, untracked-session count), repeated per repo |
-| `charts` | **Trends** (the reviews/comments time series) and the Token usage panel + Total/By repo toggle inside **Charts** | The by-date/by-tool series: reviews, comments, my-comments, tokens, and a per-tool token/cost breakdown |
-| `prs` | **PRs** (the Recent PRs table) | One row per PR: pass count, verdict, severity-tagged comment counts, resolved-thread fraction |
-| `sessions` | **Sessions** (the session-by-session table) | One row per review session: branches, files/lines, created/last-reviewed dates, tool, pass count, tokens, cost |
+| `--sections` value | Dashboard section(s) it feeds                                                                                                                                                          | What it computes                                                                                                                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `totals`           | **Overview** (the KPI tiles and highlight pills) and **Repos** (the per-repo table); also backs the verdict, Resolved, and thread-status pies and the repo bar chart inside **Charts** | Summary counts — reviews, threads, comments, replies, verdicts, resolved, severity, My activity/Whole PR splits, files/lines — plus aggregate token usage (tokens, cost, untracked-session count), repeated per repo |
+| `charts`           | **Trends** (the reviews/comments time series) and the Token usage panel + Total/By repo toggle inside **Charts**                                                                       | The by-date/by-tool series: reviews, comments, my-comments, tokens, and a per-tool token/cost breakdown                                                                                                              |
+| `prs`              | **PRs** (the Recent PRs table)                                                                                                                                                         | One row per PR: pass count, verdict, severity-tagged comment counts, resolved-thread fraction                                                                                                                        |
+| `sessions`         | **Sessions** (the session-by-session table)                                                                                                                                            | One row per review session: branches, files/lines, created/last-reviewed dates, tool, pass count, tokens, cost                                                                                                       |
 
 Anything not named comes back zeroed or empty rather than absent — the JSON's shape never changes — so one script can read either a full or a filtered response the same way. Invalid names are rejected with the valid list, so a typo can't silently zero half the output. The same filter is available over HTTP as `?sections=charts,prs` on the stats API the dashboard uses.
 
 The dashboard shows:
+
 - **KPI tiles** — reviews, comments, threads, replies, lines reviewed, files reviewed. Hover any tile for exactly what it counts — the Reviews tile breaks down branch-pair vs snapshot (a local ref/branch comparison with no PR attached counts too), and the rest note whether the My activity / Whole PR toggle affects them.
 - **Highlights** — resolution rate, approval rate, average comments/lines per review, tokens used, busiest day, longest daily streak. Each only appears when the underlying counts make it meaningful (no "0%" noise on a near-empty history). Dollar figures never print as static text anywhere in the dashboard — the Tokens used pill's hover shows estimated cost, same as the token chart and per-tool/per-repo breakdowns below. Token figures print compact everywhere in the dashboard (`2.06M`, not `2,056,792`) — pills, chart axes, per-tool and per-repo text — and every one of them carries the exact locale-formatted number on hover, so precision is one hover away.
 - **Charts** — verdict breakdown (approved / changes requested / commented) taken from branchdiff's own review verdict (`auto` / `review run`), so it populates for Bitbucket PRs as well as GitHub; plus thread status (open / resolved / dismissed), a resolved-by-whom split (you / resolve skill / platform), a reviews-and-comments time series (auto-downsampled to weekly/monthly over long windows), and a per-repo bar chart.
@@ -2487,10 +2629,10 @@ A **refresh icon at the top of the dashboard** reloads the whole page at once �
 
 **My activity vs Whole PR.** A toggle at the top of the dashboard switches the author-scoped numbers — comments, threads, replies, verdict breakdown, severity counts, and the trends comments series — between **My activity** (the default) and **Whole PR**:
 
-- **My activity** counts only *your* work: comments and verdicts from branchdiff's automated reviews, plus anything you did manually (a comment, approve, or request-changes — whether through branchdiff or directly on GitHub/Bitbucket, which branchdiff re-reads on its next pull). Other people's comments and other bots are excluded.
+- **My activity** counts only _your_ work: comments and verdicts from branchdiff's automated reviews, plus anything you did manually (a comment, approve, or request-changes — whether through branchdiff or directly on GitHub/Bitbucket, which branchdiff re-reads on its next pull). Other people's comments and other bots are excluded.
 - **Whole PR** counts everyone on the PR — you, teammates, and other bots.
 
-branchdiff's verdict is approve or request-changes only, so the **My activity** verdict pie has no "Commented" slice; switch to **Whole PR** to see teammates' commented reviews as a third slice. Reviews, lines, files, and passes are always yours regardless of the toggle (they are branchdiff sessions). **What's stats?**, next to the scope toggle, opens a scrollable explanation of every section on the dashboard plus a glossary defining each class. Your identity is resolved from `gh` (GitHub) and your Bitbucket credentials; if it can't be resolved, your manual actions can't be attributed and fall under Whole PR only.
+branchdiff's verdict is approve or request-changes only, so the **My activity** verdict pie has no "Commented" slice; switch to **Whole PR** to see teammates' commented reviews as a third slice. Reviews, lines, files, and passes are always yours regardless of the toggle (they are branchdiff sessions). **What's stats?**, next to the scope toggle, opens a scrollable explanation of every section on the dashboard plus a glossary defining each class; the upload icon in its header opens the visualize-paste view. Your identity is resolved from `gh` (GitHub) and your Bitbucket credentials; if it can't be resolved, your manual actions can't be attributed and fall under Whole PR only.
 
 **Resolved (by whom).** Every Resolve/Dismiss click or resolve-skill pass now records who acted, split into four slices: **You** (a Resolve/Dismiss click in the browser), **Resolve skill** (the resolve skill, `review import`, or `review run` applying an AI resolve), **Platform** (resolved directly on GitHub/Bitbucket — this can be a teammate, not just you), and **Other (pre-tracking)** for threads resolved before this attribution existed. This chart is always whole-repo and doesn't switch with the My activity / Whole PR toggle above — a local `reviews.db` has exactly one operator, so "You" and "Resolve skill" are already unambiguous without needing your login.
 
@@ -2498,9 +2640,19 @@ branchdiff's verdict is approve or request-changes only, so the **My activity** 
 
 **Sharing:** **Copy summary** copies a markdown block (the same shape `--share` prints) to your clipboard; **Export PNG** downloads the dashboard as an image, matching your current theme.
 
+**Visualize stats from anywhere.** The upload icon beside the close button in **What's stats?** opens a paste view: drop in the JSON output of `branchdiff stats --json` (run on any machine) and click **Visualize** to render it through this same dashboard — a teammate's numbers, a CI artifact, or an old snapshot, without loading anything into your server. While active, a **Viewing pasted data** badge marks the mode and a **Reset to original** button sits beside it; resetting or reloading the page returns to your own stats. On a remote machine with no browser handy, `branchdiff stats --file` writes that same JSON straight to a file — pull it over and paste its contents into this view. `--file`'s success message also prints an OS-appropriate one-liner (`pbcopy`/`clip`/`xclip`) to pipe the saved file straight to the clipboard, so an SSH session can skip opening the file at all.
+
+<details><summary>Technical breakdown</summary>
+
+The paste is validated against the exact shape the dashboard reads before anything renders — an invalid paste names the first missing key inline and keeps your text for fixing, it never partially renders. Accepted data lives in the tab only: nothing is persisted, sent to the server, or written to `~/.branchdiff`, and reload drops it.
+
+What changes while pasted data is shown: the preset chips, date range, scope toggle, **Refresh**, and **Platform activity** are disabled (they re-query this server, which isn't the data source anymore), and the live-server sections — **Instances**, **Auto sessions**, **Cron schedules**, **Configs** — are hidden along with their jump pills, since they'd show this machine's processes next to someone else's stats. The Sessions table's **Load more** is suppressed for the same reason. The My activity / Whole PR toggle, **Copy summary**, and **Export PNG** keep working — they derive from whatever data is displayed. The effective scope comes from the pasted payload's own `window.scope`, not the URL.
+
+</details>
+
 ### Platform activity
 
-The **Platform activity** button opens a modal that pulls *your* cross-platform pull-request activity — across **both GitHub and Bitbucket** — over a date range you choose, preseeded from the dashboard's current window, into four dimensions: **PRs authored**, **PRs approved/reviewed**, **Commits pushed**, and **Comments/reviews given**.
+The **Platform activity** button opens a modal that pulls _your_ cross-platform pull-request activity — across **both GitHub and Bitbucket** — over a date range you choose, preseeded from the dashboard's current window, into four dimensions: **PRs authored**, **PRs approved/reviewed**, **Commits pushed**, and **Comments/reviews given**.
 
 It's a query-builder, not an auto-load: you pick a date range, toggle which platforms and which dimensions you want, then click **Fetch**. Nothing runs until you do, so a quick glance at a single dimension costs only that one query. Each dimension carries a cost badge — **fast** (authored, approved: list searches), **medium** (commits), or **slow · per-PR walk** (comments, which has to fetch each PR's review history) — so you can drop the expensive one when all you need is a tally. The **fast** dimensions (authored, approved) come checked by default; the costlier **commits** and **comments** start unchecked, so the expensive ones are opt-in. While it runs, a spinner shows the two platforms fetching independently.
 
@@ -2529,33 +2681,33 @@ The per-platform tables: **commits** carries a **Ticket** column pulling each br
 
 ## Options
 
-| Flag | Description |
-|---|---|
-| `--mode <file\|git>` | Diff mode (default: `git`) |
-| `--port <n>` | Port (default: auto-assigns from 5391) |
-| `--no-open` | Don't auto-open browser |
-| `--dark` | Dark theme |
-| `--unified` | Unified view (default is split) |
-| `--quiet` | Minimal terminal output |
-| `--new` | Archive current session and start fresh |
-| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1). Use `-p 0` for unstaged-only view |
-| `--worktree` | With a GitHub or Bitbucket PR URL: check the PR out into `.worktrees/pr-<n>` instead of switching your working tree |
-| `--no-sync` | Skip fast-forwarding the compared branches from their remote first |
+| Flag                 | Description                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--mode <file\|git>` | Diff mode (default: `git`)                                                                                          |
+| `--port <n>`         | Port (default: auto-assigns from 5391)                                                                              |
+| `--no-open`          | Don't auto-open browser                                                                                             |
+| `--dark`             | Dark theme                                                                                                          |
+| `--unified`          | Unified view (default is split)                                                                                     |
+| `--quiet`            | Minimal terminal output                                                                                             |
+| `--new`              | Archive current session and start fresh                                                                             |
+| `-p, --previous [n]` | Compare branch against Nth previous commit (default: 1). Use `-p 0` for unstaged-only view                          |
+| `--worktree`         | With a GitHub or Bitbucket PR URL: check the PR out into `.worktrees/pr-<n>` instead of switching your working tree |
+| `--no-sync`          | Skip fast-forwarding the compared branches from their remote first                                                  |
 
 Subcommands have their own flags — `branchdiff <command> --help` lists them. Two appear on every `agent` and `review` subcommand:
 
-| Flag | Description |
-|---|---|
+| Flag             | Description                                 |
+| ---------------- | ------------------------------------------- |
 | `--session <id>` | Act on this session (see `branchdiff list`) |
-| `--port <n>` | Act on the session served on this port |
+| `--port <n>`     | Act on the session served on this port      |
 
 **Environment variables**
 
-| Variable | Effect |
-|---|---|
+| Variable                | Effect                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------- |
 | `BRANCHDIFF_SESSION_ID` | Pins every command in the shell to one session — no `--session`/`--port` needed |
-| `BRANCHDIFF_PORT` | Same, by port |
-| `BRANCHDIFF_DEBUG=1` | Diagnostic output (see [Debug Mode](#debug-mode)) |
+| `BRANCHDIFF_PORT`       | Same, by port                                                                   |
+| `BRANCHDIFF_DEBUG=1`    | Diagnostic output (see [Debug Mode](#debug-mode))                               |
 
 `review run` and `auto` set the first two automatically on the AI they launch, which is what keeps concurrent reviews from reading each other's sessions.
 
@@ -2565,10 +2717,10 @@ Subcommands have their own flags — `branchdiff <command> --help` lists them. T
 
 Stop retyping long flag sets. branchdiff reads two optional JSON files and fills in any flag you didn't pass on the command line — a flag you actually type always wins.
 
-| File | Scope |
-|---|---|
-| `~/.branchdiff/config.json` | Global — applies everywhere |
-| `.branchdiff.json` | Folder-level — a repo root, or the directory you ran branchdiff from |
+| File                        | Scope                                                                |
+| --------------------------- | -------------------------------------------------------------------- |
+| `~/.branchdiff/config.json` | Global — applies everywhere                                          |
+| `.branchdiff.json`          | Folder-level — a repo root, or the directory you ran branchdiff from |
 
 Both are optional; a missing file is not an error. Three top-level keys are recognized:
 
@@ -2602,12 +2754,12 @@ Run `branchdiff config` to see the fully-merged effective config for where you'r
 
 Full per-tier field lists:
 
-| Tier | Fields | Can be set from |
-|---|---|---|
-| Launch-wide | `repoPaths`, `repoConcurrency`, `keepServers`, `watch`, `forceSession`, `detach` | CLI, launch-dir `.branchdiff.json`, global config |
-| Launch-wide (global/launch-dir only) | `yes` | CLI, launch-dir `.branchdiff.json`, global config — **not** a target repo's own `.branchdiff.json` |
-| Per-repo | `source`, `dest`, `review`, `notify`, `push`, `approve`, `requestChanges`, `worktree`, `worktreeRemove`, `fresh`, `timeout`, `parallel`, `skip`, `skipAuthor`, `maxFiles`, `minFiles`, `maxLines`, `minLines`, `skill`, `skillName`, `additionalSkill`, `prompt`, `resolve`, `resolveSkillName`, `additionalResolveSkill`, `resolvePrompt` | CLI, that repo's own `.branchdiff.json`, launch-dir `.branchdiff.json`, global config |
-| Exec-only | `exec`, `tool` | CLI, global config only |
+| Tier                                 | Fields                                                                                                                                                                                                                                                                                                                                     | Can be set from                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Launch-wide                          | `repoPaths`, `repoConcurrency`, `keepServers`, `watch`, `forceSession`, `detach`                                                                                                                                                                                                                                                           | CLI, launch-dir `.branchdiff.json`, global config                                                  |
+| Launch-wide (global/launch-dir only) | `yes`                                                                                                                                                                                                                                                                                                                                      | CLI, launch-dir `.branchdiff.json`, global config — **not** a target repo's own `.branchdiff.json` |
+| Per-repo                             | `source`, `dest`, `review`, `notify`, `push`, `approve`, `requestChanges`, `worktree`, `worktreeRemove`, `fresh`, `timeout`, `parallel`, `skip`, `skipAuthor`, `maxFiles`, `minFiles`, `maxLines`, `minLines`, `skill`, `skillName`, `additionalSkill`, `prompt`, `resolve`, `resolveSkillName`, `additionalResolveSkill`, `resolvePrompt` | CLI, that repo's own `.branchdiff.json`, launch-dir `.branchdiff.json`, global config              |
+| Exec-only                            | `exec`, `tool`                                                                                                                                                                                                                                                                                                                             | CLI, global config only                                                                            |
 
 `branchdiff auto cron add` resolves `repoPaths` at the same launch-wide tier and order (CLI → the directory you ran `cron add` from → global config). Since the crontab job itself always runs with `cwd = $HOME`, a launch-dir `.branchdiff.json` set anywhere other than `$HOME` won't be read again at fire time — put a durable `repoPaths` in the global config instead if you rely on config rather than `--repo-paths` for a scheduled run.
 
@@ -2631,24 +2783,24 @@ BRANCHDIFF_DEBUG=1 branchdiff origin/main origin/my-feature
 
 **What it logs:**
 
-| Log line | Means |
-|---|---|
-| `GitHub remote: { owner, repo }` | GitHub remote was detected |
-| `GitHub remote: none` | No GitHub remote found in this repo |
-| `Bitbucket remote: { workspace, repoSlug }` | Bitbucket remote was parsed from git remote URL |
-| `Bitbucket credentials: username=...` | Which username was loaded from env or config file |
-| `Bitbucket credentials: none` | No credentials found — set `BITBUCKET_USERNAME` + `BITBUCKET_API_TOKEN` |
-| `Bitbucket fetchDetails error: ... 401` | Credentials exist but are invalid or missing **Pull requests: Read** scope |
-| `Bitbucket PR lookup: { branch, destinationBranch, resultCount: 0 }` | Credentials valid, no open PR found for that exact source → destination pair |
-| `Bitbucket PR lookup: { branch, destinationBranch, resultCount: 1 }` | PR was found (problem is elsewhere) |
-| `GitHub getPr error: ...` | `gh pr view` failed — check `gh auth status` |
-| `GitHub PR lookup: { branch, baseBranch, resultCount: 0, number: null }` | No open PR found for that exact head → base pair |
-| `GitHub resolvePrNumberForBase error: ...` | `gh pr list --head/--base` failed — check `gh auth status` |
-| `GitHub getFiles/getComments/pullComments error` | Comment sync step failed |
-| `Bitbucket getDiffStatFiles error` | Comment push: failed to list PR files |
-| `git getBlobMap(branch) error` | Branch comparison: git ref not found or invalid |
-| `git getBranchFileContent(branch, file) error` | File content fetch failed for that branch/file |
-| `git getBranches error` | Could not list git branches |
+| Log line                                                                 | Means                                                                        |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `GitHub remote: { owner, repo }`                                         | GitHub remote was detected                                                   |
+| `GitHub remote: none`                                                    | No GitHub remote found in this repo                                          |
+| `Bitbucket remote: { workspace, repoSlug }`                              | Bitbucket remote was parsed from git remote URL                              |
+| `Bitbucket credentials: username=...`                                    | Which username was loaded from env or config file                            |
+| `Bitbucket credentials: none`                                            | No credentials found — set `BITBUCKET_USERNAME` + `BITBUCKET_API_TOKEN`      |
+| `Bitbucket fetchDetails error: ... 401`                                  | Credentials exist but are invalid or missing **Pull requests: Read** scope   |
+| `Bitbucket PR lookup: { branch, destinationBranch, resultCount: 0 }`     | Credentials valid, no open PR found for that exact source → destination pair |
+| `Bitbucket PR lookup: { branch, destinationBranch, resultCount: 1 }`     | PR was found (problem is elsewhere)                                          |
+| `GitHub getPr error: ...`                                                | `gh pr view` failed — check `gh auth status`                                 |
+| `GitHub PR lookup: { branch, baseBranch, resultCount: 0, number: null }` | No open PR found for that exact head → base pair                             |
+| `GitHub resolvePrNumberForBase error: ...`                               | `gh pr list --head/--base` failed — check `gh auth status`                   |
+| `GitHub getFiles/getComments/pullComments error`                         | Comment sync step failed                                                     |
+| `Bitbucket getDiffStatFiles error`                                       | Comment push: failed to list PR files                                        |
+| `git getBlobMap(branch) error`                                           | Branch comparison: git ref not found or invalid                              |
+| `git getBranchFileContent(branch, file) error`                           | File content fetch failed for that branch/file                               |
+| `git getBranches error`                                                  | Could not list git branches                                                  |
 
 **Common fixes from debug output:**
 
@@ -2657,7 +2809,7 @@ BRANCHDIFF_DEBUG=1 branchdiff origin/main origin/my-feature
 - **repoSlug or workspace wrong** — check your git remote URL: `git remote get-url origin`.
 - **getBlobMap error** — the branch ref passed to branchdiff doesn't exist locally; run `git fetch` first.
 
-**`--debug` — full stack traces on a fatal error.** Separate from `BRANCHDIFF_DEBUG=1`: that env var streams the diagnostic detail in the table above while a command runs *normally*; `--debug` is a leading global flag that only matters when a command *fails*, printing the full stack trace under the one-line `Error:` message. Place it before the subcommand — `branchdiff --debug auto`, not `branchdiff auto --debug` — because it's a root-level option read before the subcommand dispatches. Whether or not `--debug` is set, every fatal prints a red `Error:` line and names the per-run log file under `~/.branchdiff/logs/` where that invocation's full output is kept; `--debug` just brings the stack trace into the terminal too.
+**`--debug` — full stack traces on a fatal error.** Separate from `BRANCHDIFF_DEBUG=1`: that env var streams the diagnostic detail in the table above while a command runs _normally_; `--debug` is a leading global flag that only matters when a command _fails_, printing the full stack trace under the one-line `Error:` message. Place it before the subcommand — `branchdiff --debug auto`, not `branchdiff auto --debug` — because it's a root-level option read before the subcommand dispatches. Whether or not `--debug` is set, every fatal prints a red `Error:` line and names the per-run log file under `~/.branchdiff/logs/` where that invocation's full output is kept; `--debug` just brings the stack trace into the terminal too.
 
 ---
 
@@ -2694,7 +2846,7 @@ git fetch origin --prune
 git branch -f <branch> origin/<branch>
 ```
 
-If it *is* checked out, `git rebase` or `git merge` to keep the local commits, or `git reset --hard origin/<branch>` if they're disposable. A worktree holding the branch has to be removed first (`branchdiff prune-worktrees`) — git refuses to move a ref another checkout owns. On a review-only host, `git branch -D <branch>` is simpler still: nothing there needs a local branch. `--no-sync` silences the step without changing anything.
+If it _is_ checked out, `git rebase` or `git merge` to keep the local commits, or `git reset --hard origin/<branch>` if they're disposable. A worktree holding the branch has to be removed first (`branchdiff prune-worktrees`) — git refuses to move a ref another checkout owns. On a review-only host, `git branch -D <branch>` is simpler still: nothing there needs a local branch. `--no-sync` silences the step without changing anything.
 
 #### "Refusing to review stale code"
 
@@ -2725,7 +2877,7 @@ You ran it somewhere without a terminal to prompt in (a script, CI, a pipe). Add
 
 #### `branchdiff auto` skips a PR you expected it to review
 
-It only reviews PRs with *non-merge* commits since their last review, so merging main into your branch doesn't retrigger one. `--fresh` forces a clean review of the current state.
+It only reviews PRs with _non-merge_ commits since their last review, so merging main into your branch doesn't retrigger one. `--fresh` forces a clean review of the current state.
 
 #### The AI reviewed an older revision than the pull request is on
 
@@ -2743,7 +2895,7 @@ branchdiff auto --tool claude --worktree --no-skip --review  # re-review at the 
 Two independent pieces of state decide which revision a review actually reads, and neither one is the diff:
 
 - **The checkout.** `ensureWorktree` re-detaches a reused `.worktrees/pr-<n>` onto the pull request's head SHA on every cycle — except when the checkout is dirty, where it returns the path untouched rather than clobbering work. The head SHA comes from the forge, so a force-pushed branch moves the checkout with it; a same-named local branch left behind on an old commit is never used as the source of truth.
-- **The reviewed-at record.** `~/.branchdiff/<repo>/pr-review-*` stores the commit each pull request was last reviewed at, and eligibility is the symmetric difference between that commit and the current head with merges filtered out — so a force-push that *removes* commits still counts as new work, while merging the base branch in still does not.
+- **The reviewed-at record.** `~/.branchdiff/<repo>/pr-review-*` stores the commit each pull request was last reviewed at, and eligibility is the symmetric difference between that commit and the current head with merges filtered out — so a force-push that _removes_ commits still counts as new work, while merging the base branch in still does not.
 
 The diff, the size gate and the verdict footer all read the forge's head SHA directly, so they stay correct even when the checkout is held back — which is why a pass in this state completes cleanly and reports no findings rather than failing. `branchdiff list` prints each session's `worktree:` path, and `git -C <path> rev-parse HEAD` inside it tells you which commit the reviewer is actually reading.
 
@@ -2780,7 +2932,7 @@ Start with **`branchdiff doctor --notify`**. It reports which backend your platf
 
 The second case is the common one on **macOS**, where a toast is attributed to the app that requested it and notification permission is granted **per app**. Which app that is depends on the backend:
 
-- **`terminal-notifier` installed** (`brew install terminal-notifier`) — toasts are attributed to *terminal-notifier*, which appears in System Settings → Notifications as its own entry you can allow. This is the default when it's on your PATH, and it's also the only backend with click-to-open.
+- **`terminal-notifier` installed** (`brew install terminal-notifier`) — toasts are attributed to _terminal-notifier_, which appears in System Settings → Notifications as its own entry you can allow. This is the default when it's on your PATH, and it's also the only backend with click-to-open.
 - **Otherwise** — the built-in `osascript` is used, and its toasts are attributed to **Script Editor**. If Script Editor's alert style is "None", they land silently in Notification Center. Worse, on some machines Script Editor never appears in that list at all — macOS won't prompt for it either, so there is no way to grant the permission. Installing `terminal-notifier` is the fix for that.
 
 Either way: set the relevant app to Allow Notifications, style Banners or Alerts. `BRANCHDIFF_MAC_NOTIFIER=0` forces the built-in path if a `terminal-notifier` install misbehaves.
@@ -2788,15 +2940,19 @@ Either way: set the relevant app to Allow Notifications, style Banners or Alerts
 #### Native module errors (`better-sqlite3`)
 
 Its compiled `.node` binding is locked to one Node major version at a time, and breaks two ways:
+
 - **ABI mismatch** — you switched Node versions (`nvm use`, an OS update, a new machine) and the binding wasn't rebuilt for the new one. The error names both versions (`NODE_MODULE_VERSION X` vs `Y`).
 - **Missing entirely** — "Could not locate the bindings file". Common on NTFS/FUSE mounts: the binding gets orphaned if a branchdiff server held it open while something replaced the file underneath it.
 
 Either way, stop every branchdiff process first — rebuilding while one still holds the binding open just orphans it again — then rebuild for whichever Node version you actually run branchdiff under:
+
 ```bash
 branchdiff killall
 npm rebuild -g better-sqlite3
 ```
+
 Working from a source checkout (`pnpm install`) instead of the published package? `pnpm rebuild better-sqlite3` can silently no-op if pnpm believes the install already succeeded once, even with the binding file gone. If the file's still missing afterward, rebuild it directly:
+
 ```bash
 cd node_modules/.pnpm/better-sqlite3@*/node_modules/better-sqlite3
 npx node-gyp rebuild --release
@@ -2813,7 +2969,7 @@ A single `node_modules/better-sqlite3` holds one compiled binding at a time. If 
 
 `branchdiff auto cron add`'s generated script bakes in `process.execPath` and `process.argv[1]` — the exact Node binary and branchdiff script that ran the `add` command — not a bare `branchdiff` resolved from `cron`'s PATH at fire time. That's deliberate: `cron` never sources `.bashrc`/`.nvmrc`/`nvm.sh`, so resolving `nvm` fresh on every single fire would be more moving parts, not fewer.
 
-Two consequences: changing your shell's default Node version (`nvm alias default <n>`) has zero effect on a schedule that already exists — check what's actually pinned with `cat ~/.branchdiff/cron-scripts/<cronId>.sh | grep exec`, and `auto cron remove --id <id>` + re-`add` under the Node version you want if it's wrong. And while `auto cron add` checks the binding before writing anything (so it can't schedule an already-broken job), it can't protect against the binding breaking *after* the schedule exists — that fails silently on every fire with nothing but the session log to notice.
+Two consequences: changing your shell's default Node version (`nvm alias default <n>`) has zero effect on a schedule that already exists — check what's actually pinned with `cat ~/.branchdiff/cron-scripts/<cronId>.sh | grep exec`, and `auto cron remove --id <id>` + re-`add` under the Node version you want if it's wrong. And while `auto cron add` checks the binding before writing anything (so it can't schedule an already-broken job), it can't protect against the binding breaking _after_ the schedule exists — that fails silently on every fire with nothing but the session log to notice.
 
 </details>
 
@@ -2827,12 +2983,15 @@ Two consequences: changing your shell's default Node version (`nvm alias default
 `PATH`, `DISPLAY`, and `DBUS_SESSION_BUS_ADDRESS` are copied once, as a snapshot, straight into the schedule's generated script from the shell running `add` — fine, since none of them rotate. Forge auth (`BITBUCKET_USERNAME`/`BITBUCKET_API_TOKEN`/`GH_TOKEN`/`GITHUB_TOKEN`/`GH_HOST`/`GH_ENTERPRISE_TOKEN`) is never snapshotted, since a token rotated after `cron add` would otherwise sit stale for the schedule's whole lifetime — instead the scheduled job's exec runs inside your own login shell, sourcing your profile fresh on every fire, so a rotated token is picked up by the very next cycle. A team using only GitHub, only Bitbucket, or no `--notify` simply has fewer snapshot vars to copy — no warning either way.
 
 A custom `--exec` command's own env vars ride the same login-shell wrap — `export` one in `~/.zshrc`/`~/.bashrc` and the scheduled job sees it at every fire, no crontab edit needed. The alternative is a plain `VAR=value` line at the top of the crontab (`crontab -e`, applies to every job in that file):
+
 ```
 MY_TOOL_API_KEY=your-key
 ```
+
 Either way, a schedule already running when you add the var won't pick it up until its next fire — its already-spawned `--watch` loop keeps the environment it started with for its whole lifetime (forge auth aside, which refreshes every cycle) — see **Covering today's gap** above to restart it now instead of waiting.
 
 If you write the crontab line yourself instead of using `auto cron add`, none of the above happens automatically: add `PATH`/`--notify` vars by hand, wrap your own command in `$SHELL -ilc '...'` (or `export` forge auth directly on the crontab line) for live-resolved auth, and make sure `branchdiff` itself is on that `PATH` (this prints its directory):
+
 ```bash
 dirname "$(dirname "$(readlink -f "$(which branchdiff)")")"
 ```
@@ -2857,14 +3016,14 @@ Run `branchdiff doctor`.
 
 Anything that permanently deletes data or removes a schedule confirms before acting, and `--force` skips that prompt:
 
-| Command | Deletes |
-|---|---|
-| `branchdiff clear` | All review data (comments, threads, sessions) for the current repo |
-| `branchdiff prune` | Everything, for every repo — and stops running servers / `auto` runs / schedules first |
-| `branchdiff state reset` | Persisted UI state (collapse state, viewed-file markers) for a repo |
-| `branchdiff auto log delete` | Recorded [run logs](#run-logs-log) |
-| `branchdiff auto cron removeall` | Every `auto` schedule |
-| `branchdiff prune-worktrees cron removeall` | Every `prune-worktrees` schedule |
+| Command                                     | Deletes                                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `branchdiff clear`                          | All review data (comments, threads, sessions) for the current repo                     |
+| `branchdiff prune`                          | Everything, for every repo — and stops running servers / `auto` runs / schedules first |
+| `branchdiff state reset`                    | Persisted UI state (collapse state, viewed-file markers) for a repo                    |
+| `branchdiff auto log delete`                | Recorded [run logs](#run-logs-log)                                                     |
+| `branchdiff auto cron removeall`            | Every `auto` schedule                                                                  |
+| `branchdiff prune-worktrees cron removeall` | Every `prune-worktrees` schedule                                                       |
 
 ```bash
 branchdiff clear                  # asks: Permanently delete all review data for <repo>? (y/N)
@@ -2873,15 +3032,17 @@ branchdiff clear --force          # deletes immediately
 
 **In a script, cron job, or CI, `--force` is required** — without a terminal there is no way to answer the prompt, so these commands refuse and exit 1 rather than deleting on an assumption (or hanging forever waiting for an answer that can't arrive). The refusal names what it would have deleted and which flag to pass.
 
-Commands that only *stop* things — `branchdiff kill`, `killall`, `auto stop`, `auto stopall` — don't ask. Nothing is lost: review data lives in SQLite and outlives the process, so a stopped session reopens with everything intact.
+Commands that only _stop_ things — `branchdiff kill`, `killall`, `auto stop`, `auto stopall` — don't ask. Nothing is lost: review data lives in SQLite and outlives the process, so a stopped session reopens with everything intact.
 
 ## Data & privacy
 
 Everything is local. No outbound calls except:
+
 - `localhost` (UI ↔ CLI server)
 - GitHub API via your local `gh` CLI (only for PR viewing and comment sync — only when you click a sync button)
 
 Stored in `~/.branchdiff/`:
+
 - `registry.json` — running instance metadata
 - `config.json` — your global flag defaults, if you've created one (see [Config File](#config-file))
 - `<repo-hash>/` — per-repo SQLite with comment threads
@@ -2923,7 +3084,7 @@ From the terminal, the same update is one command: `branchdiff update`. It asks 
 - **Check frequency:** the server asks the registry at most once per hour and caches the answer; **Check again** in the dialog forces a fresh lookup.
 - **Dev installs:** when branchdiff runs from a source checkout rather than an install, the badge, the menu item, and the dialog are hidden entirely — updating would touch the installed package, not the checkout.
 - **Custom registry for testing:** `BRANCHDIFF_UPDATE_REGISTRY` env var overrides the registry URL the check fetches (defaults to `https://registry.npmjs.org`).
-- **Skills nudge after a successful update:** once the spawned update exits successfully, the server asks the *newly installed* binary for its skills hash (`--skills-hash`) and compares it against the hash this (still-running, old) process shipped with. A difference means the release changed the [AI review skill](#ai-review) content, and the dialog adds a note pointing at `branchdiff skill add` (or, for a plugin-marketplace install, the `/plugin` menu), plus a **See more** link opening this guide's [Updating installed skills](#updating-installed-skills) section in a new tab. `branchdiff update` prints the same nudge in the terminal. No difference, or the check itself fails (e.g. a channel whose shim takes a moment to point at the new binary) — no note; nothing to do either way.
+- **Skills nudge after a successful update:** once the spawned update exits successfully, the server asks the _newly installed_ binary for its skills hash (`--skills-hash`) and compares it against the hash this (still-running, old) process shipped with. A difference means the release changed the [AI review skill](#ai-review) content, and the dialog adds a note pointing at `branchdiff skill add` (or, for a plugin-marketplace install, the `/plugin` menu), plus a **See more** link opening this guide's [Updating installed skills](#updating-installed-skills) section in a new tab. `branchdiff update` prints the same nudge in the terminal. No difference, or the check itself fails (e.g. a channel whose shim takes a moment to point at the new binary) — no note; nothing to do either way.
 - **Where the success screen's what's-new list comes from:** the server reads the just-installed package's `CHANGELOG.md` off disk after the spawned update finishes (see [Update branchdiff](#update-branchdiff)'s breakdown for the resolution rules) and slices it against the version this server was running when the run started. No changelog next to the binary — the standalone download — means no list; the restart note and the hosted-changelog link still stand.
 
 </details>

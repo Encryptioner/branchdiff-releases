@@ -6,6 +6,28 @@ All notable changes to `branchdiff` are documented here.
 
 ---
 
+## [2.3.2] - 2026-09-14
+
+### Added
+
+- **Zed task snippets** - a copy-paste `tasks.json` sample in GUIDELINE.md's "Zed" section, with ready-made tasks for the interactive picker, stats, instances, branches, history, guideline, changelog, and kill (stats/instances/kill each cover this repo and all repos), runnable from Zed's command palette.
+
+- **Visualize stats JSON in the dashboard** - paste the output of `branchdiff stats --json` into the What's stats? dialog's visualize view to render it through the Stats dashboard — stats from another machine, a CI artifact, or an old snapshot, no server data needed. A "Viewing pasted data" badge and a Reset button mark the mode; reloading restores your own stats.
+
+- **`stats --file`** - writes stats to a file instead of printing them, so long output never needs copying out of a terminal. Bare `--file` auto-names the file from the run's scope, window, and timestamp; `--file <name>` picks your own. Writes JSON by default (paste it into the dashboard's visualize view above), or the `--share` markdown summary with `--share --file`.
+
+### Fixed
+
+- **Copy actions in the VS Code extension** - Copy summary and every other copy button work inside the extension's embedded panel now, where the browser's clipboard API is blocked.
+
+- **Check-for-updates indicator now shows everywhere it applies** - the 3-dot menu's badge and its "Check for updates" item light up consistently on Stats, Branches, History, Search, Guideline, and Changelog, not just inside a diff comparison.
+
+- **No more light-theme flash on load** - the app paints in your preferred theme from the very first frame, whether that preference is a saved choice or your system's light/dark setting, instead of briefly showing light before switching.
+
+- **Tooltips behave around dialogs** - tooltips no longer flash open the moment a dialog appears over the mouse, they render above an open dialog instead of behind it, and every icon-only button that shows one is named for screen readers.
+
+---
+
 ## [2.3.1] - 2026-09-12
 
 ### Fixed
