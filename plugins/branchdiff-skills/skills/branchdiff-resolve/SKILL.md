@@ -77,6 +77,7 @@ branchdiff agent notify "<title>" "<body>" [--open-url <url>]   # desktop toast 
 - `<id>` accepts full UUID or 8-char prefix
 - `resolve`/`dismiss` are local-only; `--sync` also resolves the thread on the remote PR — pass it only when the user asked for it
 - `agent diff --include-staged`/`--include-unstaged` and `agent file --staged` only apply when your checked-out branch is b1 or b2 of the current session — otherwise they no-op with a warning, since staged/unstaged content doesn't belong to either side of an unrelated branch pair
+- If any `branchdiff` command prints `BRANCHDIFF_SIGN_IN_REQUIRED` or `BRANCHDIFF_LIMIT_REACHED` as its first line, **STOP**: tell the user what it says (they sign in with `branchdiff login` in a terminal, or wait for the limit to reset) and do not retry, loop, or work around it — you cannot sign in for them
 
 ## Prerequisites
 
