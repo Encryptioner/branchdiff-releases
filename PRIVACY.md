@@ -40,4 +40,4 @@ In Google Firebase (Authentication and Cloud Firestore). Google processes it as 
 
 ## Contact
 
-Privacy questions or deletion requests: open an issue at https://github.com/encryptioner/branchdiff-releases/issues or email **TODO: support address**.
+Privacy questions or deletion requests: open an issue at https://github.com/encryptioner/branchdiff-releases/issues, or write to: Ankur Mursalin (Encryptioner), Ramprua, Dhaka, Bangladesh.
